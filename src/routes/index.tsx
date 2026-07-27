@@ -71,12 +71,20 @@ function MainMenu() {
           delay={120}
         />
         <MenuCard
+          to="/mundo"
+          icon={Globe2}
+          title="Mundo do Futebol"
+          description="Clubes, ligas e competições"
+          delay={180}
+        />
+        <MenuCard
           to="/configuracoes"
           icon={Settings}
           title="Configurações"
           description="Áudio, animações e salvamento"
-          delay={180}
+          delay={240}
         />
+
         <MenuCard
           to="/creditos"
           icon={Sparkles}
