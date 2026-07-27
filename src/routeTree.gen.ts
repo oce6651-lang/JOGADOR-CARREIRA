@@ -9,8 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
+import { Route as CreditosRouteImport } from './routes/creditos'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
 
+const NovoJogoRoute = NovoJogoRouteImport.update({
+  id: '/novo-jogo',
+  path: '/novo-jogo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditosRoute = CreditosRouteImport.update({
+  id: '/creditos',
+  path: '/creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarreiraRoute = CarreiraRouteImport.update({
+  id: '/carreira',
+  path: '/carreira',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +43,78 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/carreira': typeof CarreiraRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/creditos': typeof CreditosRoute
+  '/novo-jogo': typeof NovoJogoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/carreira': typeof CarreiraRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/creditos': typeof CreditosRoute
+  '/novo-jogo': typeof NovoJogoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/carreira': typeof CarreiraRoute
+  '/configuracoes': typeof ConfiguracoesRoute
+  '/creditos': typeof CreditosRoute
+  '/novo-jogo': typeof NovoJogoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/carreira' | '/configuracoes' | '/creditos' | '/novo-jogo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/carreira' | '/configuracoes' | '/creditos' | '/novo-jogo'
+  id:
+    | '__root__'
+    | '/'
+    | '/carreira'
+    | '/configuracoes'
+    | '/creditos'
+    | '/novo-jogo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CarreiraRoute: typeof CarreiraRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
+  CreditosRoute: typeof CreditosRoute
+  NovoJogoRoute: typeof NovoJogoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/novo-jogo': {
+      id: '/novo-jogo'
+      path: '/novo-jogo'
+      fullPath: '/novo-jogo'
+      preLoaderRoute: typeof NovoJogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creditos': {
+      id: '/creditos'
+      path: '/creditos'
+      fullPath: '/creditos'
+      preLoaderRoute: typeof CreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carreira': {
+      id: '/carreira'
+      path: '/carreira'
+      fullPath: '/carreira'
+      preLoaderRoute: typeof CarreiraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +127,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CarreiraRoute: CarreiraRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
+  CreditosRoute: CreditosRoute,
+  NovoJogoRoute: NovoJogoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
