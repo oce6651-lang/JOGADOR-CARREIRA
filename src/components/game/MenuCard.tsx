@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
 interface MenuCardProps {
-  to: string;
+  to: "/" | "/novo-jogo" | "/carreira" | "/configuracoes" | "/creditos";
   icon: LucideIcon;
   title: string;
   description: string;
