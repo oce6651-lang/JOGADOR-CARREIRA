@@ -1,4 +1,5 @@
 import { SAVE_VERSION } from "./constants";
+import { createPlayer } from "./player";
 import type { Career, GameSettings } from "./types";
 
 const CAREER_KEY = "pfc:career:v1";
