@@ -9,20 +9,23 @@ import {
   Trophy,
   UserRound,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { EventList } from "@/components/game/events/EventList";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
-import { ProgressBar, StatCard } from "@/components/game/Stats";
+import { SeasonSummaryDialog } from "@/components/game/simulation/SeasonSummaryDialog";
+import { SimulationReportDialog } from "@/components/game/simulation/SimulationReportDialog";
+import { TimePanel } from "@/components/game/simulation/TimePanel";
+import { StatCard } from "@/components/game/Stats";
 import { Button } from "@/components/ui/button";
-import { formatGameDate, seasonLabel } from "@/game/calendar";
+import { seasonLabel } from "@/game/calendar";
 import { playerAge, playerFullName, playerOverall } from "@/game/career";
-import {
-  WEEKS_PER_SEASON,
-  footLabel,
-  nationalityLabel,
-  positionLabel,
-} from "@/game/constants";
+import { footLabel, nationalityLabel, positionLabel } from "@/game/constants";
+import { EVENT_DEFINITIONS } from "@/game/events";
 import { useGame } from "@/game/GameProvider";
+import { STATUS_LABELS, primaryStatus } from "@/game/player";
+import { hasClub } from "@/game/simulation";
+import type { GameEventType } from "@/game/types";
 
 export const Route = createFileRoute("/carreira")({
   head: () => ({
@@ -31,12 +34,12 @@ export const Route = createFileRoute("/carreira")({
       {
         name: "description",
         content:
-          "Painel da carreira: temporada atual, calendário, perfil do atleta e histórico de eventos.",
+          "Painel da carreira: simule partidas, semanas e meses, acompanhe temporada, idade e todo o histórico de eventos.",
       },
       { property: "og:title", content: "Carreira — Project Football Career" },
       {
         property: "og:description",
-        content: "Acompanhe temporada, calendário e evolução do seu atleta.",
+        content: "Simule o tempo e acompanhe cada evento da carreira do seu atleta.",
       },
     ],
   }),
@@ -50,17 +53,40 @@ const LOCKED = [
   "Empresários",
   "Campeonatos",
   "Seleções",
-  "Evolução",
-  "Lesões",
+];
+
+const FILTERS: { id: "all" | GameEventType; label: string }[] = [
+  { id: "all", label: "Tudo" },
+  { id: "match", label: "Partidas" },
+  { id: "training", label: "Treinos" },
+  { id: "growth", label: "Evolução" },
+  { id: "injury", label: "Lesões" },
+  { id: "seasonEnd", label: "Temporadas" },
 ];
 
 function CareerPage() {
   const navigate = useNavigate();
-  const { career, hydrated, advanceWeek, abandonCareer } = useGame();
+  const {
+    career,
+    hydrated,
+    simulate,
+    simulating,
+    lastReport,
+    dismissReport,
+    dismissSeasonSummary,
+    abandonCareer,
+  } = useGame();
+  const [filter, setFilter] = useState<"all" | GameEventType>("all");
 
   useEffect(() => {
     if (hydrated && !career) navigate({ to: "/" });
   }, [hydrated, career, navigate]);
+
+  const events = useMemo(() => {
+    if (!career) return [];
+    const list = filter === "all" ? career.events : career.events.filter((e) => e.type === filter);
+    return list.slice(0, 40);
+  }, [career, filter]);
 
   if (!career) {
     return (
@@ -71,6 +97,9 @@ function CareerPage() {
   }
 
   const { current } = career.timeline;
+  const pendingSummary = career.pendingSeasonSummaries[0] ?? null;
+  const status = primaryStatus(career.player.statuses);
+  const totals = career.player.history.totals;
 
   return (
     <GameShell>
@@ -84,36 +113,36 @@ function CareerPage() {
       <PageHeader
         eyebrow={`Temporada ${seasonLabel(current)}`}
         title={playerFullName(career)}
-        description={`${positionLabel(career.player.position)} · ${playerAge(career)} anos · Sem clube`}
-        action={
-          <Button
-            onClick={advanceWeek}
-            size="lg"
-            className="text-display text-lg uppercase"
-          >
-            Avançar semana <ChevronsRight className="size-5" />
-          </Button>
-        }
+        description={`${positionLabel(career.player.position)} · ${playerAge(career)} anos · ${STATUS_LABELS[status].label}`}
       />
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <TimePanel
+        date={current}
+        age={playerAge(career)}
+        birthDate={career.player.birthDate}
+        canPlayMatch={hasClub(career.player)}
+        busy={simulating}
+        onSimulate={simulate}
+      />
+
+      <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={UserRound}
+          label="Overall"
+          value={String(playerOverall(career))}
+          hint={career.player.code}
+        />
         <StatCard
           icon={CalendarDays}
-          label="Semana"
-          value={`${current.week}/${WEEKS_PER_SEASON}`}
-          hint={formatGameDate(current)}
+          label="Jogos"
+          value={String(totals.appearances)}
+          hint={`${totals.goals} gols · ${totals.assists} assistências`}
         />
         <StatCard
           icon={Trophy}
           label="Temporadas"
           value={String(career.timeline.completedSeasons)}
           hint="Completas"
-        />
-        <StatCard
-          icon={UserRound}
-          label="Overall"
-          value={String(playerOverall(career))}
-          hint={career.player.code}
         />
         <StatCard
           icon={Flag}
@@ -135,47 +164,39 @@ function CareerPage() {
         <ChevronsRight className="size-6 text-primary" />
       </Link>
 
-
       <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="panel space-y-5 p-6 lg:col-span-2">
-          <h2 className="text-display text-2xl uppercase">Temporada</h2>
-          <ProgressBar
-            label="Progresso da temporada"
-            value={current.week}
-            max={WEEKS_PER_SEASON}
-          />
-          <ProgressBar label="Preparação física" value={62} tone="gold" />
-          <ProgressBar label="Moral" value={78} />
-
-          <div>
-            <h3 className="mb-3 text-display text-xl uppercase">Histórico</h3>
-            <ul className="space-y-2">
-              {career.log.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex items-start gap-3 rounded-lg border border-border bg-secondary/40 p-3"
+        <div className="panel space-y-4 p-6 lg:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-display text-2xl uppercase">Histórico de eventos</h2>
+            <div className="flex flex-wrap gap-1.5">
+              {FILTERS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setFilter(item.id)}
+                  className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                    filter === item.id
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <span className="mt-1 size-2 shrink-0 rounded-full bg-primary" />
-                  <div>
-                    <p className="text-sm font-semibold">{entry.title}</p>
-                    {entry.description ? (
-                      <p className="text-xs text-muted-foreground">
-                        {entry.description}
-                      </p>
-                    ) : null}
-                    <p className="mt-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-                      {seasonLabel(entry.date)} · semana {entry.date.week}
-                    </p>
-                  </div>
-                </li>
+                  {item.label}
+                </button>
               ))}
-            </ul>
+            </div>
           </div>
+          <EventList
+            events={events}
+            emptyLabel={`Nenhum evento do tipo ${
+              filter === "all" ? "registrado" : EVENT_DEFINITIONS[filter].label
+            } ainda.`}
+          />
         </div>
 
         <aside className="space-y-4">
           <div className="panel space-y-3 p-6">
             <h2 className="text-display text-2xl uppercase">Perfil</h2>
+            <InfoRow label="Situação" value={STATUS_LABELS[status].label} />
             <InfoRow label="Posição" value={positionLabel(career.player.position)} />
             <InfoRow
               label="Pé dominante"
@@ -183,7 +204,7 @@ function CareerPage() {
               icon={<Footprints className="size-3.5" />}
             />
             <InfoRow label="Nascimento" value={career.player.birthDate} />
-            <InfoRow label="ID" value={career.player.id.slice(0, 14) + "…"} />
+            <InfoRow label="Identificador" value={career.player.code} />
           </div>
 
           <div className="panel space-y-3 p-6">
@@ -213,6 +234,17 @@ function CareerPage() {
           </Button>
         </aside>
       </section>
+
+      <SeasonSummaryDialog
+        summary={pendingSummary}
+        open={Boolean(pendingSummary)}
+        onClose={() => pendingSummary && dismissSeasonSummary(pendingSummary.id)}
+      />
+      <SimulationReportDialog
+        report={lastReport}
+        open={Boolean(lastReport) && !pendingSummary}
+        onClose={dismissReport}
+      />
     </GameShell>
   );
 }

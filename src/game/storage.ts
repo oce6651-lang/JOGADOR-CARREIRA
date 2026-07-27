@@ -1,6 +1,8 @@
 import { SAVE_VERSION } from "./constants";
+import { ageAt } from "./calendar";
 import { createPlayer } from "./player";
-import type { Career, GameSettings } from "./types";
+import { createSeasonProgress } from "./simulation";
+import type { Career, GameEvent, GameSettings } from "./types";
 
 const CAREER_KEY = "pfc:career:v1";
 const SETTINGS_KEY = "pfc:settings:v1";
@@ -62,6 +64,13 @@ export function saveSettings(settings: GameSettings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
+interface LegacyLogEntry {
+  id: string;
+  date: Career["timeline"]["current"];
+  title: string;
+  description?: string;
+}
+
 /** Forward-compatible save migration hook. */
 function migrateCareer(career: Career): Career | null {
   if (!career || typeof career !== "object" || !career.player) return null;
@@ -85,7 +94,37 @@ function migrateCareer(career: Career): Career | null {
     next = { ...next, player: { ...player, id: next.player.id } };
   }
 
+  // v2 -> v3: the career log becomes a typed event archive and the season
+  // accumulator is introduced.
+  if (!next.events) {
+    const legacy = ((next as unknown as { log?: LegacyLogEntry[] }).log ?? []).map(
+      (entry): GameEvent => ({
+        id: entry.id,
+        type: "milestone",
+        date: entry.date,
+        title: entry.title,
+        description: entry.description,
+        tone: "info",
+      }),
+    );
+    next = { ...next, events: legacy };
+  }
+
+  if (!next.pendingSeasonSummaries) {
+    next = { ...next, pendingSeasonSummaries: [] };
+  }
+
+  if (!next.currentSeason) {
+    next = {
+      ...next,
+      currentSeason: createSeasonProgress(
+        next.player,
+        next.timeline.current.seasonYear,
+        ageAt(next.player.birthDate, next.timeline.current.date),
+      ),
+    };
+  }
+
   // Future migrations chain here.
   return { ...next, version: SAVE_VERSION };
 }
-

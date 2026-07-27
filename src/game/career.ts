@@ -1,14 +1,17 @@
 import { SAVE_VERSION } from "./constants";
-import { advanceWeek, ageAt, createTimeline } from "./calendar";
+import { ageAt, createTimeline } from "./calendar";
+import { createEvent, appendEvents } from "./events";
 import { createId } from "./ids";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
+import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
 import type {
   Career,
-  CareerLogEntry,
   CareerSummary,
   Foot,
+  GameEvent,
   IsoDate,
   PositionCode,
+  SimulationReport,
 } from "./types";
 
 export interface NewCareerInput {
@@ -28,14 +31,19 @@ export function currentSeasonYear(now = new Date()): number {
 export function createCareer(input: NewCareerInput, now = Date.now()): Career {
   const timeline = createTimeline(currentSeasonYear(new Date(now)));
   const player = createPlayer(input, timeline.current.date);
+  const age = ageAt(player.birthDate, timeline.current.date);
 
-  const firstEntry: CareerLogEntry = {
-    id: createId("event"),
-    date: timeline.current,
-    title: "Carreira iniciada",
-    description: `${player.fullName} (${player.code}) começa sua jornada sem clube.`,
-    kind: "milestone",
-  };
+  const events: GameEvent[] = [
+    createEvent(
+      "seasonStart",
+      timeline.current,
+      `Início da temporada ${timeline.current.seasonYear}`,
+      { description: "A jornada começa agora." },
+    ),
+    createEvent("milestone", timeline.current, "Carreira iniciada", {
+      description: `${player.fullName} (${player.code}) começa sua jornada sem clube.`,
+    }),
+  ];
 
   return {
     id: createId("career"),
@@ -45,7 +53,9 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     status: "unsigned",
     player,
     timeline,
-    log: [firstEntry],
+    events,
+    pendingSeasonSummaries: [],
+    currentSeason: createSeasonProgress(player, timeline.current.seasonYear, age),
   };
 }
 
@@ -65,25 +75,37 @@ export function playerStatus(career: Career) {
   return primaryStatus(career.player.statuses);
 }
 
-/** Pure clock advance. Future systems will compose their own steps around it. */
-export function advanceCareerWeek(career: Career): Career {
+/** Advances the career, running every automatic system for the period. */
+export function simulateCareer(
+  career: Career,
+  scope: SimulationScope,
+): { career: Career; report: SimulationReport } {
+  return simulate(career, scope);
+}
+
+export function acknowledgeSeasonSummary(career: Career, summaryId: string): Career {
   return {
     ...career,
-    timeline: advanceWeek(career.timeline),
+    pendingSeasonSummaries: career.pendingSeasonSummaries.filter(
+      (summary) => summary.id !== summaryId,
+    ),
     updatedAt: Date.now(),
   };
 }
 
-export function appendLog(
+export function appendEvent(
   career: Career,
-  entry: Omit<CareerLogEntry, "id" | "date">,
+  event: Omit<GameEvent, "id" | "date" | "tone"> & { tone?: GameEvent["tone"] },
 ): Career {
   return {
     ...career,
-    log: [
-      { id: createId("event"), date: career.timeline.current, ...entry },
-      ...career.log,
-    ].slice(0, 200),
+    events: appendEvents(career.events, [
+      createEvent(event.type, career.timeline.current, event.title, {
+        description: event.description,
+        tone: event.tone,
+        data: event.data,
+      }),
+    ]),
     updatedAt: Date.now(),
   };
 }
