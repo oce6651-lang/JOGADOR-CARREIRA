@@ -15,7 +15,7 @@ import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { ProgressBar, StatCard } from "@/components/game/Stats";
 import { Button } from "@/components/ui/button";
 import { formatGameDate, seasonLabel } from "@/game/calendar";
-import { playerAge, playerFullName } from "@/game/career";
+import { playerAge, playerFullName, playerOverall } from "@/game/career";
 import {
   WEEKS_PER_SEASON,
   footLabel,
