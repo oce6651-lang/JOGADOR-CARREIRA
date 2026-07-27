@@ -19,6 +19,7 @@ import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MundoIndexRouteImport } from './routes/mundo.index'
 import { Route as MundoCompeticaoCompetitionSlugRouteImport } from './routes/mundo.competicao.$competitionSlug'
+import { Route as MundoClubeClubSlugRouteImport } from './routes/mundo.clube.$clubSlug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -71,6 +72,11 @@ const MundoCompeticaoCompetitionSlugRoute =
     path: '/competicao/$competitionSlug',
     getParentRoute: () => MundoRoute,
   } as any)
+const MundoClubeClubSlugRoute = MundoClubeClubSlugRouteImport.update({
+  id: '/clube/$clubSlug',
+  path: '/clube/$clubSlug',
+  getParentRoute: () => MundoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo/': typeof MundoIndexRoute
+  '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
   '/mundo/competicao/$competitionSlug': typeof MundoCompeticaoCompetitionSlugRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo': typeof MundoIndexRoute
+  '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
   '/mundo/competicao/$competitionSlug': typeof MundoCompeticaoCompetitionSlugRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo/': typeof MundoIndexRoute
+  '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
   '/mundo/competicao/$competitionSlug': typeof MundoCompeticaoCompetitionSlugRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/novo-jogo'
     | '/sitemap.xml'
     | '/mundo/'
+    | '/mundo/clube/$clubSlug'
     | '/mundo/competicao/$competitionSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/novo-jogo'
     | '/sitemap.xml'
     | '/mundo'
+    | '/mundo/clube/$clubSlug'
     | '/mundo/competicao/$competitionSlug'
   id:
     | '__root__'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/novo-jogo'
     | '/sitemap.xml'
     | '/mundo/'
+    | '/mundo/clube/$clubSlug'
     | '/mundo/competicao/$competitionSlug'
   fileRoutesById: FileRoutesById
 }
@@ -229,16 +241,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MundoCompeticaoCompetitionSlugRouteImport
       parentRoute: typeof MundoRoute
     }
+    '/mundo/clube/$clubSlug': {
+      id: '/mundo/clube/$clubSlug'
+      path: '/clube/$clubSlug'
+      fullPath: '/mundo/clube/$clubSlug'
+      preLoaderRoute: typeof MundoClubeClubSlugRouteImport
+      parentRoute: typeof MundoRoute
+    }
   }
 }
 
 interface MundoRouteChildren {
   MundoIndexRoute: typeof MundoIndexRoute
+  MundoClubeClubSlugRoute: typeof MundoClubeClubSlugRoute
   MundoCompeticaoCompetitionSlugRoute: typeof MundoCompeticaoCompetitionSlugRoute
 }
 
 const MundoRouteChildren: MundoRouteChildren = {
   MundoIndexRoute: MundoIndexRoute,
+  MundoClubeClubSlugRoute: MundoClubeClubSlugRoute,
   MundoCompeticaoCompetitionSlugRoute: MundoCompeticaoCompetitionSlugRoute,
 }
 
