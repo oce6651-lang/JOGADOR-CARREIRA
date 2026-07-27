@@ -17,6 +17,7 @@ import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MundoIndexRouteImport } from './routes/mundo.index'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -58,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MundoIndexRoute = MundoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MundoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,9 +71,10 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
-  '/mundo': typeof MundoRoute
+  '/mundo': typeof MundoRouteWithChildren
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/mundo/': typeof MundoIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -75,9 +82,9 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
-  '/mundo': typeof MundoRoute
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/mundo': typeof MundoIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -86,9 +93,10 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
-  '/mundo': typeof MundoRoute
+  '/mundo': typeof MundoRouteWithChildren
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/mundo/': typeof MundoIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +109,7 @@ export interface FileRouteTypes {
     | '/mundo'
     | '/novo-jogo'
     | '/sitemap.xml'
+    | '/mundo/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -108,9 +117,9 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/creditos'
     | '/jogador'
-    | '/mundo'
     | '/novo-jogo'
     | '/sitemap.xml'
+    | '/mundo'
   id:
     | '__root__'
     | '/'
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/mundo'
     | '/novo-jogo'
     | '/sitemap.xml'
+    | '/mundo/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -129,7 +139,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
   JogadorRoute: typeof JogadorRoute
-  MundoRoute: typeof MundoRoute
+  MundoRoute: typeof MundoRouteWithChildren
   NovoJogoRoute: typeof NovoJogoRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -192,8 +202,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mundo/': {
+      id: '/mundo/'
+      path: '/'
+      fullPath: '/mundo/'
+      preLoaderRoute: typeof MundoIndexRouteImport
+      parentRoute: typeof MundoRoute
+    }
   }
 }
+
+interface MundoRouteChildren {
+  MundoIndexRoute: typeof MundoIndexRoute
+}
+
+const MundoRouteChildren: MundoRouteChildren = {
+  MundoIndexRoute: MundoIndexRoute,
+}
+
+const MundoRouteWithChildren = MundoRoute._addFileChildren(MundoRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -201,7 +228,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
   JogadorRoute: JogadorRoute,
-  MundoRoute: MundoRoute,
+  MundoRoute: MundoRouteWithChildren,
   NovoJogoRoute: NovoJogoRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
