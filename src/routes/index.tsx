@@ -1,24 +1,97 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Gamepad2, Play, Settings, Sparkles, Trophy } from "lucide-react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { GameShell } from "@/components/game/GameShell";
+import { MenuCard } from "@/components/game/MenuCard";
+import { GAME_NAME, positionLabel } from "@/game/constants";
+import { playerAge, playerFullName } from "@/game/career";
+import { seasonLabel } from "@/game/calendar";
+import { useGame } from "@/game/GameProvider";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Project Football Career — Simulador de Carreira de Futebol" },
+      {
+        name: "description",
+        content:
+          "Viva a carreira de um jogador de futebol: decisões, temporadas, títulos e legado até a aposentadoria.",
+      },
+      { property: "og:title", content: "Project Football Career" },
+      {
+        property: "og:description",
+        content:
+          "Simulador de carreira de futebol: comece sem clube e construa um legado temporada após temporada.",
+      },
+    ],
+  }),
+  component: MainMenu,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function MainMenu() {
+  const { career, hydrated } = useGame();
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <GameShell className="flex min-h-screen flex-col justify-center">
+      <div className="mb-10 animate-rise text-center">
+        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+          <Gamepad2 className="size-3.5" /> Temporada 01
+        </p>
+        <h1 className="text-display text-6xl uppercase leading-none sm:text-8xl">
+          Project
+          <span className="block bg-gradient-primary bg-clip-text text-transparent">
+            Football Career
+          </span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-md text-sm text-muted-foreground">
+          Uma carreira. Um jogador. Cada decisão conta.
+        </p>
+      </div>
+
+      <div className="mx-auto grid w-full max-w-xl gap-3">
+        <MenuCard
+          to="/novo-jogo"
+          icon={Play}
+          title="Novo Jogo"
+          description="Crie seu jogador e comece do zero"
+          accent="primary"
+          delay={60}
+        />
+        <MenuCard
+          to="/carreira"
+          icon={Trophy}
+          title="Continuar"
+          description={
+            hydrated && career
+              ? `${playerFullName(career)} · ${positionLabel(career.player.position)} · ${playerAge(career)} anos · ${seasonLabel(career.timeline.current)}`
+              : "Nenhuma carreira salva encontrada"
+          }
+          accent="gold"
+          disabled={!hydrated || !career}
+          delay={120}
+        />
+        <MenuCard
+          to="/configuracoes"
+          icon={Settings}
+          title="Configurações"
+          description="Áudio, animações e salvamento"
+          delay={180}
+        />
+        <MenuCard
+          to="/creditos"
+          icon={Sparkles}
+          title="Créditos"
+          description="Sobre o projeto e sua construção"
+          delay={240}
+        />
+      </div>
+
+      <p className="mt-10 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
+        {GAME_NAME} · Fundação v1 ·{" "}
+        <Link to="/creditos" className="text-primary hover:underline">
+          Saiba mais
+        </Link>
+      </p>
+    </GameShell>
   );
 }
