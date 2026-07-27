@@ -8,7 +8,13 @@ import {
   type ReactNode,
 } from "react";
 
-import { advanceCareerWeek, createCareer, type NewCareerInput } from "./career";
+import {
+  acknowledgeSeasonSummary,
+  createCareer,
+  simulateCareer,
+  type NewCareerInput,
+} from "./career";
+import type { SimulationScope } from "./simulation";
 import {
   DEFAULT_SETTINGS,
   deleteCareer,
@@ -17,16 +23,21 @@ import {
   saveCareer,
   saveSettings,
 } from "./storage";
-import type { Career, GameSettings } from "./types";
+import type { Career, GameSettings, SimulationReport } from "./types";
 
 interface GameContextValue {
   /** True once localStorage has been read on the client. */
   hydrated: boolean;
   career: Career | null;
   settings: GameSettings;
+  /** Report of the last simulated period (not persisted). */
+  lastReport: SimulationReport | null;
+  simulating: boolean;
   startNewCareer: (input: NewCareerInput) => Career;
   updateCareer: (updater: (career: Career) => Career) => void;
-  advanceWeek: () => void;
+  simulate: (scope: SimulationScope) => void;
+  dismissReport: () => void;
+  dismissSeasonSummary: (summaryId: string) => void;
   abandonCareer: () => void;
   updateSettings: (patch: Partial<GameSettings>) => void;
 }
@@ -37,6 +48,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [career, setCareer] = useState<Career | null>(null);
   const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
+  const [lastReport, setLastReport] = useState<SimulationReport | null>(null);
+  const [simulating, setSimulating] = useState(false);
 
   useEffect(() => {
     setCareer(loadCareer());
@@ -52,31 +65,47 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const startNewCareer = useCallback(
     (input: NewCareerInput) => {
       const next = createCareer(input);
+      setLastReport(null);
       persist(next);
       return next;
     },
     [persist],
   );
 
-  const updateCareer = useCallback(
-    (updater: (career: Career) => Career) => {
-      setCareer((prev) => {
-        if (!prev) return prev;
-        const next = { ...updater(prev), updatedAt: Date.now() };
-        saveCareer(next);
-        return next;
-      });
-    },
-    [],
-  );
+  const updateCareer = useCallback((updater: (career: Career) => Career) => {
+    setCareer((prev) => {
+      if (!prev) return prev;
+      const next = { ...updater(prev), updatedAt: Date.now() };
+      saveCareer(next);
+      return next;
+    });
+  }, []);
 
-  const advanceWeek = useCallback(() => {
-    updateCareer(advanceCareerWeek);
-  }, [updateCareer]);
+  const simulate = useCallback((scope: SimulationScope) => {
+    setSimulating(true);
+    setCareer((prev) => {
+      if (!prev) return prev;
+      const { career: next, report } = simulateCareer(prev, scope);
+      saveCareer(next);
+      setLastReport(report);
+      return next;
+    });
+    setSimulating(false);
+  }, []);
+
+  const dismissReport = useCallback(() => setLastReport(null), []);
+
+  const dismissSeasonSummary = useCallback(
+    (summaryId: string) => {
+      updateCareer((prev) => acknowledgeSeasonSummary(prev, summaryId));
+    },
+    [updateCareer],
+  );
 
   const abandonCareer = useCallback(() => {
     deleteCareer();
     setCareer(null);
+    setLastReport(null);
   }, []);
 
   const updateSettings = useCallback((patch: Partial<GameSettings>) => {
@@ -92,9 +121,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       hydrated,
       career,
       settings,
+      lastReport,
+      simulating,
       startNewCareer,
       updateCareer,
-      advanceWeek,
+      simulate,
+      dismissReport,
+      dismissSeasonSummary,
       abandonCareer,
       updateSettings,
     }),
@@ -102,9 +135,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
       hydrated,
       career,
       settings,
+      lastReport,
+      simulating,
       startNewCareer,
       updateCareer,
-      advanceWeek,
+      simulate,
+      dismissReport,
+      dismissSeasonSummary,
       abandonCareer,
       updateSettings,
     ],
