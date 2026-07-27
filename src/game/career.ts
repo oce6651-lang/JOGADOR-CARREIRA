@@ -1,6 +1,7 @@
 import { SAVE_VERSION } from "./constants";
 import { advanceWeek, ageAt, createTimeline } from "./calendar";
 import { createId } from "./ids";
+import { calculateOverall, createPlayer, primaryStatus } from "./player";
 import type {
   Career,
   CareerLogEntry,
@@ -26,12 +27,13 @@ export function currentSeasonYear(now = new Date()): number {
 
 export function createCareer(input: NewCareerInput, now = Date.now()): Career {
   const timeline = createTimeline(currentSeasonYear(new Date(now)));
+  const player = createPlayer(input, timeline.current.date);
 
   const firstEntry: CareerLogEntry = {
     id: createId("event"),
     date: timeline.current,
     title: "Carreira iniciada",
-    description: `${input.firstName} ${input.lastName} começa sua jornada sem clube.`,
+    description: `${player.fullName} (${player.code}) começa sua jornada sem clube.`,
     kind: "milestone",
   };
 
@@ -41,26 +43,26 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     createdAt: now,
     updatedAt: now,
     status: "unsigned",
-    player: {
-      id: createId("player"),
-      firstName: input.firstName.trim(),
-      lastName: input.lastName.trim(),
-      birthDate: input.birthDate,
-      nationality: input.nationality,
-      position: input.position,
-      foot: input.foot,
-    },
+    player,
     timeline,
     log: [firstEntry],
   };
 }
 
 export function playerFullName(career: Career) {
-  return `${career.player.firstName} ${career.player.lastName}`.trim();
+  return career.player.fullName;
 }
 
 export function playerAge(career: Career) {
   return ageAt(career.player.birthDate, career.timeline.current.date);
+}
+
+export function playerOverall(career: Career) {
+  return calculateOverall(career.player.attributes, career.player.position);
+}
+
+export function playerStatus(career: Career) {
+  return primaryStatus(career.player.statuses);
 }
 
 /** Pure clock advance. Future systems will compose their own steps around it. */

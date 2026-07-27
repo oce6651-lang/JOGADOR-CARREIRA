@@ -15,7 +15,7 @@ import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { ProgressBar, StatCard } from "@/components/game/Stats";
 import { Button } from "@/components/ui/button";
 import { formatGameDate, seasonLabel } from "@/game/calendar";
-import { playerAge, playerFullName } from "@/game/career";
+import { playerAge, playerFullName, playerOverall } from "@/game/career";
 import {
   WEEKS_PER_SEASON,
   footLabel,
@@ -111,9 +111,9 @@ function CareerPage() {
         />
         <StatCard
           icon={UserRound}
-          label="Situação"
-          value="Sem clube"
-          hint="Aguardando oportunidade"
+          label="Overall"
+          value={String(playerOverall(career))}
+          hint={career.player.code}
         />
         <StatCard
           icon={Flag}
@@ -121,6 +121,20 @@ function CareerPage() {
           value={nationalityLabel(career.player.nationality)}
         />
       </section>
+
+      <Link
+        to="/jogador"
+        className="panel mt-4 flex items-center justify-between gap-4 p-5 transition-colors hover:border-primary/60"
+      >
+        <div>
+          <p className="text-display text-2xl uppercase">Ficha do jogador</p>
+          <p className="text-sm text-muted-foreground">
+            Atributos, personalidade, estatísticas e histórico completo.
+          </p>
+        </div>
+        <ChevronsRight className="size-6 text-primary" />
+      </Link>
+
 
       <section className="mt-4 grid gap-4 lg:grid-cols-3">
         <div className="panel space-y-5 p-6 lg:col-span-2">
