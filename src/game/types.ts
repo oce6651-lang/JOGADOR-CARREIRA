@@ -360,12 +360,92 @@ export interface Player {
 
 export type CareerStatus = "unsigned" | "active" | "retired";
 
-export interface CareerLogEntry {
+/* ------------------------------------------------------------------ */
+/* Events & simulation                                                 */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Every kind of thing that can happen in a career. Systems that do not exist
+ * yet (clubs, competitions, agents) already have their event type reserved.
+ */
+export type GameEventType =
+  | "training"
+  | "match"
+  | "goal"
+  | "injury"
+  | "recovery"
+  | "growth"
+  | "decline"
+  | "birthday"
+  | "trial"
+  | "transfer"
+  | "contract"
+  | "callUp"
+  | "title"
+  | "award"
+  | "categoryChange"
+  | "seasonStart"
+  | "seasonEnd"
+  | "vacation"
+  | "retirement"
+  | "milestone";
+
+export type GameEventTone = "neutral" | "info" | "positive" | "warning" | "danger";
+
+export interface GameEvent {
   id: EntityId;
+  type: GameEventType;
   date: GameDate;
   title: string;
   description?: string;
-  kind: "milestone" | "info";
+  tone: GameEventTone;
+  /** Free-form payload for systems that need structured data. */
+  data?: Record<string, unknown>;
+}
+
+export interface AttributeChange {
+  key: AttributeKey;
+  before: number;
+  after: number;
+}
+
+/** Result of simulating one or more weeks. Shown to the player, not persisted. */
+export interface SimulationReport {
+  id: EntityId;
+  from: GameDate;
+  to: GameDate;
+  weeks: number;
+  scope: "match" | "week" | "month";
+  events: GameEvent[];
+  stats: MatchStatLine;
+  trainings: number;
+  overallBefore: number;
+  overallAfter: number;
+  ageBefore: number;
+  ageAfter: number;
+  attributeChanges: AttributeChange[];
+  injuries: InjuryRecord[];
+  seasonSummaries: SeasonSummary[];
+}
+
+/** End-of-season report — one of the most important screens in the game. */
+export interface SeasonSummary {
+  id: EntityId;
+  seasonYear: number;
+  ageStart: number;
+  ageEnd: number;
+  clubName?: string;
+  category?: string;
+  categoryChange?: string;
+  overallStart: number;
+  overallEnd: number;
+  attributeChanges: AttributeChange[];
+  stats: MatchStatLine;
+  injuries: InjuryRecord[];
+  titles: TitleRecord[];
+  awards: AwardRecord[];
+  callUps: CallUpRecord[];
+  highlights: string[];
 }
 
 /** A full save file. Future systems add their own top-level slices here. */
@@ -377,8 +457,30 @@ export interface Career {
   status: CareerStatus;
   player: Player;
   timeline: CareerTimeline;
-  log: CareerLogEntry[];
+  /** Permanent event archive (most recent first). */
+  events: GameEvent[];
+  /** Season summaries the player has not acknowledged yet. */
+  pendingSeasonSummaries: SeasonSummary[];
+  /** Accumulator for the season currently being played. */
+  currentSeason: SeasonProgress;
 }
+
+/** Live accumulator for the ongoing season. Finalised into a SeasonSummary. */
+export interface SeasonProgress {
+  seasonYear: number;
+  ageStart: number;
+  overallStart: number;
+  attributesStart: PlayerAttributes;
+  clubName?: string;
+  category?: string;
+  stats: MatchStatLine;
+  trainings: number;
+  injuries: InjuryRecord[];
+  titles: TitleRecord[];
+  awards: AwardRecord[];
+  callUps: CallUpRecord[];
+}
+
 
 export interface CareerSummary {
   id: EntityId;
