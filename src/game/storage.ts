@@ -65,6 +65,26 @@ export function saveSettings(settings: GameSettings) {
 function migrateCareer(career: Career): Career | null {
   if (!career || typeof career !== "object" || !career.player) return null;
   if (career.version === SAVE_VERSION) return career;
+
+  let next = career;
+
+  // v1 -> v2: identity-only players gain attributes, personality and history.
+  if (!next.player.attributes) {
+    const player = createPlayer(
+      {
+        firstName: next.player.firstName,
+        lastName: next.player.lastName,
+        birthDate: next.player.birthDate,
+        nationality: next.player.nationality,
+        position: next.player.position,
+        foot: next.player.foot,
+      },
+      next.timeline?.current?.date,
+    );
+    next = { ...next, player: { ...player, id: next.player.id } };
+  }
+
   // Future migrations chain here.
-  return { ...career, version: SAVE_VERSION };
+  return { ...next, version: SAVE_VERSION };
 }
+
