@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Gamepad2, Play, Settings, Sparkles, Trophy } from "lucide-react";
+import { Gamepad2, Globe2, Play, Settings, Sparkles, Trophy } from "lucide-react";
 
 import { GameShell } from "@/components/game/GameShell";
 import { MenuCard } from "@/components/game/MenuCard";
@@ -82,7 +82,7 @@ function MainMenu() {
           icon={Settings}
           title="Configurações"
           description="Áudio, animações e salvamento"
-          delay={240}
+          delay={300}
         />
 
         <MenuCard
@@ -90,7 +90,7 @@ function MainMenu() {
           icon={Sparkles}
           title="Créditos"
           description="Sobre o projeto e sua construção"
-          delay={240}
+          delay={300}
         />
       </div>
 
