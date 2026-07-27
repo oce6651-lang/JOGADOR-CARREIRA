@@ -11,11 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
+import { Route as MundoRouteImport } from './routes/mundo'
 import { Route as JogadorRouteImport } from './routes/jogador'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MundoIndexRouteImport } from './routes/mundo.index'
+import { Route as MundoCompeticaoCompetitionSlugRouteImport } from './routes/mundo.competicao.$competitionSlug'
+import { Route as MundoClubeClubSlugRouteImport } from './routes/mundo.clube.$clubSlug'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -25,6 +29,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const NovoJogoRoute = NovoJogoRouteImport.update({
   id: '/novo-jogo',
   path: '/novo-jogo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MundoRoute = MundoRouteImport.update({
+  id: '/mundo',
+  path: '/mundo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JogadorRoute = JogadorRouteImport.update({
@@ -52,6 +61,22 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MundoIndexRoute = MundoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MundoRoute,
+} as any)
+const MundoCompeticaoCompetitionSlugRoute =
+  MundoCompeticaoCompetitionSlugRouteImport.update({
+    id: '/competicao/$competitionSlug',
+    path: '/competicao/$competitionSlug',
+    getParentRoute: () => MundoRoute,
+  } as any)
+const MundoClubeClubSlugRoute = MundoClubeClubSlugRouteImport.update({
+  id: '/clube/$clubSlug',
+  path: '/clube/$clubSlug',
+  getParentRoute: () => MundoRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,8 +84,12 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
+  '/mundo': typeof MundoRouteWithChildren
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/mundo/': typeof MundoIndexRoute
+  '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
+  '/mundo/competicao/$competitionSlug': typeof MundoCompeticaoCompetitionSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +99,9 @@ export interface FileRoutesByTo {
   '/jogador': typeof JogadorRoute
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/mundo': typeof MundoIndexRoute
+  '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
+  '/mundo/competicao/$competitionSlug': typeof MundoCompeticaoCompetitionSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +110,12 @@ export interface FileRoutesById {
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
+  '/mundo': typeof MundoRouteWithChildren
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/mundo/': typeof MundoIndexRoute
+  '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
+  '/mundo/competicao/$competitionSlug': typeof MundoCompeticaoCompetitionSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -89,8 +125,12 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/creditos'
     | '/jogador'
+    | '/mundo'
     | '/novo-jogo'
     | '/sitemap.xml'
+    | '/mundo/'
+    | '/mundo/clube/$clubSlug'
+    | '/mundo/competicao/$competitionSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +140,9 @@ export interface FileRouteTypes {
     | '/jogador'
     | '/novo-jogo'
     | '/sitemap.xml'
+    | '/mundo'
+    | '/mundo/clube/$clubSlug'
+    | '/mundo/competicao/$competitionSlug'
   id:
     | '__root__'
     | '/'
@@ -107,8 +150,12 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/creditos'
     | '/jogador'
+    | '/mundo'
     | '/novo-jogo'
     | '/sitemap.xml'
+    | '/mundo/'
+    | '/mundo/clube/$clubSlug'
+    | '/mundo/competicao/$competitionSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,6 +164,7 @@ export interface RootRouteChildren {
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
   JogadorRoute: typeof JogadorRoute
+  MundoRoute: typeof MundoRouteWithChildren
   NovoJogoRoute: typeof NovoJogoRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -135,6 +183,13 @@ declare module '@tanstack/react-router' {
       path: '/novo-jogo'
       fullPath: '/novo-jogo'
       preLoaderRoute: typeof NovoJogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mundo': {
+      id: '/mundo'
+      path: '/mundo'
+      fullPath: '/mundo'
+      preLoaderRoute: typeof MundoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jogador': {
@@ -172,8 +227,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mundo/': {
+      id: '/mundo/'
+      path: '/'
+      fullPath: '/mundo/'
+      preLoaderRoute: typeof MundoIndexRouteImport
+      parentRoute: typeof MundoRoute
+    }
+    '/mundo/competicao/$competitionSlug': {
+      id: '/mundo/competicao/$competitionSlug'
+      path: '/competicao/$competitionSlug'
+      fullPath: '/mundo/competicao/$competitionSlug'
+      preLoaderRoute: typeof MundoCompeticaoCompetitionSlugRouteImport
+      parentRoute: typeof MundoRoute
+    }
+    '/mundo/clube/$clubSlug': {
+      id: '/mundo/clube/$clubSlug'
+      path: '/clube/$clubSlug'
+      fullPath: '/mundo/clube/$clubSlug'
+      preLoaderRoute: typeof MundoClubeClubSlugRouteImport
+      parentRoute: typeof MundoRoute
+    }
   }
 }
+
+interface MundoRouteChildren {
+  MundoIndexRoute: typeof MundoIndexRoute
+  MundoClubeClubSlugRoute: typeof MundoClubeClubSlugRoute
+  MundoCompeticaoCompetitionSlugRoute: typeof MundoCompeticaoCompetitionSlugRoute
+}
+
+const MundoRouteChildren: MundoRouteChildren = {
+  MundoIndexRoute: MundoIndexRoute,
+  MundoClubeClubSlugRoute: MundoClubeClubSlugRoute,
+  MundoCompeticaoCompetitionSlugRoute: MundoCompeticaoCompetitionSlugRoute,
+}
+
+const MundoRouteWithChildren = MundoRoute._addFileChildren(MundoRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -181,6 +271,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
   JogadorRoute: JogadorRoute,
+  MundoRoute: MundoRouteWithChildren,
   NovoJogoRoute: NovoJogoRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
