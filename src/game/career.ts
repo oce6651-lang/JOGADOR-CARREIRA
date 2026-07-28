@@ -56,8 +56,10 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     events,
     pendingSeasonSummaries: [],
     currentSeason: createSeasonProgress(player, timeline.current.seasonYear, age),
+    ai: createCareerAi(player),
   };
 }
+
 
 export function playerFullName(career: Career) {
   return career.player.fullName;
