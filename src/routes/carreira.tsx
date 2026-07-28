@@ -49,14 +49,8 @@ export const Route = createFileRoute("/carreira")({
   component: CareerPage,
 });
 
-const LOCKED = [
-  "Peneiras",
-  "Clubes",
-  "Transferências",
-  "Empresários",
-  "Campeonatos",
-  "Seleções",
-];
+const LOCKED = ["Empresários", "Campeonatos", "Seleções", "Negociação de contrato"];
+
 
 const FILTERS: { id: "all" | GameEventType; label: string }[] = [
   { id: "all", label: "Tudo" },
