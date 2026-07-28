@@ -409,6 +409,74 @@ export interface AttributeChange {
   after: number;
 }
 
+/* ------------------------------------------------------------------ */
+/* Career AI                                                           */
+/* ------------------------------------------------------------------ */
+
+/** How the coaching staff currently sees the player inside the squad. */
+export type SquadRole =
+  | "star"
+  | "starter"
+  | "rotation"
+  | "bench"
+  | "reserve"
+  | "outOfSquad";
+
+/** Where the athlete plays right now, decided entirely by the career AI. */
+export interface ClubSituation {
+  spellId: EntityId;
+  clubId: EntityId;
+  clubSlug: string;
+  clubName: string;
+  clubReputation: number;
+  /** Category code from the world module (U11...PRO). */
+  category: CategoryCode;
+  role: SquadRole;
+  joinedSeason: number;
+  contractUntilSeason: number;
+  /** Weekly wage in BRL. */
+  weeklyWage: number;
+  onLoan: boolean;
+  parentClubId?: EntityId;
+  parentClubName?: string;
+  /** Weeks spent in the current category — feeds promotion decisions. */
+  weeksInCategory: number;
+}
+
+/** A club watching the athlete. Interest grows and decays over time. */
+export interface ScoutingInterest {
+  clubId: EntityId;
+  clubName: string;
+  clubReputation: number;
+  /** 0-100. */
+  level: number;
+  sinceWeek: number;
+}
+
+/** Persistent brain of the career: context every AI decision reads from. */
+export interface CareerAi {
+  club: ClubSituation | null;
+  /** 0-100 — how happy the athlete is. */
+  morale: number;
+  /** 0-100 — physical condition. */
+  fitness: number;
+  /** 0-100 — match rhythm, lost during injuries and on the bench. */
+  sharpness: number;
+  /** 0-100 — how known the athlete is in the football world. */
+  reputation: number;
+  /** 0-100 — how much the coaching staff trusts him. */
+  coachTrust: number;
+  /** Ratings of the last matches (most recent first, capped). */
+  recentRatings: number[];
+  scouting: ScoutingInterest[];
+  /** elapsedWeeks of the last squad review. */
+  lastReviewWeek: number;
+  /** How many trials the athlete already attended. */
+  trials: number;
+  /** How many times he was released by a club. */
+  releases: number;
+}
+
 /** Result of simulating one or more weeks. Shown to the player, not persisted. */
 export interface SimulationReport {
   id: EntityId;
@@ -426,6 +494,13 @@ export interface SimulationReport {
   attributeChanges: AttributeChange[];
   injuries: InjuryRecord[];
   seasonSummaries: SeasonSummary[];
+  /** Short AI-written lines summarising what the period meant. */
+  headlines: string[];
+  clubName?: string;
+  categoryLabel?: string;
+  roleLabel?: string;
+  morale: number;
+  fitness: number;
 }
 
 /** End-of-season report — one of the most important screens in the game. */
@@ -463,7 +538,10 @@ export interface Career {
   pendingSeasonSummaries: SeasonSummary[];
   /** Accumulator for the season currently being played. */
   currentSeason: SeasonProgress;
+  /** Career AI state — drives every automatic decision. */
+  ai: CareerAi;
 }
+
 
 /** Live accumulator for the ongoing season. Finalised into a SeasonSummary. */
 export interface SeasonProgress {
