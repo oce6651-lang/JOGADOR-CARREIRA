@@ -1,4 +1,4 @@
-import { Activity, Award, Star, Target, Users } from "lucide-react";
+import { Activity, Award, HeartPulse, Smile, Star, Target, Users } from "lucide-react";
 
 import { EventList } from "@/components/game/events/EventList";
 import { AttributeDeltaList } from "@/components/game/simulation/AttributeDeltaList";
@@ -7,10 +7,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { seasonLabel } from "@/game/calendar";
 import { averageRating } from "@/game/player";
 import { injurySeverityLabel } from "@/game/simulation";
@@ -45,8 +45,23 @@ export function SimulationReportDialog({
           </DialogTitle>
           <DialogDescription>
             {report.weeks} semana(s) · até {seasonLabel(report.to)} · semana {report.to.week}
+            {report.clubName
+              ? ` · ${report.clubName}${report.categoryLabel ? ` (${report.categoryLabel})` : ""}`
+              : " · sem clube"}
           </DialogDescription>
         </DialogHeader>
+
+        <Button onClick={onClose} className="w-full text-display uppercase">
+          Continuar
+        </Button>
+
+        <section className="space-y-1 rounded-lg border border-border bg-secondary/40 p-4">
+          {report.headlines.map((headline) => (
+            <p key={headline} className="text-sm">
+              {headline}
+            </p>
+          ))}
+        </section>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <MiniStat icon={<Activity className="size-3.5" />} label="Treinos" value={String(report.trainings)} />
@@ -71,6 +86,25 @@ export function SimulationReportDialog({
           <MiniStat label="Lesões" value={String(report.injuries.length)} />
         </div>
 
+        <div className="grid gap-3 sm:grid-cols-2">
+          <ConditionBar
+            icon={<Smile className="size-3.5" />}
+            label="Moral"
+            value={report.morale}
+          />
+          <ConditionBar
+            icon={<HeartPulse className="size-3.5" />}
+            label="Condição física"
+            value={report.fitness}
+          />
+        </div>
+
+        {report.roleLabel ? (
+          <p className="text-sm text-muted-foreground">
+            Papel atual no elenco: <span className="font-semibold text-foreground">{report.roleLabel}</span>
+          </p>
+        ) : null}
+
         {report.injuries.length ? (
           <p className="text-sm text-destructive">
             {report.injuries
@@ -90,14 +124,31 @@ export function SimulationReportDialog({
           <h3 className="mb-2 text-display text-lg uppercase">Acontecimentos</h3>
           <EventList events={report.events} showDate={false} />
         </section>
-
-        <DialogFooter>
-          <Button onClick={onClose} className="text-display uppercase">
-            Continuar
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ConditionBar({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-secondary/40 p-3">
+      <p className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          {icon}
+          {label}
+        </span>
+        <span className="text-foreground">{Math.round(value)}</span>
+      </p>
+      <Progress value={value} className="h-2" />
+    </div>
   );
 }
 

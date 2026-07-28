@@ -5,9 +5,22 @@ import { createStatLine, mergeStatLines } from "../player/history";
 import { calculateOverall } from "../player/overall";
 import { addStatus, hasStatus, removeStatus } from "../player/status";
 import { createRandom } from "../rng";
-import { chance, randomInt } from "../rng";
+import { chance } from "../rng";
+import {
+  applyMatchFeedback,
+  applyWeekCondition,
+  buildHeadlines,
+  decayMorale,
+  randomOpponentStrength,
+  roleLabel,
+  runCareerReview,
+  selectionProfile,
+  shouldReview,
+} from "../ai";
+import { categoryLabel } from "../world";
 import type {
   AttributeChange,
+  CareerAi,
   Career,
   GameEvent,
   InjuryRecord,
@@ -35,6 +48,9 @@ const MAX_MATCH_SEARCH_WEEKS = 8;
 
 /** Off-season weeks (vacation) at the very end of the season. */
 const VACATION_WEEKS = 4;
+
+/** Chance the club has a fixture in a given (non-vacation) week. */
+const FIXTURE_CHANCE = 0.85;
 
 interface WeekOutcome {
   career: Career;
@@ -72,8 +88,7 @@ export function simulate(career: Career, scope: SimulationScope): {
   const overallBefore = calculateOverall(career.player.attributes, career.player.position);
   const ageBefore = ageAt(career.player.birthDate, from.date);
 
-  const maxWeeks =
-    scope === "match" ? MAX_MATCH_SEARCH_WEEKS : SCOPE_WEEKS[scope];
+  const maxWeeks = scope === "match" ? MAX_MATCH_SEARCH_WEEKS : SCOPE_WEEKS[scope];
 
   let state = career;
   const events: GameEvent[] = [];
@@ -95,10 +110,12 @@ export function simulate(career: Career, scope: SimulationScope): {
     attributeChanges = mergeChanges(attributeChanges, outcome.attributeChanges);
     seasonSummaries = [...seasonSummaries, ...outcome.seasonSummaries];
 
-    if (scope === "match" && (outcome.playedMatch || !hasClub(state.player))) break;
+    if (scope === "match" && outcome.playedMatch) break;
   }
 
   const overallAfter = calculateOverall(state.player.attributes, state.player.position);
+  const ai = state.ai;
+
   const report: SimulationReport = {
     id: createId("event"),
     from,
@@ -115,6 +132,19 @@ export function simulate(career: Career, scope: SimulationScope): {
     attributeChanges,
     injuries,
     seasonSummaries,
+    headlines: buildHeadlines({
+      ai,
+      stats,
+      trainings,
+      overallDelta: overallAfter - overallBefore,
+      injuries: injuries.length,
+      events,
+    }),
+    clubName: ai.club?.clubName,
+    categoryLabel: ai.club ? categoryLabel(ai.club.category) : undefined,
+    roleLabel: ai.club ? roleLabel(ai.club.role) : undefined,
+    morale: ai.morale,
+    fitness: ai.fitness,
   };
 
   return { career: { ...state, updatedAt: Date.now() }, report };
@@ -132,7 +162,9 @@ function simulateSingleWeek(career: Career): WeekOutcome {
   let stats = createStatLine();
   let trainings = 0;
   let playedMatch = false;
+  let minutesPlayed = 0;
   let player = career.player;
+  let ai: CareerAi = career.ai;
   let season = career.currentSeason;
   const age = ageAt(player.birthDate, date.date);
 
@@ -149,17 +181,16 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     };
   }
 
-  const injured = isInjured(player);
   const vacation = isVacation(date.week);
 
-  /* --- recovery ------------------------------------------------- */
-  if (injured) {
+  /* --- recovery ---------------------------------------------------- */
+  if (isInjured(player)) {
     const flag = player.statuses.find((status) => status.id === "injured");
     if (flag?.untilWeek !== undefined && career.timeline.elapsedWeeks >= flag.untilWeek) {
       player = { ...player, statuses: removeStatus(player.statuses, "injured") };
       events.push(
         createEvent("recovery", date, "Recuperado da lesão", {
-          description: "O atleta está liberado para treinar e jogar novamente.",
+          description: "Liberado para treinar, mas ainda sem ritmo de jogo.",
         }),
       );
     }
@@ -167,13 +198,13 @@ function simulateSingleWeek(career: Career): WeekOutcome {
 
   const stillInjured = isInjured(player);
 
-  /* --- training --------------------------------------------------- */
+  /* --- training ---------------------------------------------------- */
   if (!stillInjured && !vacation) {
-    trainings = randomInt(2, 4, random);
+    trainings = 2 + (chance(0.5, random) ? 1 : 0) + (ai.club ? 1 : 0);
     events.push(
       createEvent("training", date, `${trainings} treinos realizados`, {
-        description: hasClub(player)
-          ? "Rotina semanal com o elenco."
+        description: ai.club
+          ? `Rotina semanal no ${ai.club.clubName} (${categoryLabel(ai.club.category)}).`
           : "Treinos individuais enquanto procura um clube.",
       }),
     );
@@ -192,54 +223,86 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     );
   }
 
-  /* --- match ------------------------------------------------------ */
-  if (!stillInjured && !vacation && hasClub(player) && chance(0.85, random)) {
-    const match = simulateMatch(
-      player,
-      {
-        date,
-        competition: season.category ? `Campeonato ${season.category}` : "Campeonato",
-        opponent: randomOpponent(random),
-        starterChance: 0.7,
-      },
-      random,
-    );
-    playedMatch = true;
-    stats = mergeStatLines(stats, matchToStatLine(player, match));
-    player = {
-      ...player,
-      history: {
-        ...player.history,
-        matches: [match, ...player.history.matches].slice(0, 400),
-      },
-    };
-    events.push(
-      createEvent("match", date, `${match.scoreFor} x ${match.scoreAgainst} · ${match.opponent}`, {
-        description: `${match.minutes} min · ${match.goals} gol(s) · ${match.assists} assistência(s) · nota ${match.rating.toFixed(2)}`,
-        data: { matchId: match.id },
-      }),
-    );
-    if (match.goals > 0) {
+  /* --- match ------------------------------------------------------- */
+  const situation = ai.club;
+  const fixtureWeek =
+    !stillInjured && !vacation && situation !== null && chance(FIXTURE_CHANCE, random);
+
+  if (fixtureWeek && situation) {
+    const profile = selectionProfile(situation.role);
+    const called = chance(profile.playChance, random);
+
+    if (called) {
+      const starter = chance(profile.starterChance, random);
+      const opponentStrength = randomOpponentStrength(situation.clubReputation, random);
+      const match = simulateMatch(
+        player,
+        {
+          date,
+          competition: `${categoryLabel(situation.category)} · ${situation.clubName}`,
+          opponent: randomOpponent(random),
+          starter,
+          benchMinutes: profile.benchMinutes,
+          sharpness: ai.sharpness,
+          morale: ai.morale,
+          teamStrength: situation.clubReputation,
+          opponentStrength,
+        },
+        random,
+      );
+      playedMatch = true;
+      minutesPlayed = match.minutes;
+      stats = mergeStatLines(stats, matchToStatLine(player, match));
+      ai = applyMatchFeedback(ai, match, situation.clubReputation);
+      player = {
+        ...player,
+        history: {
+          ...player.history,
+          matches: [match, ...player.history.matches].slice(0, 400),
+        },
+      };
       events.push(
-        createEvent("goal", date, `${match.goals} gol(s) marcado(s)`, {
-          description: `Contra ${match.opponent}.`,
+        createEvent(
+          "match",
+          date,
+          `${match.scoreFor} x ${match.scoreAgainst} · ${match.opponent}`,
+          {
+            description: `${starter ? "Titular" : "Entrou no decorrer"} · ${match.minutes} min · ${match.goals} gol(s) · ${match.assists} assistência(s) · nota ${match.rating.toFixed(2)}`,
+            data: { matchId: match.id },
+          },
+        ),
+      );
+      if (match.goals > 0) {
+        events.push(
+          createEvent("goal", date, `${match.goals} gol(s) marcado(s)`, {
+            description: `Contra ${match.opponent}.`,
+          }),
+        );
+      }
+    } else {
+      ai = decayMorale({ ...ai, morale: Math.max(0, ai.morale - 3) });
+      events.push(
+        createEvent("milestone", date, "Fora dos relacionados", {
+          description: `${situation.clubName} não relacionou o atleta para a rodada.`,
+          tone: "warning",
         }),
       );
     }
-  } else if (!stillInjured && !vacation && !hasClub(player) && chance(0.12, random)) {
-    events.push(
-      createEvent("trial", date, "Convite para peneira", {
-        description: "Um clube demonstrou interesse em avaliar o atleta.",
-      }),
-    );
   }
 
-  /* --- injury ----------------------------------------------------- */
+  /* --- injury ------------------------------------------------------ */
   if (!stillInjured && !vacation) {
-    const load = playedMatch ? 1 : 0.5;
-    const injury = rollInjury(player, date, age, load, random);
+    const load = playedMatch ? 0.6 + minutesPlayed / 150 : 0.5;
+    const fatigue = load * (1 + (85 - ai.fitness) / 120);
+    const injury = rollInjury(player, date, age, fatigue, random);
     if (injury) {
       injuries.push(injury);
+      ai = {
+        ...ai,
+        sharpness: Math.max(0, ai.sharpness - injury.weeksOut * 4),
+        fitness: Math.max(20, ai.fitness - injury.weeksOut * 2),
+        morale: Math.max(5, ai.morale - 10 - injury.weeksOut),
+      };
       player = {
         ...player,
         statuses: addStatus(player.statuses, {
@@ -260,12 +323,30 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     }
   }
 
-  /* --- progression ------------------------------------------------ */
+  /* --- condition --------------------------------------------------- */
+  ai = applyWeekCondition(ai, {
+    injured: stillInjured,
+    vacation,
+    trained: trainings > 0,
+    playedMinutes: minutesPlayed,
+    naturalFitness: player.attributes.physical.naturalFitness,
+  });
+  ai = decayMorale(ai);
+
+  /* --- progression -------------------------------------------------- */
   const personalityGrowth = player.personality.reduce(
     (acc, trait) => acc * (trait.effects.growth ?? 1),
     1,
   );
-  const load = vacation ? 0.1 : stillInjured ? 0.15 : playedMatch ? 1 : 0.6;
+  const load = vacation
+    ? 0.1
+    : stillInjured
+      ? 0.15
+      : playedMatch
+        ? 0.55 + minutesPlayed / 200
+        : ai.club
+          ? 0.45
+          : 0.3;
   const progression = progressAttributes(
     player.attributes,
     {
@@ -273,7 +354,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       position: player.position,
       potential: player.hidden.potential,
       growthRate: player.hidden.growthRate,
-      personalityGrowth,
+      personalityGrowth: personalityGrowth * (0.9 + ai.morale / 500),
       load,
       form: stats.appearances ? stats.ratingSum / stats.appearances : 0,
     },
@@ -300,12 +381,14 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     );
   }
 
-  /* --- season accumulator ----------------------------------------- */
+  /* --- season accumulator ------------------------------------------- */
   season = addSeasonStats(season, stats);
   season = {
     ...season,
     trainings: season.trainings + trainings,
     injuries: [...season.injuries, ...injuries],
+    clubName: ai.club?.clubName ?? season.clubName,
+    category: ai.club ? categoryLabel(ai.club.category) : season.category,
   };
 
   player = {
@@ -316,10 +399,15 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     },
   };
 
-  /* --- clock ------------------------------------------------------- */
+  if (ai.club) {
+    ai = { ...ai, club: { ...ai.club, weeksInCategory: ai.club.weeksInCategory + 1 } };
+  }
+
+  /* --- clock --------------------------------------------------------- */
   const timeline = advanceWeek(career.timeline);
   const nextDate = timeline.current;
   const newAge = ageAt(player.birthDate, nextDate.date);
+  const seasonEnd = timeline.completedSeasons > career.timeline.completedSeasons;
   const seasonSummaries: SeasonSummary[] = [];
 
   if (newAge > age) {
@@ -330,10 +418,39 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     );
   }
 
+  /* --- career AI ------------------------------------------------------ */
+  let categoryChange: string | undefined;
+  if (
+    !isRetired(player) &&
+    shouldReview(ai, { elapsedWeeks: timeline.elapsedWeeks, seasonEnd })
+  ) {
+    const review = runCareerReview({
+      player,
+      ai,
+      date: nextDate,
+      elapsedWeeks: timeline.elapsedWeeks,
+      age: newAge,
+      overall: calculateOverall(player.attributes, player.position),
+      seasonStats: season.stats,
+      seasonEnd,
+      random,
+    });
+    player = review.player;
+    ai = review.ai;
+    categoryChange = review.categoryChange;
+    events.push(...review.events);
+    season = {
+      ...season,
+      clubName: ai.club?.clubName ?? season.clubName,
+      category: ai.club ? categoryLabel(ai.club.category) : season.category,
+    };
+  }
+
   let nextSeason = season;
-  if (timeline.completedSeasons > career.timeline.completedSeasons) {
+  if (seasonEnd) {
     const { summary, record } = finalizeSeason(season, player, newAge);
-    seasonSummaries.push(summary);
+    const withChange: SeasonSummary = { ...summary, categoryChange };
+    seasonSummaries.push(withChange);
     player = {
       ...player,
       history: {
@@ -360,14 +477,16 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       player,
       nextDate.seasonYear,
       newAge,
-      season.clubName,
-      season.category,
+      ai.club?.clubName,
+      ai.club ? categoryLabel(ai.club.category) : undefined,
     );
   }
 
   const nextCareer: Career = {
     ...career,
     player,
+    ai,
+    status: hasClub(player) ? "active" : career.status === "retired" ? "retired" : "unsigned",
     timeline,
     currentSeason: nextSeason,
     events: appendEvents(career.events, events),

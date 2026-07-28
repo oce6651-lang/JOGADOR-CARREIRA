@@ -1,5 +1,7 @@
 import { SAVE_VERSION } from "./constants";
 import { ageAt } from "./calendar";
+import { createCareerAi } from "./ai";
+
 import { createPlayer } from "./player";
 import { createSeasonProgress } from "./simulation";
 import type { Career, GameEvent, GameSettings } from "./types";
@@ -125,6 +127,12 @@ function migrateCareer(career: Career): Career | null {
     };
   }
 
+  // v3 -> v4: the career AI (morale, fitness, squad role, scouting) is added.
+  if (!next.ai) {
+    next = { ...next, ai: createCareerAi(next.player) };
+  }
+
   // Future migrations chain here.
   return { ...next, version: SAVE_VERSION };
+
 }

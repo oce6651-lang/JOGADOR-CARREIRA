@@ -1,6 +1,8 @@
 import { SAVE_VERSION } from "./constants";
 import { ageAt, createTimeline } from "./calendar";
+import { createCareerAi } from "./ai";
 import { createEvent, appendEvents } from "./events";
+
 import { createId } from "./ids";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
@@ -56,8 +58,10 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     events,
     pendingSeasonSummaries: [],
     currentSeason: createSeasonProgress(player, timeline.current.seasonYear, age),
+    ai: createCareerAi(player),
   };
 }
+
 
 export function playerFullName(career: Career) {
   return career.player.fullName;
