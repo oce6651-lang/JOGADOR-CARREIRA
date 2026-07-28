@@ -12,6 +12,7 @@ import type {
 import {
   categoryForAge,
   categoryLabel,
+  categoryOrder,
   getCategory,
   getClub,
   nextCategory,
