@@ -125,6 +125,12 @@ function migrateCareer(career: Career): Career | null {
     };
   }
 
+  // v3 -> v4: the career AI (morale, fitness, squad role, scouting) is added.
+  if (!next.ai) {
+    next = { ...next, ai: createCareerAi(next.player) };
+  }
+
   // Future migrations chain here.
   return { ...next, version: SAVE_VERSION };
+
 }
