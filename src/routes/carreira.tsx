@@ -164,47 +164,56 @@ function CareerPage() {
         <ChevronsRight className="size-6 text-primary" />
       </Link>
 
-      <section className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="panel space-y-4 p-6 lg:col-span-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-display text-2xl uppercase">Histórico de eventos</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {FILTERS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setFilter(item.id)}
-                  className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                    filter === item.id
-                      ? "border-primary bg-primary/15 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <EventList
-            events={events}
-            emptyLabel={`Nenhum evento do tipo ${
-              filter === "all" ? "registrado" : EVENT_DEFINITIONS[filter].label
-            } ainda.`}
+      <section className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="panel space-y-3 p-6">
+          <h2 className="text-display text-2xl uppercase">Perfil</h2>
+          <InfoRow label="Situação" value={STATUS_LABELS[status].label} />
+          <InfoRow
+            label="Clube"
+            value={
+              career.ai.club
+                ? `${career.ai.club.clubName} · ${categoryLabel(career.ai.club.category)}`
+                : "Sem clube"
+            }
           />
+          <InfoRow
+            label="Papel no elenco"
+            value={career.ai.club ? roleLabel(career.ai.club.role) : "—"}
+          />
+          <InfoRow label="Moral" value={`${Math.round(career.ai.morale)}/100`} />
+          <InfoRow label="Condição física" value={`${Math.round(career.ai.fitness)}/100`} />
+          <InfoRow label="Posição" value={positionLabel(career.player.position)} />
+          <InfoRow
+            label="Pé dominante"
+            value={footLabel(career.player.foot)}
+            icon={<Footprints className="size-3.5" />}
+          />
+          <InfoRow label="Nascimento" value={career.player.birthDate} />
+          <InfoRow label="Identificador" value={career.player.code} />
         </div>
 
-        <aside className="space-y-4">
+        <div className="space-y-4">
           <div className="panel space-y-3 p-6">
-            <h2 className="text-display text-2xl uppercase">Perfil</h2>
-            <InfoRow label="Situação" value={STATUS_LABELS[status].label} />
-            <InfoRow label="Posição" value={positionLabel(career.player.position)} />
-            <InfoRow
-              label="Pé dominante"
-              value={footLabel(career.player.foot)}
-              icon={<Footprints className="size-3.5" />}
-            />
-            <InfoRow label="Nascimento" value={career.player.birthDate} />
-            <InfoRow label="Identificador" value={career.player.code} />
+            <h2 className="text-display text-2xl uppercase">Interesse de clubes</h2>
+            {career.ai.scouting.length ? (
+              <ul className="space-y-2">
+                {career.ai.scouting.map((interest) => (
+                  <li
+                    key={interest.clubId}
+                    className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-3 py-2 text-sm"
+                  >
+                    <span className="font-semibold">{interest.clubName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      interesse {Math.round(interest.level)}%
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Nenhum olheiro acompanhando o atleta no momento.
+              </p>
+            )}
           </div>
 
           <div className="panel space-y-3 p-6">
@@ -232,8 +241,37 @@ function CareerPage() {
           >
             Abandonar carreira
           </Button>
-        </aside>
+        </div>
       </section>
+
+      <section className="panel mt-4 space-y-4 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-display text-2xl uppercase">Histórico de eventos</h2>
+          <div className="flex flex-wrap gap-1.5">
+            {FILTERS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setFilter(item.id)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  filter === item.id
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <EventList
+          events={events}
+          emptyLabel={`Nenhum evento do tipo ${
+            filter === "all" ? "registrado" : EVENT_DEFINITIONS[filter].label
+          } ainda.`}
+        />
+      </section>
+
 
       <SeasonSummaryDialog
         summary={pendingSummary}
