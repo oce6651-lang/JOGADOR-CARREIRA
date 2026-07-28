@@ -6,6 +6,8 @@
  * Nothing here knows about React or the UI.
  */
 
+import type { CategoryCode } from "./world/types";
+
 export type EntityId = string;
 
 /** Discriminates the kind of an entity id, useful for future registries. */
