@@ -25,6 +25,9 @@ import { EVENT_DEFINITIONS } from "@/game/events";
 import { useGame } from "@/game/GameProvider";
 import { STATUS_LABELS, primaryStatus } from "@/game/player";
 import { hasClub } from "@/game/simulation";
+import { roleLabel } from "@/game/ai";
+import { categoryLabel } from "@/game/world";
+
 import type { GameEventType } from "@/game/types";
 
 export const Route = createFileRoute("/carreira")({
