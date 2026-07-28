@@ -169,8 +169,12 @@ function reviewFreeAgent(ctx: AiContext): AiOutcome {
 function entryCategoryFor(club: Club, wanted: CategoryCode): CategoryCode {
   if (club.categories.includes(wanted)) return wanted;
   const sorted = sortCategories(club.categories);
-  return sorted.find((code) => code >= wanted) ?? sorted[sorted.length - 1];
+  return (
+    sorted.find((code) => categoryOrder(code) >= categoryOrder(wanted)) ??
+    sorted[sorted.length - 1]
+  );
 }
+
 
 function reachableClubs(overall: number, potential: number, category: CategoryCode) {
   const projected = overall + Math.max(0, potential - overall) * 0.35;
