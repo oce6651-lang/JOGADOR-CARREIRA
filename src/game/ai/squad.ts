@@ -79,3 +79,12 @@ export function roleLabel(role: SquadRole) {
 export function isMarginal(role: SquadRole) {
   return role === "reserve" || role === "outOfSquad";
 }
+
+/**
+ * Opponent strength for a given club: usually similar teams, sometimes a
+ * much stronger or weaker rival.
+ */
+export function randomOpponentStrength(clubReputation: number, random: () => number) {
+  const swing = (random() - 0.5) * 26;
+  return Math.max(5, Math.min(99, Math.round(clubReputation + swing)));
+}
