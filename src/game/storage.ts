@@ -1,5 +1,7 @@
 import { SAVE_VERSION } from "./constants";
 import { ageAt } from "./calendar";
+import { createCareerAi } from "./ai";
+
 import { createPlayer } from "./player";
 import { createSeasonProgress } from "./simulation";
 import type { Career, GameEvent, GameSettings } from "./types";
