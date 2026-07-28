@@ -1,6 +1,8 @@
 import { SAVE_VERSION } from "./constants";
 import { ageAt, createTimeline } from "./calendar";
+import { createCareerAi } from "./ai";
 import { createEvent, appendEvents } from "./events";
+
 import { createId } from "./ids";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
