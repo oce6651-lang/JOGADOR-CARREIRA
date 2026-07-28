@@ -280,22 +280,20 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   ) {
     const seasons = evaluation.score > 25 ? 4 : evaluation.score > 5 ? 3 : 2;
     const raise = 1 + Math.max(0.05, Math.min(1.2, evaluation.score / 60));
-    ai = {
-      ...ai,
-      club: {
-        ...ai.club,
-        contractUntilSeason: date.seasonYear + seasons,
-        weeklyWage: Math.round(ai.club.weeklyWage * raise),
-      },
-      morale: Math.min(100, ai.morale + 10),
+    const renewed = {
+      ...ai.club,
+      contractUntilSeason: date.seasonYear + seasons,
+      weeklyWage: Math.round(ai.club.weeklyWage * raise),
     };
+    ai = { ...ai, club: renewed, morale: Math.min(100, ai.morale + 10) };
     events.push(
       createEvent("contract", date, `Renovação com o ${situation.clubName}`, {
-        description: `Novo vínculo até ${date.seasonYear + seasons} com salário de R$ ${ai.club.weeklyWage.toLocaleString("pt-BR")}/semana.`,
+        description: `Novo vínculo até ${date.seasonYear + seasons} com salário de R$ ${renewed.weeklyWage.toLocaleString("pt-BR")}/semana.`,
         tone: "positive",
       }),
     );
   }
+
 
   return finish(player, ai, events);
 }
