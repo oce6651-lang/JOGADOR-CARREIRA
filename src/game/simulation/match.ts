@@ -6,16 +6,25 @@ import { chance, pick, randomBetween, randomInt } from "../rng";
 import type { GameDate, MatchRecord, MatchStatLine, Player, PositionCode } from "../types";
 
 /**
- * Lightweight match engine. Clubs and competitions do not exist yet, so the
- * opponent/competition come from placeholders — the shape of the record is
- * already final so the real systems only have to feed better data in.
+ * Match engine. The career AI decides *if* and *how much* the athlete plays;
+ * this module only resolves what happens on the pitch once he is on it.
  */
 export interface MatchContext {
   date: GameDate;
   competition: string;
   opponent: string;
-  /** 0-1 chance the player starts the match. */
-  starterChance: number;
+  /** Decided by the AI selection layer. */
+  starter: boolean;
+  /** Minutes range used when he comes off the bench. */
+  benchMinutes: [number, number];
+  /** 0-100 match rhythm. */
+  sharpness: number;
+  /** 0-100 happiness. */
+  morale: number;
+  /** 1-100 strength of his own team. */
+  teamStrength: number;
+  /** 1-100 strength of the opponent. */
+  opponentStrength: number;
 }
 
 const GOAL_RATE: Record<PositionCode, number> = {
@@ -51,23 +60,41 @@ export function simulateMatch(
 ): MatchRecord {
   const overall = calculateOverall(player.attributes, player.position);
   const quality = overall / 100;
-  const starter = chance(context.starterChance, random);
-  const minutes = starter ? randomInt(60, 90, random) : randomInt(5, 35, random);
+  const minutes = context.starter
+    ? randomInt(65, 90, random)
+    : randomInt(context.benchMinutes[0], context.benchMinutes[1], random);
   const share = minutes / 90;
 
-  const goals = countEvents(GOAL_RATE[player.position] * share * (0.5 + quality), random);
+  const condition =
+    0.75 + (context.sharpness / 100) * 0.2 + (context.morale / 100) * 0.15;
+  const teamHelp = 0.75 + (context.teamStrength / 100) * 0.5;
+
+  const goals = countEvents(
+    GOAL_RATE[player.position] * share * (0.5 + quality) * condition * teamHelp,
+    random,
+  );
   const assists = countEvents(
-    ASSIST_RATE[player.position] * share * (0.5 + quality),
+    ASSIST_RATE[player.position] * share * (0.5 + quality) * condition * teamHelp,
     random,
   );
 
   const stability = player.hidden.consistency;
   const base = 5.4 + quality * 1.6;
   const swing = randomBetween(-1.5, 1.5, random) / stability;
-  const rating = clampRating(base + swing + goals * 0.8 + assists * 0.45);
+  const conditionBonus = (context.sharpness - 60) / 160 + (context.morale - 60) / 220;
+  const rating = clampRating(
+    base + swing + conditionBonus + goals * 0.8 + assists * 0.45,
+  );
 
-  const scoreFor = randomInt(0, 4, random);
-  const scoreAgainst = randomInt(0, 3, random);
+  const strengthEdge = (context.teamStrength - context.opponentStrength) / 40;
+  const scoreFor = Math.max(
+    0,
+    randomInt(0, 3, random) + (chance(Math.min(0.8, 0.35 + strengthEdge * 0.2), random) ? 1 : 0),
+  );
+  const scoreAgainst = Math.max(
+    0,
+    randomInt(0, 3, random) - (strengthEdge > 0.5 ? 1 : 0),
+  );
 
   return {
     id: createId("match"),
