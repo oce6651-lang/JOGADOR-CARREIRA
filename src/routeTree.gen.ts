@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as PeneirasRouteImport } from './routes/peneiras'
 import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
 import { Route as NegociacoesRouteImport } from './routes/negociacoes'
 import { Route as MundoRouteImport } from './routes/mundo'
@@ -25,6 +26,11 @@ import { Route as MundoClubeClubSlugRouteImport } from './routes/mundo.clube.$cl
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeneirasRoute = PeneirasRouteImport.update({
+  id: '/peneiras',
+  path: '/peneiras',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NovoJogoRoute = NovoJogoRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/mundo': typeof MundoRouteWithChildren
   '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
+  '/peneiras': typeof PeneirasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo/': typeof MundoIndexRoute
   '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/jogador': typeof JogadorRoute
   '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
+  '/peneiras': typeof PeneirasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo': typeof MundoIndexRoute
   '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/mundo': typeof MundoRouteWithChildren
   '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
+  '/peneiras': typeof PeneirasRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo/': typeof MundoIndexRoute
   '/mundo/clube/$clubSlug': typeof MundoClubeClubSlugRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/mundo'
     | '/negociacoes'
     | '/novo-jogo'
+    | '/peneiras'
     | '/sitemap.xml'
     | '/mundo/'
     | '/mundo/clube/$clubSlug'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/jogador'
     | '/negociacoes'
     | '/novo-jogo'
+    | '/peneiras'
     | '/sitemap.xml'
     | '/mundo'
     | '/mundo/clube/$clubSlug'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/mundo'
     | '/negociacoes'
     | '/novo-jogo'
+    | '/peneiras'
     | '/sitemap.xml'
     | '/mundo/'
     | '/mundo/clube/$clubSlug'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   MundoRoute: typeof MundoRouteWithChildren
   NegociacoesRoute: typeof NegociacoesRoute
   NovoJogoRoute: typeof NovoJogoRoute
+  PeneirasRoute: typeof PeneirasRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peneiras': {
+      id: '/peneiras'
+      path: '/peneiras'
+      fullPath: '/peneiras'
+      preLoaderRoute: typeof PeneirasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/novo-jogo': {
@@ -294,6 +314,7 @@ const rootRouteChildren: RootRouteChildren = {
   MundoRoute: MundoRouteWithChildren,
   NegociacoesRoute: NegociacoesRoute,
   NovoJogoRoute: NovoJogoRoute,
+  PeneirasRoute: PeneirasRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
