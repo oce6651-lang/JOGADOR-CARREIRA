@@ -15,6 +15,7 @@ import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
 import { Route as NegociacoesRouteImport } from './routes/negociacoes'
 import { Route as MundoRouteImport } from './routes/mundo'
 import { Route as JogadorRouteImport } from './routes/jogador'
+import { Route as EmpresarioRouteImport } from './routes/empresario'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as CarreiraRouteImport } from './routes/carreira'
@@ -51,6 +52,11 @@ const MundoRoute = MundoRouteImport.update({
 const JogadorRoute = JogadorRouteImport.update({
   id: '/jogador',
   path: '/jogador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpresarioRoute = EmpresarioRouteImport.update({
+  id: '/empresario',
+  path: '/empresario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreditosRoute = CreditosRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/carreira': typeof CarreiraRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
+  '/empresario': typeof EmpresarioRoute
   '/jogador': typeof JogadorRoute
   '/mundo': typeof MundoRouteWithChildren
   '/negociacoes': typeof NegociacoesRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/carreira': typeof CarreiraRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
+  '/empresario': typeof EmpresarioRoute
   '/jogador': typeof JogadorRoute
   '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/carreira': typeof CarreiraRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
+  '/empresario': typeof EmpresarioRoute
   '/jogador': typeof JogadorRoute
   '/mundo': typeof MundoRouteWithChildren
   '/negociacoes': typeof NegociacoesRoute
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | '/carreira'
     | '/configuracoes'
     | '/creditos'
+    | '/empresario'
     | '/jogador'
     | '/mundo'
     | '/negociacoes'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/carreira'
     | '/configuracoes'
     | '/creditos'
+    | '/empresario'
     | '/jogador'
     | '/negociacoes'
     | '/novo-jogo'
@@ -171,6 +182,7 @@ export interface FileRouteTypes {
     | '/carreira'
     | '/configuracoes'
     | '/creditos'
+    | '/empresario'
     | '/jogador'
     | '/mundo'
     | '/negociacoes'
@@ -187,6 +199,7 @@ export interface RootRouteChildren {
   CarreiraRoute: typeof CarreiraRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
+  EmpresarioRoute: typeof EmpresarioRoute
   JogadorRoute: typeof JogadorRoute
   MundoRoute: typeof MundoRouteWithChildren
   NegociacoesRoute: typeof NegociacoesRoute
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       path: '/jogador'
       fullPath: '/jogador'
       preLoaderRoute: typeof JogadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empresario': {
+      id: '/empresario'
+      path: '/empresario'
+      fullPath: '/empresario'
+      preLoaderRoute: typeof EmpresarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/creditos': {
@@ -310,6 +330,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarreiraRoute: CarreiraRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
+  EmpresarioRoute: EmpresarioRoute,
   JogadorRoute: JogadorRoute,
   MundoRoute: MundoRouteWithChildren,
   NegociacoesRoute: NegociacoesRoute,
