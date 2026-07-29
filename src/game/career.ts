@@ -1,6 +1,19 @@
 import { SAVE_VERSION } from "./constants";
 import { ageAt, createTimeline } from "./calendar";
-import { createCareerAi } from "./ai";
+import {
+  acceptOffer,
+  attendTrial,
+  declineOffer,
+  hireAgent,
+  negotiateOffer,
+  trialOpportunities,
+  createCareerAi,
+  type AgentTemplate,
+  type NegotiationResult,
+  type TrialOpportunity,
+} from "./ai";
+import { createRandom } from "./rng";
+import { categoryLabel } from "./world";
 import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
@@ -12,6 +25,7 @@ import type {
   Foot,
   GameEvent,
   IsoDate,
+  NegotiationTopic,
   PositionCode,
   SimulationReport,
 } from "./types";
@@ -123,4 +137,137 @@ export function toSummary(career: Career): CareerSummary {
     seasonYear: career.timeline.current.seasonYear,
     updatedAt: career.updatedAt,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Negotiations, trials and agents                                     */
+/* ------------------------------------------------------------------ */
+
+function careerRandom(career: Career, tag: string) {
+  return createRandom(`${career.id}:${tag}:${career.timeline.elapsedWeeks}:${career.updatedAt}`);
+}
+
+function withEvents(career: Career, events: GameEvent[]): Career {
+  return {
+    ...career,
+    events: events.length ? appendEvents(career.events, events) : career.events,
+    updatedAt: Date.now(),
+  };
+}
+
+/** Signs a pending proposal exactly as negotiated by the player. */
+export function acceptCareerOffer(career: Career, offerId: string): Career {
+  const result = acceptOffer(
+    career.player,
+    career.ai,
+    offerId,
+    career.timeline.current,
+    playerOverall(career),
+    careerRandom(career, `accept:${offerId}`),
+  );
+  const next = withEvents(
+    { ...career, player: result.player, ai: result.ai },
+    result.events,
+  );
+  return {
+    ...next,
+    status: result.ai.club ? "contracted" : next.status,
+    currentSeason: {
+      ...next.currentSeason,
+      clubName: result.ai.club?.clubName ?? next.currentSeason.clubName,
+      category: result.ai.club ? categoryLabel(result.ai.club.category) : next.currentSeason.category,
+    },
+  };
+}
+
+export interface NegotiationFeedback {
+  career: Career;
+  result: NegotiationResult;
+  message: string;
+}
+
+/** Counters a proposal. Each round risks losing the deal. */
+export function negotiateCareerOffer(
+  career: Career,
+  offerId: string,
+  topic: NegotiationTopic,
+): NegotiationFeedback {
+  const outcome = negotiateOffer(
+    career.ai,
+    offerId,
+    topic,
+    careerRandom(career, `negotiate:${offerId}:${topic}`),
+  );
+  const event = createEvent("contract", career.timeline.current, "Negociação", {
+    description: outcome.message,
+    tone: outcome.result === "improved" ? "positive" : outcome.result === "withdrawn" ? "danger" : "warning",
+  });
+  return {
+    career: withEvents({ ...career, ai: outcome.ai }, [event]),
+    result: outcome.result,
+    message: outcome.message,
+  };
+}
+
+export function declineCareerOffer(career: Career, offerId: string): Career {
+  const result = declineOffer(career.ai, offerId, career.timeline.current);
+  return withEvents({ ...career, ai: result.ai }, result.events);
+}
+
+/** Trials the athlete can attend right now (free agents only). */
+export function careerTrials(career: Career): TrialOpportunity[] {
+  if (career.ai.club) return [];
+  return trialOpportunities(career.player, career.ai, playerAge(career), playerOverall(career));
+}
+
+/** One trial per week — the athlete needs time to travel and recover. */
+export function canAttendTrial(career: Career) {
+  return !career.ai.club && career.timeline.elapsedWeeks > career.ai.lastTrialWeek;
+}
+
+export function attendCareerTrial(
+  career: Career,
+  opportunity: TrialOpportunity,
+): { career: Career; approved: boolean } {
+  if (!canAttendTrial(career)) return { career, approved: false };
+  const result = attendTrial(
+    career.player,
+    career.ai,
+    opportunity,
+    career.timeline.current,
+    career.timeline.elapsedWeeks,
+    playerOverall(career),
+    careerRandom(career, `trial:${opportunity.club.id}`),
+  );
+  return {
+    career: withEvents({ ...career, ai: result.ai }, result.events),
+    approved: result.approved,
+  };
+}
+
+export function hireCareerAgent(career: Career, template: AgentTemplate): Career {
+  const agent = hireAgent(template, career.timeline.current.seasonYear);
+  return withEvents(
+    { ...career, ai: { ...career.ai, agent } },
+    [
+      createEvent("contract", career.timeline.current, `Novo empresário: ${agent.name}`, {
+        description: `Comissão de ${agent.commission}% sobre o salário.`,
+        tone: "positive",
+      }),
+    ],
+  );
+}
+
+export function dismissCareerAgent(career: Career): Career {
+  const agent = career.ai.agent;
+  if (!agent) return career;
+  return withEvents(
+    { ...career, ai: { ...career.ai, agent: null } },
+    [
+      createEvent("contract", career.timeline.current, `${agent.name} deixou de representar o atleta`, {
+        description: "O atleta voltou a negociar por conta própria.",
+        tone: "warning",
+      }),
+    ],
+  );
 }
