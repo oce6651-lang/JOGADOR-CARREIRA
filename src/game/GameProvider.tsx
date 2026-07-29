@@ -9,11 +9,20 @@ import {
 } from "react";
 
 import {
+  acceptCareerOffer,
   acknowledgeSeasonSummary,
+  attendCareerTrial,
   createCareer,
+  declineCareerOffer,
+  dismissCareerAgent,
+  hireCareerAgent,
+  negotiateCareerOffer,
   simulateCareer,
+  type NegotiationFeedback,
   type NewCareerInput,
 } from "./career";
+import type { AgentTemplate, TrialOpportunity } from "./ai";
+import type { NegotiationTopic } from "./types";
 import type { SimulationScope } from "./simulation";
 import {
   DEFAULT_SETTINGS,
@@ -39,6 +48,13 @@ interface GameContextValue {
   dismissReport: () => void;
   dismissSeasonSummary: (summaryId: string) => void;
   abandonCareer: () => void;
+  /** Negotiations — every proposal is resolved by the player. */
+  acceptOffer: (offerId: string) => void;
+  negotiateOffer: (offerId: string, topic: NegotiationTopic) => NegotiationFeedback | null;
+  declineOffer: (offerId: string) => void;
+  attendTrial: (opportunity: TrialOpportunity) => boolean;
+  hireAgent: (template: AgentTemplate) => void;
+  dismissAgent: () => void;
   updateSettings: (patch: Partial<GameSettings>) => void;
 }
 
@@ -93,6 +109,46 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setSimulating(false);
   }, []);
 
+  const acceptOffer = useCallback(
+    (offerId: string) => updateCareer((prev) => acceptCareerOffer(prev, offerId)),
+    [updateCareer],
+  );
+
+  const negotiateOffer = useCallback(
+    (offerId: string, topic: NegotiationTopic) => {
+      if (!career) return null;
+      const feedback = negotiateCareerOffer(career, offerId, topic);
+      persist(feedback.career);
+      return feedback;
+    },
+    [career, persist],
+  );
+
+  const declineOffer = useCallback(
+    (offerId: string) => updateCareer((prev) => declineCareerOffer(prev, offerId)),
+    [updateCareer],
+  );
+
+  const attendTrial = useCallback(
+    (opportunity: TrialOpportunity) => {
+      if (!career) return false;
+      const result = attendCareerTrial(career, opportunity);
+      persist(result.career);
+      return result.approved;
+    },
+    [career, persist],
+  );
+
+  const hireAgent = useCallback(
+    (template: AgentTemplate) => updateCareer((prev) => hireCareerAgent(prev, template)),
+    [updateCareer],
+  );
+
+  const dismissAgent = useCallback(
+    () => updateCareer((prev) => dismissCareerAgent(prev)),
+    [updateCareer],
+  );
+
   const dismissReport = useCallback(() => setLastReport(null), []);
 
   const dismissSeasonSummary = useCallback(
@@ -130,6 +186,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissSeasonSummary,
       abandonCareer,
       updateSettings,
+      acceptOffer,
+      negotiateOffer,
+      declineOffer,
+      attendTrial,
+      hireAgent,
+      dismissAgent,
     }),
     [
       hydrated,
@@ -144,6 +206,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissSeasonSummary,
       abandonCareer,
       updateSettings,
+      acceptOffer,
+      negotiateOffer,
+      declineOffer,
+      attendTrial,
+      hireAgent,
+      dismissAgent,
     ],
   );
 
