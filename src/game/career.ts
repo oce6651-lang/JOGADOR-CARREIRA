@@ -171,7 +171,7 @@ export function acceptCareerOffer(career: Career, offerId: string): Career {
   );
   return {
     ...next,
-    status: result.ai.club ? "contracted" : next.status,
+    status: result.ai.club ? "active" : next.status,
     currentSeason: {
       ...next.currentSeason,
       clubName: result.ai.club?.clubName ?? next.currentSeason.clubName,
