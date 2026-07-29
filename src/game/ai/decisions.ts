@@ -222,43 +222,74 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   /* --- loan ------------------------------------------------------- */
   const loan = evaluateLoan(ai, evaluation, ctx);
   if (loan) {
-    const moved = joinClub(player, ai, {
-      club: loan,
-      category: entryCategoryFor(loan, situation.category),
-      date,
-      overall,
-      type: "loan",
-      parent: situation,
-      random,
-    });
-    player = moved.player;
-    ai = moved.ai;
-    return finish(player, ai, [...events, ...moved.events], categoryLabel(ai.club!.category));
-  }
-
-  /* --- renewal ---------------------------------------------------- */
-  if (
-    seasonEnd &&
-    ai.club &&
-    ai.club.contractUntilSeason <= date.seasonYear + 1 &&
-    evaluation.score > -12
-  ) {
-    const seasons = evaluation.score > 25 ? 4 : evaluation.score > 5 ? 3 : 2;
-    const raise = 1 + Math.max(0.05, Math.min(1.2, evaluation.score / 60));
-    const renewed = {
-      ...ai.club,
-      contractUntilSeason: date.seasonYear + seasons,
-      weeklyWage: Math.round(ai.club.weeklyWage * raise),
-    };
-    ai = { ...ai, club: renewed, morale: Math.min(100, ai.morale + 10) };
+    const category = entryCategoryFor(loan, situation.category);
+    ai = addOffer(
+      ai,
+      buildOffer({
+        kind: "loan",
+        club: loan,
+        category,
+        overall,
+        elapsedWeeks: ctx.elapsedWeeks,
+        ai,
+        role: "rotation",
+        fromClubName: situation.clubName,
+        random,
+        message: `O ${situation.clubName} liberou uma saída por empréstimo. O ${loan.name} garante minutos no ${categoryLabel(category)}.`,
+      }),
+    );
     events.push(
-      createEvent("contract", date, `Renovação com o ${situation.clubName}`, {
-        description: `Novo vínculo até ${date.seasonYear + seasons} com salário de R$ ${renewed.weeklyWage.toLocaleString("pt-BR")}/semana.`,
-        tone: "positive",
+      createEvent("contract", date, `Empréstimo oferecido pelo ${loan.name}`, {
+        description: "Proposta aguardando decisão do atleta em Negociações.",
+        tone: "info",
       }),
     );
   }
 
+  /* --- renewal ---------------------------------------------------- */
+  if (
+    ai.club &&
+    ai.club.contractUntilSeason <= date.seasonYear + 1 &&
+    evaluation.score > -12 &&
+    !ai.offers.some((offer) => offer.kind === "renewal")
+  ) {
+    const club = getClub(ai.club.clubId);
+    if (club) {
+      const seasons = evaluation.score > 25 ? 4 : evaluation.score > 5 ? 3 : 2;
+      const raise = 1 + Math.max(0.05, Math.min(1.2, evaluation.score / 60));
+      const offer = buildOffer({
+        kind: "renewal",
+        club,
+        category: ai.club.category,
+        overall,
+        elapsedWeeks: ctx.elapsedWeeks,
+        ai,
+        role: ai.club.role,
+        random,
+        message: `O ${situation.clubName} quer renovar o contrato do atleta.`,
+      });
+      ai = addOffer(ai, {
+        ...offer,
+        terms: {
+          ...offer.terms,
+          seasons,
+          weeklyWage: Math.round(ai.club.weeklyWage * raise),
+        },
+      });
+      events.push(
+        createEvent("contract", date, `Renovação oferecida pelo ${situation.clubName}`, {
+          description: "A diretoria apresentou uma proposta de renovação. Analise em Negociações.",
+          tone: "info",
+        }),
+      );
+    }
+  }
+
+  /* --- national team ---------------------------------------------- */
+  const callUp = evaluateCallUp({ player, ai, date, age, seasonStats, random });
+  player = callUp.player;
+  ai = callUp.ai;
+  events.push(...callUp.events);
 
   return finish(player, ai, events);
 }
