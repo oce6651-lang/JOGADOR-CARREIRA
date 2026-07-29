@@ -455,6 +455,64 @@ export interface ScoutingInterest {
   sinceWeek: number;
 }
 
+/* ------------------------------------------------------------------ */
+/* Negotiations                                                        */
+/* ------------------------------------------------------------------ */
+
+/** Every kind of proposal the athlete can receive. */
+export type OfferKind = "trial" | "contract" | "renewal" | "loan" | "transfer";
+
+/** What the athlete (or his agent) tries to improve in a negotiation. */
+export type NegotiationTopic = "wage" | "seasons" | "role";
+
+export interface ContractTerms {
+  /** Weekly wage in BRL. */
+  weeklyWage: number;
+  /** Contract length in seasons. */
+  seasons: number;
+  /** Squad role promised by the club. */
+  role: SquadRole;
+  /** One-off signing bonus in BRL. */
+  signingBonus: number;
+}
+
+/** A proposal waiting for the player's answer. Never resolved automatically. */
+export interface ClubOffer {
+  id: EntityId;
+  kind: OfferKind;
+  clubId: EntityId;
+  clubSlug: string;
+  clubName: string;
+  clubReputation: number;
+  category: CategoryCode;
+  /** Club leaving behind (loans and transfers). */
+  fromClubName?: string;
+  terms: ContractTerms;
+  message: string;
+  createdWeek: number;
+  /** elapsedWeeks after which the club withdraws the proposal. */
+  expiresWeek: number;
+  /** Negotiation rounds already used by the player. */
+  rounds: number;
+  maxRounds: number;
+  /** The club refuses to improve the terms any further. */
+  finalOffer: boolean;
+}
+
+/** Agents open doors, find trials and improve every negotiation. */
+export interface Agent {
+  id: EntityId;
+  name: string;
+  /** 1-100 — how good he is at finding and improving deals. */
+  quality: number;
+  /** Percentage of the wage kept by the agent. */
+  commission: number;
+  /** Minimum reputation required to be hired. */
+  minReputation: number;
+  hiredSeason?: number;
+  description: string;
+}
+
 /** Persistent brain of the career: context every AI decision reads from. */
 export interface CareerAi {
   club: ClubSituation | null;
@@ -477,7 +535,16 @@ export interface CareerAi {
   trials: number;
   /** How many times he was released by a club. */
   releases: number;
+  /** Proposals waiting for the player's decision. */
+  offers: ClubOffer[];
+  /** Hired agent, if any. */
+  agent: Agent | null;
+  /** elapsedWeeks of the last trial attended (one per week). */
+  lastTrialWeek: number;
+  /** National team level the athlete currently belongs to. */
+  nationalTeamLevel: CallUpRecord["level"] | null;
 }
+
 
 /** Result of simulating one or more weeks. Shown to the player, not persisted. */
 export interface SimulationReport {
