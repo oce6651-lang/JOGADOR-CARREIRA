@@ -32,9 +32,8 @@ export function createCareerAi(player: Player): CareerAi {
     lastTrialWeek: -99,
     nationalTeamLevel: null,
   };
-
-  };
 }
+
 
 export function recordRating(ai: CareerAi, rating: number): CareerAi {
   return {
