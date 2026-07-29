@@ -354,7 +354,7 @@ function PlayerPage() {
             items={player.history.injuries.map((item) => ({
               id: item.id,
               title: item.name,
-              detail: `${item.date.date} · ${item.weeksOut} semana(s) fora`,
+              detail: `${item.from.date} · ${item.weeksOut} semana(s) fora`,
             }))}
           />
           <HistoryBlock
