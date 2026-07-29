@@ -9,7 +9,9 @@ import type {
   GameDate,
   GameEvent,
   Player,
+  SquadRole,
 } from "../types";
+
 import { categoryLabel, type CategoryCode, type Club } from "../world";
 import { requiredOverall } from "./evaluation";
 
@@ -54,11 +56,13 @@ export function joinClub(
     type: MoveType;
     parent?: ClubSituation;
     random: Random;
+    /** Terms agreed by the player during the negotiation. */
+    terms?: { weeklyWage: number; seasons: number; role: SquadRole };
   },
 ): { player: Player; ai: CareerAi; events: GameEvent[] } {
-  const { club, category, date, overall, type, parent, random } = options;
+  const { club, category, date, overall, type, parent, random, terms } = options;
   const spellId = createId("contract");
-  const wage = estimateWage(club, category, overall, random);
+  const wage = terms?.weeklyWage ?? estimateWage(club, category, overall, random);
   const events: GameEvent[] = [];
 
   const situation: ClubSituation = {
@@ -68,15 +72,17 @@ export function joinClub(
     clubName: club.name,
     clubReputation: club.reputation,
     category,
-    role: category === "PRO" ? "reserve" : "bench",
+    role: terms?.role ?? (category === "PRO" ? "reserve" : "bench"),
     joinedSeason: date.seasonYear,
-    contractUntilSeason: date.seasonYear + contractLength(category, random),
+    contractUntilSeason:
+      date.seasonYear + (terms?.seasons ?? contractLength(category, random)),
     weeklyWage: wage,
     onLoan: type === "loan",
     parentClubId: parent?.clubId,
     parentClubName: parent?.clubName,
     weeksInCategory: 0,
   };
+
 
   const nextPlayer: Player = {
     ...player,

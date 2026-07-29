@@ -27,8 +27,13 @@ export function createCareerAi(player: Player): CareerAi {
     lastReviewWeek: 0,
     trials: 0,
     releases: 0,
+    offers: [],
+    agent: null,
+    lastTrialWeek: -99,
+    nationalTeamLevel: null,
   };
 }
+
 
 export function recordRating(ai: CareerAi, rating: number): CareerAi {
   return {

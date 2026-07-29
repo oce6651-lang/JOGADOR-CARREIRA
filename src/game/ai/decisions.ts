@@ -12,17 +12,18 @@ import type {
 import {
   categoryForAge,
   categoryLabel,
-  categoryOrder,
   getCategory,
   getClub,
   nextCategory,
-  sortCategories,
   CLUBS,
   type CategoryCode,
   type Club,
 } from "../world";
-import { changeCategory, joinClub, releaseFromClub } from "./clubMoves";
-import { evaluate, levelGap, requiredOverall, type Evaluation } from "./evaluation";
+import { changeCategory, releaseFromClub } from "./clubMoves";
+import { evaluate, levelGap, type Evaluation } from "./evaluation";
+import { entryCategoryFor, reachableClubs } from "./market";
+import { evaluateCallUp } from "./nationalTeam";
+import { addOffer, buildOffer } from "./offers";
 import { decideRole, isMarginal, roleLabel } from "./squad";
 
 /**
@@ -78,10 +79,9 @@ export function runCareerReview(ctx: AiContext): AiOutcome {
 function reviewFreeAgent(ctx: AiContext): AiOutcome {
   const { player, date, age, overall, random } = ctx;
   let ai = ctx.ai;
-  const events: GameEvent[] = [];
 
   const category = categoryForAge(age);
-  const candidates = reachableClubs(overall, player.hidden.potential, category);
+  const candidates = reachableClubs(overall, player.hidden.potential, category, ai.reputation);
 
   if (!candidates.length) {
     return {
@@ -89,26 +89,31 @@ function reviewFreeAgent(ctx: AiContext): AiOutcome {
       ai,
       events: [
         createEvent("trial", date, "Sem oportunidades no momento", {
-          description: "Nenhum clube com vaga compatível para o nível atual.",
+          description:
+            "Nenhum clube com vaga compatível. Continue treinando e tente peneiras mais modestas.",
           tone: "warning",
         }),
       ],
     };
   }
 
-  // Being known and being consistent open more doors than raw overall.
+  // Clubs only come knocking when the athlete is known; otherwise he has to
+  // knock on doors himself through the trials screen.
   const inviteChance = Math.min(
-    0.9,
-    0.35 + ai.reputation / 180 + player.attributes.mental.determination / 400,
+    0.75,
+    0.08 +
+      ai.reputation / 190 +
+      player.attributes.mental.determination / 900 +
+      (ai.agent ? ai.agent.quality / 320 : 0),
   );
-  if (!chance(inviteChance, random)) {
-    ai = { ...ai, morale: Math.max(10, ai.morale - 4) };
+
+  if (ai.offers.length >= 3 || !chance(inviteChance, random)) {
     return {
       player,
-      ai,
+      ai: { ...ai, morale: Math.max(10, ai.morale - 2) },
       events: [
-        createEvent("trial", date, "Peneira sem retorno", {
-          description: "O atleta segue treinando por conta própria à espera de um convite.",
+        createEvent("trial", date, "Semana sem convites", {
+          description: "O atleta segue treinando por conta própria à espera de uma chance.",
           tone: "warning",
         }),
       ],
@@ -116,74 +121,29 @@ function reviewFreeAgent(ctx: AiContext): AiOutcome {
   }
 
   const club = pickTrialClub(candidates, overall, random);
-  ai = { ...ai, trials: ai.trials + 1 };
-  events.push(
-    createEvent("trial", date, `Peneira no ${club.name}`, {
-      description: `Avaliação para o ${categoryLabel(category)}.`,
-    }),
-  );
-
-  const gap = levelGap(overall, category, club.reputation);
-  const successChance = Math.max(
-    0.08,
-    Math.min(
-      0.94,
-      0.5 +
-        gap * 0.05 +
-        (player.hidden.potential - overall) * 0.008 +
-        (player.attributes.mental.determination - 50) * 0.004 +
-        (ai.fitness - 80) * 0.004,
-    ),
-  );
-
-  if (!chance(successChance, random)) {
-    return {
-      player,
-      ai: { ...ai, morale: Math.max(10, ai.morale - 8) },
-      events: [
-        ...events,
-        createEvent("trial", date, `Reprovado no ${club.name}`, {
-          description: "A comissão técnica optou por não seguir com o atleta.",
-          tone: "danger",
-        }),
-      ],
-    };
-  }
-
-  const joined = joinClub(player, ai, {
+  const target = entryCategoryFor(club, category);
+  const offer = buildOffer({
+    kind: "trial",
     club,
-    category: entryCategoryFor(club, category),
-    date,
+    category: target,
     overall,
-    type: category === "PRO" ? "permanent" : "youth",
+    elapsedWeeks: ctx.elapsedWeeks,
+    ai,
     random,
+    message: `O ${club.name} convidou o atleta para uma avaliação no ${categoryLabel(target)}. Aceitar garante vaga direta na peneira.`,
   });
+  ai = addOffer(ai, offer);
 
   return {
-    player: joined.player,
-    ai: joined.ai,
-    events: [...events, ...joined.events],
-    categoryChange: categoryLabel(entryCategoryFor(club, category)),
+    player,
+    ai,
+    events: [
+      createEvent("contract", date, `Convite do ${club.name}`, {
+        description: `Convite para avaliação no ${categoryLabel(target)}. Responda em Negociações.`,
+        tone: "info",
+      }),
+    ],
   };
-}
-
-function entryCategoryFor(club: Club, wanted: CategoryCode): CategoryCode {
-  if (club.categories.includes(wanted)) return wanted;
-  const sorted = sortCategories(club.categories);
-  return (
-    sorted.find((code) => categoryOrder(code) >= categoryOrder(wanted)) ??
-    sorted[sorted.length - 1]
-  );
-}
-
-
-function reachableClubs(overall: number, potential: number, category: CategoryCode) {
-  const projected = overall + Math.max(0, potential - overall) * 0.35;
-  return CLUBS.filter((club) => {
-    const target = entryCategoryFor(club, category);
-    const required = requiredOverall(target, club.reputation);
-    return projected >= required - 4 && projected <= required + 26;
-  });
 }
 
 function pickTrialClub(candidates: Club[], overall: number, random: Random) {
@@ -262,43 +222,74 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   /* --- loan ------------------------------------------------------- */
   const loan = evaluateLoan(ai, evaluation, ctx);
   if (loan) {
-    const moved = joinClub(player, ai, {
-      club: loan,
-      category: entryCategoryFor(loan, situation.category),
-      date,
-      overall,
-      type: "loan",
-      parent: situation,
-      random,
-    });
-    player = moved.player;
-    ai = moved.ai;
-    return finish(player, ai, [...events, ...moved.events], categoryLabel(ai.club!.category));
-  }
-
-  /* --- renewal ---------------------------------------------------- */
-  if (
-    seasonEnd &&
-    ai.club &&
-    ai.club.contractUntilSeason <= date.seasonYear + 1 &&
-    evaluation.score > -12
-  ) {
-    const seasons = evaluation.score > 25 ? 4 : evaluation.score > 5 ? 3 : 2;
-    const raise = 1 + Math.max(0.05, Math.min(1.2, evaluation.score / 60));
-    const renewed = {
-      ...ai.club,
-      contractUntilSeason: date.seasonYear + seasons,
-      weeklyWage: Math.round(ai.club.weeklyWage * raise),
-    };
-    ai = { ...ai, club: renewed, morale: Math.min(100, ai.morale + 10) };
+    const category = entryCategoryFor(loan, situation.category);
+    ai = addOffer(
+      ai,
+      buildOffer({
+        kind: "loan",
+        club: loan,
+        category,
+        overall,
+        elapsedWeeks: ctx.elapsedWeeks,
+        ai,
+        role: "rotation",
+        fromClubName: situation.clubName,
+        random,
+        message: `O ${situation.clubName} liberou uma saída por empréstimo. O ${loan.name} garante minutos no ${categoryLabel(category)}.`,
+      }),
+    );
     events.push(
-      createEvent("contract", date, `Renovação com o ${situation.clubName}`, {
-        description: `Novo vínculo até ${date.seasonYear + seasons} com salário de R$ ${renewed.weeklyWage.toLocaleString("pt-BR")}/semana.`,
-        tone: "positive",
+      createEvent("contract", date, `Empréstimo oferecido pelo ${loan.name}`, {
+        description: "Proposta aguardando decisão do atleta em Negociações.",
+        tone: "info",
       }),
     );
   }
 
+  /* --- renewal ---------------------------------------------------- */
+  if (
+    ai.club &&
+    ai.club.contractUntilSeason <= date.seasonYear + 1 &&
+    evaluation.score > -12 &&
+    !ai.offers.some((offer) => offer.kind === "renewal")
+  ) {
+    const club = getClub(ai.club.clubId);
+    if (club) {
+      const seasons = evaluation.score > 25 ? 4 : evaluation.score > 5 ? 3 : 2;
+      const raise = 1 + Math.max(0.05, Math.min(1.2, evaluation.score / 60));
+      const offer = buildOffer({
+        kind: "renewal",
+        club,
+        category: ai.club.category,
+        overall,
+        elapsedWeeks: ctx.elapsedWeeks,
+        ai,
+        role: ai.club.role,
+        random,
+        message: `O ${situation.clubName} quer renovar o contrato do atleta.`,
+      });
+      ai = addOffer(ai, {
+        ...offer,
+        terms: {
+          ...offer.terms,
+          seasons,
+          weeklyWage: Math.round(ai.club.weeklyWage * raise),
+        },
+      });
+      events.push(
+        createEvent("contract", date, `Renovação oferecida pelo ${situation.clubName}`, {
+          description: "A diretoria apresentou uma proposta de renovação. Analise em Negociações.",
+          tone: "info",
+        }),
+      );
+    }
+  }
+
+  /* --- national team ---------------------------------------------- */
+  const callUp = evaluateCallUp({ player, ai, date, age, seasonStats, random });
+  player = callUp.player;
+  ai = callUp.ai;
+  events.push(...callUp.events);
 
   return finish(player, ai, events);
 }

@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   Award,
@@ -257,11 +258,32 @@ function PlayerPage() {
               value={String(player.history.transfers.length)}
             />
           </div>
-          <EmptySection
-            icon={Shirt}
-            title="Ainda sem clube"
-            description="Quando o atleta entrar em um clube, cada passagem, categoria de base e empréstimo aparecerá aqui permanentemente."
-          />
+          {player.history.clubs.length ? (
+            <HistoryList
+              title="Passagens por clubes"
+              items={player.history.clubs.map((spell) => ({
+                id: spell.id,
+                title: `${spell.clubName} · ${spell.category}`,
+                detail: `${spell.from.date} — ${spell.to?.date ?? "atual"} · ${SPELL_LABELS[spell.type]}`,
+              }))}
+            />
+          ) : (
+            <EmptySection
+              icon={Shirt}
+              title="Ainda sem clube"
+              description="Quando o atleta entrar em um clube, cada passagem, categoria de base e empréstimo aparecerá aqui permanentemente."
+            />
+          )}
+          {player.history.transfers.length ? (
+            <HistoryList
+              title="Transferências"
+              items={player.history.transfers.map((transfer) => ({
+                id: transfer.id,
+                title: `${transfer.fromClub ?? "Sem clube"} → ${transfer.toClub}`,
+                detail: `${transfer.date.date} · ${transfer.type}`,
+              }))}
+            />
+          ) : null}
         </TabsContent>
 
         <TabsContent value="stats" className="grid gap-4">
@@ -295,35 +317,72 @@ function PlayerPage() {
         </TabsContent>
 
         <TabsContent value="history" className="grid gap-4 md:grid-cols-2">
-          <EmptySection
+          <HistoryBlock
             icon={Trophy}
             title="Títulos"
-            description="Cada taça conquistada ficará registrada para sempre, mesmo após a aposentadoria."
+            empty="Cada taça conquistada ficará registrada para sempre."
+            items={player.history.titles.map((item) => ({
+              id: item.id,
+              title: item.competition,
+              detail: `${item.seasonYear}${item.clubName ? ` · ${item.clubName}` : ""}`,
+            }))}
           />
-          <EmptySection
+          <HistoryBlock
             icon={Award}
             title="Prêmios individuais"
-            description="Prêmios de melhor jogador, artilharia e destaques da temporada aparecerão aqui."
+            empty="Prêmios de melhor jogador e artilharia aparecerão aqui."
+            items={player.history.awards.map((item) => ({
+              id: item.id,
+              title: item.name,
+              detail: String(item.seasonYear),
+            }))}
           />
-          <EmptySection
+          <HistoryBlock
             icon={Users}
             title="Convocações"
-            description="Convocações para as seleções de base, olímpica e principal serão listadas aqui."
+            empty="Convocações para as seleções serão listadas aqui."
+            items={player.history.callUps.map((item) => ({
+              id: item.id,
+              title: `${item.nationalTeam} ${item.level}`,
+              detail: `${item.seasonYear} · ${item.caps} jogo(s) · ${item.goals} gol(s)`,
+            }))}
           />
-          <EmptySection
+          <HistoryBlock
             icon={Stethoscope}
             title="Lesões"
-            description="Todo o histórico médico do atleta, com tempo de recuperação e impacto físico."
+            empty="Todo o histórico médico do atleta aparecerá aqui."
+            items={player.history.injuries.map((item) => ({
+              id: item.id,
+              title: item.name,
+              detail: `${item.from.date} · ${item.weeksOut} semana(s) fora`,
+            }))}
           />
-          <EmptySection
+          <HistoryBlock
             icon={Wallet}
             title="Salários e valor de mercado"
-            description="A evolução financeira da carreira será registrada temporada após temporada."
+            empty="A evolução financeira será registrada temporada após temporada."
+            items={[
+              ...player.history.salaries.map((item) => ({
+                id: item.id,
+                title: `R$ ${item.amount.toLocaleString("pt-BR")}/semana`,
+                detail: `${item.date.date}${item.clubName ? ` · ${item.clubName}` : ""}`,
+              })),
+              ...player.history.marketValues.map((item) => ({
+                id: `mv-${item.date.date}`,
+                title: `Valor de mercado: R$ ${item.value.toLocaleString("pt-BR")}`,
+                detail: item.date.date,
+              })),
+            ]}
           />
-          <EmptySection
+          <HistoryBlock
             icon={Sparkles}
             title="Evolução de overall"
-            description="O overall e os atributos de cada temporada ficarão salvos para comparação."
+            empty="O overall de cada temporada ficará salvo para comparação."
+            items={player.history.overallBySeason.map((item) => ({
+              id: `ov-${item.seasonYear}`,
+              title: `Temporada ${item.seasonYear}`,
+              detail: `Overall ${item.overall} · ${item.age} anos`,
+            }))}
           />
         </TabsContent>
       </Tabs>
@@ -349,4 +408,53 @@ function InfoRow({
       <span className="text-right font-semibold">{value}</span>
     </div>
   );
+}
+
+const SPELL_LABELS: Record<"youth" | "permanent" | "loan", string> = {
+  youth: "Base",
+  permanent: "Contrato",
+  loan: "Empréstimo",
+};
+
+interface HistoryItem {
+  id: string;
+  title: string;
+  detail: string;
+}
+
+/** Permanent archive list — every career record is rendered the same way. */
+function HistoryList({ title, items }: { title: string; items: HistoryItem[] }) {
+  return (
+    <section className="panel space-y-3 p-6">
+      <h3 className="text-display text-xl uppercase">{title}</h3>
+      <ul className="space-y-2">
+        {items.map((item) => (
+          <li
+            key={item.id}
+            className="rounded-lg border border-border bg-secondary/40 px-3 py-2"
+          >
+            <p className="text-sm font-semibold">{item.title}</p>
+            <p className="text-xs text-muted-foreground">{item.detail}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function HistoryBlock({
+  icon,
+  title,
+  empty,
+  items,
+}: {
+  icon: LucideIcon;
+  title: string;
+  empty: string;
+  items: HistoryItem[];
+}) {
+  if (!items.length) {
+    return <EmptySection icon={icon} title={title} description={empty} />;
+  }
+  return <HistoryList title={title} items={items} />;
 }

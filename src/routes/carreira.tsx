@@ -2,10 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   CalendarDays,
   ChevronsRight,
+  Briefcase,
   Flag,
   Footprints,
+  Handshake,
   Home,
-  Lock,
+  Target,
   Trophy,
   UserRound,
 } from "lucide-react";
@@ -25,7 +27,7 @@ import { EVENT_DEFINITIONS } from "@/game/events";
 import { useGame } from "@/game/GameProvider";
 import { STATUS_LABELS, primaryStatus } from "@/game/player";
 import { hasClub } from "@/game/simulation";
-import { roleLabel } from "@/game/ai";
+import { reputationLabel, roleLabel } from "@/game/ai";
 import { categoryLabel } from "@/game/world";
 
 import type { GameEventType } from "@/game/types";
@@ -49,7 +51,13 @@ export const Route = createFileRoute("/carreira")({
   component: CareerPage,
 });
 
-const LOCKED = ["Empresários", "Campeonatos", "Seleções", "Negociação de contrato"];
+const SHORTCUTS = [
+  { to: "/negociacoes" as const, label: "Negociações", icon: Handshake },
+  { to: "/peneiras" as const, label: "Peneiras", icon: Target },
+  { to: "/empresario" as const, label: "Empresário", icon: Briefcase },
+  { to: "/selecoes" as const, label: "Seleções", icon: Flag },
+  { to: "/mundo" as const, label: "Campeonatos", icon: Trophy },
+];
 
 
 const FILTERS: { id: "all" | GameEventType; label: string }[] = [
@@ -177,6 +185,10 @@ function CareerPage() {
             label="Papel no elenco"
             value={career.ai.club ? roleLabel(career.ai.club.role) : "—"}
           />
+          <InfoRow
+            label="Reputação"
+            value={`${reputationLabel(career.ai.reputation)} (${Math.round(career.ai.reputation)}/100)`}
+          />
           <InfoRow label="Moral" value={`${Math.round(career.ai.morale)}/100`} />
           <InfoRow label="Condição física" value={`${Math.round(career.ai.fitness)}/100`} />
           <InfoRow label="Posição" value={positionLabel(career.player.position)} />
@@ -214,16 +226,23 @@ function CareerPage() {
           </div>
 
           <div className="panel space-y-3 p-6">
-            <h2 className="text-display text-2xl uppercase">Em breve</h2>
-            <div className="flex flex-wrap gap-2">
-              {LOCKED.map((item) => (
-                <span
-                  key={item}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-muted-foreground"
+            <h2 className="text-display text-2xl uppercase">Central da carreira</h2>
+            <div className="grid gap-2">
+              {SHORTCUTS.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-secondary/40 px-3 py-2.5 text-sm transition-colors hover:border-primary/60"
                 >
-                  <Lock className="size-3" />
-                  {item}
-                </span>
+                  <item.icon className="size-4 text-primary" />
+                  <span className="flex-1 font-semibold">{item.label}</span>
+                  {item.to === "/negociacoes" && career.ai.offers.length ? (
+                    <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-bold text-primary-foreground">
+                      {career.ai.offers.length}
+                    </span>
+                  ) : null}
+                  <ChevronsRight className="size-4 text-muted-foreground" />
+                </Link>
               ))}
             </div>
           </div>
