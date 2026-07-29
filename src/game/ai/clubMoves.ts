@@ -9,7 +9,9 @@ import type {
   GameDate,
   GameEvent,
   Player,
+  SquadRole,
 } from "../types";
+
 import { categoryLabel, type CategoryCode, type Club } from "../world";
 import { requiredOverall } from "./evaluation";
 
