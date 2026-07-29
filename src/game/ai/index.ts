@@ -9,5 +9,12 @@ export * from "./evaluation";
 export * from "./squad";
 export * from "./state";
 export * from "./clubMoves";
+export * from "./market";
+export * from "./reputation";
+export * from "./agents";
+export * from "./offers";
+export * from "./trials";
+export * from "./nationalTeam";
 export * from "./decisions";
 export * from "./headlines";
+
