@@ -132,6 +132,20 @@ function migrateCareer(career: Career): Career | null {
     next = { ...next, ai: createCareerAi(next.player) };
   }
 
+  // v4 -> v5: negotiations, agents and national teams.
+  if (!Array.isArray(next.ai.offers)) {
+    next = {
+      ...next,
+      ai: {
+        ...next.ai,
+        offers: [],
+        agent: next.ai.agent ?? null,
+        lastTrialWeek: next.ai.lastTrialWeek ?? -99,
+        nationalTeamLevel: next.ai.nationalTeamLevel ?? null,
+      },
+    };
+  }
+
   // Future migrations chain here.
   return { ...next, version: SAVE_VERSION };
 

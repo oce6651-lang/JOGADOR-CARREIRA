@@ -13,6 +13,7 @@ import {
   decayMorale,
   randomOpponentStrength,
   roleLabel,
+  expireOffers,
   runCareerReview,
   selectionProfile,
   shouldReview,
@@ -417,6 +418,11 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       }),
     );
   }
+
+  /* --- pending offers -------------------------------------------------- */
+  const expired = expireOffers(ai, nextDate, timeline.elapsedWeeks);
+  ai = expired.ai;
+  events.push(...expired.events);
 
   /* --- career AI ------------------------------------------------------ */
   let categoryChange: string | undefined;
