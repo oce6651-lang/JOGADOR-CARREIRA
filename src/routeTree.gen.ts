@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
+import { Route as NegociacoesRouteImport } from './routes/negociacoes'
 import { Route as MundoRouteImport } from './routes/mundo'
 import { Route as JogadorRouteImport } from './routes/jogador'
 import { Route as CreditosRouteImport } from './routes/creditos'
@@ -29,6 +30,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const NovoJogoRoute = NovoJogoRouteImport.update({
   id: '/novo-jogo',
   path: '/novo-jogo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NegociacoesRoute = NegociacoesRouteImport.update({
+  id: '/negociacoes',
+  path: '/negociacoes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MundoRoute = MundoRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
   '/mundo': typeof MundoRouteWithChildren
+  '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo/': typeof MundoIndexRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
+  '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo': typeof MundoIndexRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/creditos': typeof CreditosRoute
   '/jogador': typeof JogadorRoute
   '/mundo': typeof MundoRouteWithChildren
+  '/negociacoes': typeof NegociacoesRoute
   '/novo-jogo': typeof NovoJogoRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/mundo/': typeof MundoIndexRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/jogador'
     | '/mundo'
+    | '/negociacoes'
     | '/novo-jogo'
     | '/sitemap.xml'
     | '/mundo/'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/creditos'
     | '/jogador'
+    | '/negociacoes'
     | '/novo-jogo'
     | '/sitemap.xml'
     | '/mundo'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/jogador'
     | '/mundo'
+    | '/negociacoes'
     | '/novo-jogo'
     | '/sitemap.xml'
     | '/mundo/'
@@ -165,6 +177,7 @@ export interface RootRouteChildren {
   CreditosRoute: typeof CreditosRoute
   JogadorRoute: typeof JogadorRoute
   MundoRoute: typeof MundoRouteWithChildren
+  NegociacoesRoute: typeof NegociacoesRoute
   NovoJogoRoute: typeof NovoJogoRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -183,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/novo-jogo'
       fullPath: '/novo-jogo'
       preLoaderRoute: typeof NovoJogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/negociacoes': {
+      id: '/negociacoes'
+      path: '/negociacoes'
+      fullPath: '/negociacoes'
+      preLoaderRoute: typeof NegociacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mundo': {
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreditosRoute: CreditosRoute,
   JogadorRoute: JogadorRoute,
   MundoRoute: MundoRouteWithChildren,
+  NegociacoesRoute: NegociacoesRoute,
   NovoJogoRoute: NovoJogoRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
