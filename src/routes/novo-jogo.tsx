@@ -19,9 +19,12 @@ import {
   FEET,
   MAX_START_AGE,
   MIN_START_AGE,
+  MIN_START_YEAR,
   NATIONALITIES,
   POSITIONS,
+  maxStartYear,
 } from "@/game/constants";
+
 import { useGame } from "@/game/GameProvider";
 import type { Foot, PositionCode } from "@/game/types";
 
