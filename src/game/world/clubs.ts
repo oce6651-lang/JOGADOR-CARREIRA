@@ -127,3 +127,13 @@ export const FINANCE_WAGE_FACTOR: Record<FinanceLevel, number> = {
   rich: 1.35,
   elite: 1.9,
 };
+
+/** Human label for a 1-100 reputation score. */
+export function reputationLabel(reputation: number) {
+  if (reputation >= 90) return "Mundial";
+  if (reputation >= 78) return "Continental";
+  if (reputation >= 64) return "Nacional";
+  if (reputation >= 48) return "Regional";
+  if (reputation >= 32) return "Estadual";
+  return "Local";
+}
