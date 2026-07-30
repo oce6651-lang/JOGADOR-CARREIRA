@@ -19,9 +19,12 @@ import {
   FEET,
   MAX_START_AGE,
   MIN_START_AGE,
+  MIN_START_YEAR,
   NATIONALITIES,
   POSITIONS,
+  maxStartYear,
 } from "@/game/constants";
+
 import { useGame } from "@/game/GameProvider";
 import type { Foot, PositionCode } from "@/game/types";
 
@@ -50,12 +53,35 @@ const nameField = z
   .min(2, "Mínimo de 2 caracteres")
   .max(30, "Máximo de 30 caracteres");
 
+/** Month/day are cosmetic — generated so the player only picks the age. */
+function generateBirthDate(startYear: number, age: number) {
+  const month = Math.floor(Math.random() * 12);
+  const day = 1 + Math.floor(Math.random() * 28);
+  const year = startYear - age;
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
 function NewGamePage() {
   const navigate = useNavigate();
   const { startNewCareer } = useGame();
 
+  const years = useMemo(() => {
+    const last = maxStartYear();
+    return Array.from({ length: last - MIN_START_YEAR + 1 }, (_, i) => last - i);
+  }, []);
+  const ages = useMemo(
+    () =>
+      Array.from(
+        { length: MAX_START_AGE - MIN_START_AGE + 1 },
+        (_, i) => MIN_START_AGE + i,
+      ),
+    [],
+  );
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [startYear, setStartYear] = useState(maxStartYear());
+  const [startAge, setStartAge] = useState(15);
   const [birthDate, setBirthDate] = useState("");
   const [nationality, setNationality] = useState("BRA");
   const [position, setPosition] = useState<PositionCode>("ST");
@@ -69,33 +95,20 @@ function NewGamePage() {
         lastName: nameField,
         birthDate: z
           .string()
-          .min(1, "Informe a data de nascimento")
-          .refine((value) => !Number.isNaN(Date.parse(value)), "Data inválida")
-          .refine((value) => {
-            const age = ageAt(value, new Date().toISOString().slice(0, 10));
-            return age >= MIN_START_AGE && age <= MAX_START_AGE;
-          }, `A idade deve estar entre ${MIN_START_AGE} e ${MAX_START_AGE} anos`),
-        nationality: z.string().min(1),
-        position: z.string().min(1),
-        foot: z.string().min(1),
+          .refine(
+            (value) => !value || !Number.isNaN(Date.parse(value)),
+            "Data inválida",
+          ),
       }),
     [],
   );
 
-  const age = birthDate
-    ? ageAt(birthDate, new Date().toISOString().slice(0, 10))
-    : null;
+  const resolvedBirthDate = birthDate || generateBirthDate(startYear, startAge);
+  const age = birthDate ? ageAt(birthDate, `${startYear}-01-08`) : startAge;
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    const result = schema.safeParse({
-      firstName,
-      lastName,
-      birthDate,
-      nationality,
-      position,
-      foot,
-    });
+    const result = schema.safeParse({ firstName, lastName, birthDate });
 
     if (!result.success) {
       const next: Record<string, string> = {};
@@ -106,10 +119,26 @@ function NewGamePage() {
       return;
     }
 
+    if (age < MIN_START_AGE || age > MAX_START_AGE) {
+      setErrors({
+        birthDate: `A idade deve estar entre ${MIN_START_AGE} e ${MAX_START_AGE} anos`,
+      });
+      return;
+    }
+
     setErrors({});
-    startNewCareer({ firstName, lastName, birthDate, nationality, position, foot });
+    startNewCareer({
+      firstName,
+      lastName,
+      birthDate: resolvedBirthDate,
+      nationality,
+      position,
+      foot,
+      startYear,
+    });
     navigate({ to: "/carreira" });
   }
+
 
   return (
     <GameShell>
@@ -146,13 +175,55 @@ function NewGamePage() {
             />
           </Field>
 
+          <Field label="Ano de início" hint="O mundo se adapta à época escolhida.">
+            <Select
+              value={String(startYear)}
+              onValueChange={(value) => setStartYear(Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {years.map((year) => (
+                  <SelectItem key={year} value={String(year)}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
           <Field
-            label="Data de nascimento"
+            label="Idade inicial"
+            hint={`Permitido: ${MIN_START_AGE} a ${MAX_START_AGE} anos`}
+          >
+            <Select
+              value={String(startAge)}
+              onValueChange={(value) => {
+                setStartAge(Number(value));
+                setBirthDate("");
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {ages.map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value} anos
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field
+            label="Data de nascimento (opcional)"
             error={errors.birthDate}
             hint={
-              age !== null && !Number.isNaN(age)
-                ? `${age} anos`
-                : `Idade permitida: ${MIN_START_AGE} a ${MAX_START_AGE} anos`
+              birthDate
+                ? `${age} anos no início da carreira`
+                : "Deixe em branco para gerar automaticamente."
             }
           >
             <Input
@@ -161,6 +232,7 @@ function NewGamePage() {
               onChange={(e) => setBirthDate(e.target.value)}
             />
           </Field>
+
 
           <Field label="Nacionalidade">
             <Select value={nationality} onValueChange={setNationality}>

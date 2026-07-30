@@ -78,7 +78,12 @@ export interface CareerTimeline {
   elapsedWeeks: number;
   /** Seasons already completed. */
   completedSeasons: number;
+  /** 0-indexed month the season starts in (country dependent). */
+  seasonStartMonth: number;
+  /** Country code driving the calendar (BRA = Jan-Dec, ENG = Aug-May). */
+  calendarCountry: string;
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Attributes                                                          */

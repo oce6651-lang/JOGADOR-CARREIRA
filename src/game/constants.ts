@@ -6,12 +6,17 @@ export const SAVE_VERSION = 5;
 /** Weeks in one in-game season. */
 export const WEEKS_PER_SEASON = 52;
 
-/** A season starts on the first week of July. */
-export const SEASON_START_MONTH = 6; // 0-indexed: July
-export const SEASON_START_DAY = 1;
+/** Age range allowed when creating an athlete. */
+export const MIN_START_AGE = 7;
+export const MAX_START_AGE = 50;
 
-export const MIN_START_AGE = 11;
-export const MAX_START_AGE = 20;
+/** Earliest season a career can start in. */
+export const MIN_START_YEAR = 1930;
+
+export function maxStartYear(now = new Date()) {
+  return now.getUTCFullYear();
+}
+
 
 export const POSITIONS: PositionDefinition[] = [
   { code: "GK", label: "Goleiro", group: "goalkeeper" },

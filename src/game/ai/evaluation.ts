@@ -12,6 +12,9 @@ import { categoryOrder, type CategoryCode } from "../world";
 
 /** Overall a fully average player of that category is expected to have. */
 const CATEGORY_BASE: Record<CategoryCode, number> = {
+  U7: 8,
+  U8: 10,
+  U9: 13,
   U11: 18,
   U13: 24,
   U15: 31,
@@ -19,10 +22,14 @@ const CATEGORY_BASE: Record<CategoryCode, number> = {
   U20: 50,
   U23: 56,
   PRO: 60,
+  VET: 54,
 };
 
 /** How much the club reputation raises the bar inside a category. */
 const REPUTATION_WEIGHT: Record<CategoryCode, number> = {
+  U7: 0.08,
+  U8: 0.1,
+  U9: 0.12,
   U11: 0.16,
   U13: 0.18,
   U15: 0.22,
@@ -30,7 +37,9 @@ const REPUTATION_WEIGHT: Record<CategoryCode, number> = {
   U20: 0.3,
   U23: 0.32,
   PRO: 0.36,
+  VET: 0.3,
 };
+
 
 /** Minimum overall expected to hold a place in a category at a given club. */
 export function requiredOverall(category: CategoryCode, clubReputation: number) {
@@ -89,6 +98,9 @@ export function ageScore(age: number, category: CategoryCode) {
 }
 
 const EXPECTED_AGE: Record<CategoryCode, number> = {
+  U7: 7,
+  U8: 8,
+  U9: 9,
   U11: 11,
   U13: 13,
   U15: 15,
@@ -96,7 +108,9 @@ const EXPECTED_AGE: Record<CategoryCode, number> = {
   U20: 19,
   U23: 22,
   PRO: 26,
+  VET: 34,
 };
+
 
 /** 0 .. 1 — how much untapped potential the AI still believes in. */
 export function potentialScore(player: Player, overall: number, age: number) {
