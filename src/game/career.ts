@@ -37,17 +37,32 @@ export interface NewCareerInput {
   nationality: string;
   position: PositionCode;
   foot: Foot;
+  /** Season the career starts in (1930 .. current year). */
+  startYear?: number;
 }
 
-/** The season the career starts in (July-based football season). */
-export function currentSeasonYear(now = new Date()): number {
-  return now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+/** The season the career starts in, respecting the calendar of the country. */
+export function currentSeasonYear(now = new Date(), startMonth = 0): number {
+  if (startMonth === 0) return now.getUTCFullYear();
+  return now.getUTCMonth() >= startMonth ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+}
+
+/** Athletes follow the calendar of their own country until they move abroad. */
+function calendarCountryFor(nationality: string) {
+  return CLUBS.some((club) => club.country === nationality) ? nationality : "BRA";
 }
 
 export function createCareer(input: NewCareerInput, now = Date.now()): Career {
-  const timeline = createTimeline(currentSeasonYear(new Date(now)));
+  const country = calendarCountryFor(input.nationality);
+  const startMonth = seasonStartMonthFor(country);
+  const seasonYear = clampWorldYear(
+    input.startYear ?? currentSeasonYear(new Date(now), startMonth),
+    new Date(now),
+  );
+  const timeline = createTimeline(seasonYear, country);
   const player = createPlayer(input, timeline.current.date);
   const age = ageAt(player.birthDate, timeline.current.date);
+
 
   const events: GameEvent[] = [
     createEvent(
