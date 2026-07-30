@@ -20,8 +20,10 @@ export function isSplitYearCalendar(startMonth: number) {
 }
 
 export function seasonStartDate(seasonYear: number, startMonth: number): Date {
-  return new Date(Date.UTC(seasonYear, startMonth, SEASON_START_DAY));
+  const month = Number.isFinite(startMonth) ? startMonth : DEFAULT_SEASON_START_MONTH;
+  return new Date(Date.UTC(seasonYear, month, SEASON_START_DAY));
 }
+
 
 export function createTimeline(
   seasonYear: number,
