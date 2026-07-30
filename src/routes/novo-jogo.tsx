@@ -175,13 +175,55 @@ function NewGamePage() {
             />
           </Field>
 
+          <Field label="Ano de início" hint="O mundo se adapta à época escolhida.">
+            <Select
+              value={String(startYear)}
+              onValueChange={(value) => setStartYear(Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {years.map((year) => (
+                  <SelectItem key={year} value={String(year)}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
           <Field
-            label="Data de nascimento"
+            label="Idade inicial"
+            hint={`Permitido: ${MIN_START_AGE} a ${MAX_START_AGE} anos`}
+          >
+            <Select
+              value={String(startAge)}
+              onValueChange={(value) => {
+                setStartAge(Number(value));
+                setBirthDate("");
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {ages.map((value) => (
+                  <SelectItem key={value} value={String(value)}>
+                    {value} anos
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field
+            label="Data de nascimento (opcional)"
             error={errors.birthDate}
             hint={
-              age !== null && !Number.isNaN(age)
-                ? `${age} anos`
-                : `Idade permitida: ${MIN_START_AGE} a ${MAX_START_AGE} anos`
+              birthDate
+                ? `${age} anos no início da carreira`
+                : "Deixe em branco para gerar automaticamente."
             }
           >
             <Input
@@ -190,6 +232,7 @@ function NewGamePage() {
               onChange={(e) => setBirthDate(e.target.value)}
             />
           </Field>
+
 
           <Field label="Nacionalidade">
             <Select value={nationality} onValueChange={setNationality}>
