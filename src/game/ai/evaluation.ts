@@ -98,6 +98,9 @@ export function ageScore(age: number, category: CategoryCode) {
 }
 
 const EXPECTED_AGE: Record<CategoryCode, number> = {
+  U7: 7,
+  U8: 8,
+  U9: 9,
   U11: 11,
   U13: 13,
   U15: 15,
@@ -105,7 +108,9 @@ const EXPECTED_AGE: Record<CategoryCode, number> = {
   U20: 19,
   U23: 22,
   PRO: 26,
+  VET: 34,
 };
+
 
 /** 0 .. 1 — how much untapped potential the AI still believes in. */
 export function potentialScore(player: Player, overall: number, age: number) {
