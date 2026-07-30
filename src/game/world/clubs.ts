@@ -1,4 +1,5 @@
 import { BRAZIL_CLUBS, type ClubRow } from "./data/brazil-clubs";
+import { INTERNATIONAL_CLUBS } from "./data/international-clubs";
 import type { CategoryCode, Club, FinanceLevel } from "./types";
 
 /**
@@ -16,11 +17,14 @@ function financeFor(reputation: number): FinanceLevel {
 
 /** Bigger clubs run the full youth ladder; smaller ones only the top rungs. */
 function categoriesFor(reputation: number): CategoryCode[] {
-  if (reputation >= 70) return ["U11", "U13", "U15", "U17", "U20", "U23", "PRO"];
-  if (reputation >= 55) return ["U13", "U15", "U17", "U20", "PRO"];
-  if (reputation >= 42) return ["U15", "U17", "U20", "PRO"];
-  if (reputation >= 30) return ["U17", "U20", "PRO"];
-  return ["U20", "PRO"];
+  if (reputation >= 75)
+    return ["U7", "U8", "U9", "U11", "U13", "U15", "U17", "U20", "U23", "PRO", "VET"];
+  if (reputation >= 62)
+    return ["U9", "U11", "U13", "U15", "U17", "U20", "U23", "PRO", "VET"];
+  if (reputation >= 50) return ["U11", "U13", "U15", "U17", "U20", "U23", "PRO", "VET"];
+  if (reputation >= 38) return ["U13", "U15", "U17", "U20", "PRO", "VET"];
+  if (reputation >= 28) return ["U15", "U17", "U20", "PRO", "VET"];
+  return ["U17", "U20", "PRO", "VET"];
 }
 
 function academyFor(reputation: number, foundedYear: number) {
@@ -65,7 +69,12 @@ function buildClub(row: ClubRow, country: string): Club {
   };
 }
 
-export const CLUBS: Club[] = BRAZIL_CLUBS.map((row) => buildClub(row, "BRA"));
+export const CLUBS: Club[] = [
+  ...BRAZIL_CLUBS.map((row) => buildClub(row, "BRA")),
+  ...INTERNATIONAL_CLUBS.flatMap(({ country, rows }) =>
+    rows.map((row) => buildClub(row, country)),
+  ),
+];
 
 const BY_ID = new Map(CLUBS.map((club) => [club.id, club]));
 const BY_SLUG = new Map(CLUBS.map((club) => [club.slug, club]));
@@ -110,11 +119,11 @@ export const FINANCE_LABELS: Record<FinanceLevel, string> = {
   elite: "Milionário",
 };
 
-export function reputationLabel(reputation: number) {
-  if (reputation >= 85) return "Mundial";
-  if (reputation >= 70) return "Continental";
-  if (reputation >= 55) return "Nacional";
-  if (reputation >= 40) return "Regional";
-  if (reputation >= 28) return "Estadual";
-  return "Local";
-}
+/** Multiplier applied to wages by how healthy the club's finances are. */
+export const FINANCE_WAGE_FACTOR: Record<FinanceLevel, number> = {
+  insolvent: 0.55,
+  struggling: 0.78,
+  stable: 1,
+  rich: 1.35,
+  elite: 1.9,
+};

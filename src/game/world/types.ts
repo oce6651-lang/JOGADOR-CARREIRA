@@ -12,14 +12,27 @@ import type { EntityId } from "../types";
 /* Categories                                                          */
 /* ------------------------------------------------------------------ */
 
-export type CategoryCode = "U11" | "U13" | "U15" | "U17" | "U20" | "U23" | "PRO";
+export type CategoryCode =
+  | "U7"
+  | "U8"
+  | "U9"
+  | "U11"
+  | "U13"
+  | "U15"
+  | "U17"
+  | "U20"
+  | "U23"
+  | "PRO"
+  | "VET";
 
 export interface CategoryDefinition {
   code: CategoryCode;
   label: string;
   /** Maximum age allowed (PRO has none). */
   maxAge?: number;
-  /** Ordering from youngest to professional. */
+  /** Minimum age allowed to be registered in the category. */
+  minAge?: number;
+  /** Ordering from youngest to veteran. */
   order: number;
 }
 
@@ -42,6 +55,15 @@ export interface Country {
   states: State[];
   /** False for countries that are only scaffolded for the future. */
   playable: boolean;
+  /**
+   * Month (0-indexed) the domestic season kicks off in. Brazil and Argentina
+   * run a calendar year (January), most of Europe starts in July.
+   */
+  seasonStartMonth: number;
+  /** Currency symbol used when showing wages of clubs from this country. */
+  currency: string;
+  /** Rough wage power of the league versus Brazil (1 = Brazilian level). */
+  wageIndex: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -115,6 +137,8 @@ export interface Competition {
   tier?: number;
   /** Minimum club reputation usually required to take part. */
   reputationFloor: number;
+  /** Year the competition was first played — the world adapts to the era. */
+  foundedYear: number;
   status: CompetitionStatus;
   colors: ClubColors;
   clubIds: EntityId[];
