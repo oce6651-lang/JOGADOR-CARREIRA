@@ -13,7 +13,7 @@ import {
   type TrialOpportunity,
 } from "./ai";
 import { createRandom } from "./rng";
-import { categoryLabel } from "./world";
+import { CLUBS, categoryLabel, clampWorldYear } from "./world";
 import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
