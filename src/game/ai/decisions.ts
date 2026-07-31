@@ -11,7 +11,10 @@ import type {
 } from "../types";
 import {
   categoryForAge,
+  categoryForSeason,
   categoryLabel,
+  categoryOrder,
+  sortCategories,
   getCategory,
   getClub,
   nextCategory,
@@ -199,24 +202,46 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
     return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(promotion));
   }
 
-  /* --- release / stay --------------------------------------------- */
-  const maxAge = getCategory(situation.category)?.maxAge;
-  const overAge = maxAge !== undefined && age > maxAge;
-  const failing = evaluation.score <= -34 && evaluation.gap <= -6;
+  /* --- seasonal category migration --------------------------------- */
+  const seasonCategory = categoryForSeason(player.birthDate, date.seasonYear);
+  const outgrown =
+    situation.category !== "PRO" &&
+    categoryOrder(seasonCategory) > categoryOrder(situation.category);
 
-  if ((seasonEnd && overAge) || failing) {
-    const canStay = evaluation.score > -18 && !overAge;
-    if (!canStay) {
-      const released = releaseFromClub(
-        player,
-        ai,
-        date,
-        overAge
-          ? `Idade acima do ${categoryLabel(situation.category)} sem espaço na categoria seguinte.`
-          : "Desempenho abaixo do exigido pela comissão técnica.",
+  if (outgrown) {
+    const club = getClub(situation.clubId);
+    const ready = evaluation.score >= -22 || evaluation.potential >= 0.45;
+    const target = club ? plannedCategoryFor(club, seasonCategory, ready) : undefined;
+
+    if (target && ready) {
+      const moved = changeCategory(player, ai, target, date, true);
+      return finish(
+        moved.player,
+        moved.ai,
+        [...events, ...moved.events],
+        categoryLabel(target),
       );
-      return finish(released.player, released.ai, [...events, ...released.events]);
     }
+
+    const released = releaseFromClub(
+      player,
+      ai,
+      date,
+      `Não pode mais atuar no ${categoryLabel(situation.category)} e o clube não tem espaço na categoria seguinte.`,
+    );
+    return finish(released.player, released.ai, [...events, ...released.events]);
+  }
+
+  /* --- release / stay --------------------------------------------- */
+  const failing = evaluation.score <= -34 && evaluation.gap <= -6;
+  if (failing && evaluation.score <= -18) {
+    const released = releaseFromClub(
+      player,
+      ai,
+      date,
+      "Desempenho abaixo do exigido pela comissão técnica.",
+    );
+    return finish(released.player, released.ai, [...events, ...released.events]);
   }
 
   /* --- loan ------------------------------------------------------- */
@@ -335,6 +360,24 @@ function evaluatePromotion(
 
   if (dominating && readyForTarget) return target;
   return undefined;
+}
+
+/**
+ * Where the club plans to register an athlete who outgrew his category.
+ * When he is not ready for the first team the U23 is the natural bridge.
+ */
+export function plannedCategoryFor(
+  club: Club,
+  seasonCategory: CategoryCode,
+  ready: boolean,
+): CategoryCode | undefined {
+  const sorted = sortCategories(club.categories);
+  const natural = sorted.find(
+    (code) => code !== "U23" && categoryOrder(code) >= categoryOrder(seasonCategory),
+  );
+  if (natural && natural !== "PRO") return natural;
+  if (!ready && club.categories.includes("U23")) return "U23";
+  return natural ?? (club.categories.includes("PRO") ? "PRO" : undefined);
 }
 
 function nextAvailableCategory(club: Club, current: CategoryCode) {
