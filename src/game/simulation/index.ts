@@ -419,7 +419,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         age: newAge,
         fitness: ai.fitness,
         injuryWeeks: player.history.injuries
-          .filter((injury) => injury.date.seasonYear >= nextDate.seasonYear - 1)
+          .filter((injury) => injury.from.seasonYear >= nextDate.seasonYear - 1)
           .reduce((acc, injury) => acc + injury.weeksOut, 0),
         strength: player.attributes.physical.strength,
       },

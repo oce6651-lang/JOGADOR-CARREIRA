@@ -232,7 +232,13 @@ export function declineCareerOffer(career: Career, offerId: string): Career {
 /** Trials the athlete can attend right now (free agents only). */
 export function careerTrials(career: Career): TrialOpportunity[] {
   if (career.ai.club) return [];
-  return trialOpportunities(career.player, career.ai, playerAge(career), playerOverall(career));
+  return trialOpportunities(
+    career.player,
+    career.ai,
+    playerAge(career),
+    playerOverall(career),
+    career.timeline.current.seasonYear,
+  );
 }
 
 /** One trial per week — the athlete needs time to travel and recover. */
