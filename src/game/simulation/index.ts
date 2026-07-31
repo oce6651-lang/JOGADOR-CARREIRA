@@ -1,6 +1,7 @@
 import { advanceWeek, ageAt } from "../calendar";
 import { WEEKS_PER_SEASON } from "../constants";
 import { appendEvents, createEvent } from "../events";
+import { annualGrowth, growthNote } from "../player/growth";
 import { createStatLine, mergeStatLines } from "../player/history";
 import { calculateOverall } from "../player/overall";
 import { addStatus, hasStatus, removeStatus } from "../player/status";
@@ -412,9 +413,22 @@ function simulateSingleWeek(career: Career): WeekOutcome {
   const seasonSummaries: SeasonSummary[] = [];
 
   if (newAge > age) {
+    const growth = annualGrowth(
+      player,
+      {
+        age: newAge,
+        fitness: ai.fitness,
+        injuryWeeks: player.history.injuries
+          .filter((injury) => injury.date.seasonYear >= nextDate.seasonYear - 1)
+          .reduce((acc, injury) => acc + injury.weeksOut, 0),
+        strength: player.attributes.physical.strength,
+      },
+      random,
+    );
+    player = { ...player, heightCm: growth.heightCm, weightKg: growth.weightKg };
     events.push(
       createEvent("birthday", nextDate, `${newAge} anos`, {
-        description: "A idade é calculada automaticamente pela data de nascimento.",
+        description: growthNote(growth),
       }),
     );
   }
