@@ -16,8 +16,8 @@ export const CATEGORIES: CategoryDefinition[] = [
   { code: "U20", label: "Sub-20", maxAge: 20, minAge: 15, order: 7 },
   { code: "U23", label: "Sub-23", maxAge: 23, minAge: 16, order: 8 },
   { code: "PRO", label: "Profissional", minAge: 16, order: 9 },
-  { code: "VET", label: "Veterano", minAge: 34, order: 10 },
 ];
+
 
 const BY_CODE = new Map<CategoryCode, CategoryDefinition>(
   CATEGORIES.map((category) => [category.code, category]),
