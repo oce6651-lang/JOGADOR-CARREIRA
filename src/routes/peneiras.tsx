@@ -7,7 +7,7 @@ import { ClubCrest } from "@/components/game/world/ClubCrest";
 import { Button } from "@/components/ui/button";
 import { canAttendTrial, careerTrials, playerOverall } from "@/game/career";
 import { useGame } from "@/game/GameProvider";
-import { categoryLabel } from "@/game/world";
+import { TRIAL_DIFFICULTY_LABELS, TRIAL_ORIGIN_LABELS, offerCategoryLabel } from "@/game/ai";
 import type { TrialOpportunity } from "@/game/ai";
 
 export const Route = createFileRoute("/peneiras")({
@@ -71,7 +71,7 @@ function TrialsPage() {
       <PageHeader
         eyebrow={`Overall ${playerOverall(career)} · Reputação ${Math.round(career.ai.reputation)}`}
         title="Peneiras"
-        description="Uma peneira por semana. Clubes maiores exigem mais, mas abrem portas muito melhores."
+        description="Uma peneira por semana. Quase todas são de clubes do seu país — vagas no exterior só aparecem em situações especiais."
       />
 
       {message ? (
@@ -110,9 +110,22 @@ function TrialsPage() {
                   {opportunity.club.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {categoryLabel(opportunity.category)} · {opportunity.club.city} · reputação{" "}
+                  {opportunity.club.city}/{opportunity.club.country} · reputação{" "}
                   {opportunity.club.reputation}
                 </p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5 text-[10px] uppercase tracking-[0.15em]">
+                  <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 font-semibold text-primary">
+                    Categoria: {offerCategoryLabel(opportunity.category, opportunity.club.country)}
+                  </span>
+                  <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
+                    Dificuldade: {TRIAL_DIFFICULTY_LABELS[opportunity.difficulty]}
+                  </span>
+                  {opportunity.international ? (
+                    <span className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 font-semibold text-accent">
+                      {TRIAL_ORIGIN_LABELS[opportunity.origin]}
+                    </span>
+                  ) : null}
+                </div>
               </div>
               <div className="w-32">
                 <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
