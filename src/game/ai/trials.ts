@@ -2,17 +2,61 @@ import { createEvent } from "../events";
 import type { Random } from "../rng";
 import { chance } from "../rng";
 import type { CareerAi, ClubOffer, GameDate, GameEvent, Player } from "../types";
-import { categoryForAge, categoryLabel, type CategoryCode, type Club } from "../world";
+import { categoryForSeason, categoryLabel, type CategoryCode, type Club } from "../world";
 import { levelGap } from "./evaluation";
-import { entryCategoryFor, reachableClubs } from "./market";
+import {
+  entryCategoryFor,
+  homeCountryFor,
+  plannedEntryCategory,
+  reachableClubs,
+} from "./market";
 import { addOffer, buildOffer } from "./offers";
 
 /**
  * Career AI — trials (peneiras).
  *
- * A free agent doesn't wait for luck: he picks a club, shows up and is
- * evaluated. Approval produces a contract proposal he still has to negotiate.
+ * Trials are hard and local. A free agent knocks on the doors of clubs from
+ * his own country; only genuinely special situations (level, agent contacts,
+ * invitations, international tournaments) open a door abroad.
  */
+
+export type TrialDifficulty = "regional" | "estadual" | "nacional" | "elite" | "mundial";
+
+export const TRIAL_DIFFICULTY_LABELS: Record<TrialDifficulty, string> = {
+  regional: "Regional",
+  estadual: "Estadual",
+  nacional: "Nacional",
+  elite: "Elite",
+  mundial: "Mundial",
+};
+
+/** How much harder each tier is (multiplies the approval chance). */
+const DIFFICULTY_FACTOR: Record<TrialDifficulty, number> = {
+  regional: 1,
+  estadual: 0.78,
+  nacional: 0.55,
+  elite: 0.34,
+  mundial: 0.2,
+};
+
+export function trialDifficulty(clubReputation: number): TrialDifficulty {
+  if (clubReputation >= 82) return "mundial";
+  if (clubReputation >= 68) return "elite";
+  if (clubReputation >= 52) return "nacional";
+  if (clubReputation >= 36) return "estadual";
+  return "regional";
+}
+
+/** Why a foreign club is willing to look at the athlete at all. */
+export type TrialOrigin = "domestic" | "level" | "agent" | "invitation" | "tournament";
+
+export const TRIAL_ORIGIN_LABELS: Record<TrialOrigin, string> = {
+  domestic: "Peneira aberta",
+  level: "Observado pelo alto nível",
+  agent: "Indicação do empresário",
+  invitation: "Convite direto",
+  tournament: "Torneio internacional",
+};
 
 export interface TrialOpportunity {
   club: Club;
@@ -21,8 +65,16 @@ export interface TrialOpportunity {
   required: number;
   /** Estimated approval chance (0-1). */
   successChance: number;
+  difficulty: TrialDifficulty;
+  origin: TrialOrigin;
+  international: boolean;
   /** Cost of attending — distance/logistics, paid with morale. */
   moraleCost: number;
+}
+
+/** Projected level the scouts actually see. */
+function projectedLevel(player: Player, ai: CareerAi, overall: number) {
+  return overall + Math.max(0, player.hidden.potential - overall) * 0.3 + ai.reputation * 0.06;
 }
 
 export function trialOpportunities(
@@ -30,37 +82,92 @@ export function trialOpportunities(
   ai: CareerAi,
   age: number,
   overall: number,
+  seasonYear: number,
 ): TrialOpportunity[] {
-  const wanted = categoryForAge(age);
+  const wanted = categoryForSeason(player.birthDate, seasonYear);
+  const home = homeCountryFor(player, ai);
+  const projected = projectedLevel(player, ai, overall);
+
+  const agentReach = ai.agent ? ai.agent.quality : 0;
+  const invited = new Set(
+    ai.offers.filter((offer) => offer.kind === "trial").map((offer) => offer.clubId),
+  );
+
   const clubs = reachableClubs(overall, player.hidden.potential, wanted, ai.reputation);
 
-  return clubs
+  const opportunities = clubs
     .map((club) => {
-      const category = entryCategoryFor(club, wanted);
+      const international = club.country !== home;
+      const origin = originFor({
+        international,
+        invited: invited.has(club.id),
+        projected,
+        agentReach,
+        reputation: ai.reputation,
+        clubReputation: club.reputation,
+      });
+      if (!origin) return null;
+
+      const category = plannedEntryCategory(club, entryCategoryFor(club, wanted), projected, age);
       const gap = levelGap(overall, category, club.reputation);
+      const difficulty = trialDifficulty(club.reputation);
+
+      const raw =
+        0.24 +
+        gap * 0.028 +
+        (player.hidden.potential - overall) * 0.004 +
+        (player.attributes.mental.determination - 50) * 0.0025 +
+        (ai.fitness - 80) * 0.002 +
+        ai.reputation * 0.0022 +
+        agentReach * 0.0012;
+
       const successChance = Math.max(
-        0.05,
-        Math.min(
-          0.95,
-          0.42 +
-            gap * 0.05 +
-            (player.hidden.potential - overall) * 0.008 +
-            (player.attributes.mental.determination - 50) * 0.004 +
-            (ai.fitness - 80) * 0.004 +
-            ai.reputation * 0.003 +
-            (ai.agent ? ai.agent.quality * 0.0015 : 0),
-        ),
+        0.02,
+        Math.min(0.72, raw * DIFFICULTY_FACTOR[difficulty] + (international ? -0.04 : 0)),
       );
+
       return {
         club,
         category,
         required: Math.round(overall - gap),
         successChance,
-        moraleCost: club.reputation > 70 ? 6 : 4,
-      };
+        difficulty,
+        origin,
+        international,
+        moraleCost: international ? 9 : club.reputation > 70 ? 6 : 4,
+      } satisfies TrialOpportunity;
     })
-    .sort((a, b) => b.club.reputation - a.club.reputation)
-    .slice(0, 12);
+    .filter((item): item is TrialOpportunity => item !== null);
+
+  const domestic = opportunities.filter((item) => !item.international);
+  const abroad = opportunities.filter((item) => item.international);
+
+  const sortByReputation = (a: TrialOpportunity, b: TrialOpportunity) =>
+    b.club.reputation - a.club.reputation;
+
+  // Almost every open trial is domestic; abroad is the exception.
+  return [
+    ...domestic.sort(sortByReputation).slice(0, 10),
+    ...abroad.sort(sortByReputation).slice(0, 3),
+  ];
+}
+
+function originFor(input: {
+  international: boolean;
+  invited: boolean;
+  projected: number;
+  agentReach: number;
+  reputation: number;
+  clubReputation: number;
+}): TrialOrigin | null {
+  if (!input.international) return "domestic";
+  if (input.invited) return "invitation";
+  if (input.projected >= 70 && input.reputation >= 35) return "level";
+  if (input.agentReach >= 60 && input.reputation >= 25 && input.clubReputation <= input.agentReach + 15) {
+    return "agent";
+  }
+  if (input.reputation >= 55 && input.clubReputation <= 60) return "tournament";
+  return null;
 }
 
 export interface TrialResult {
@@ -83,7 +190,7 @@ export function attendTrial(
   const { club, category, successChance } = opportunity;
   const events: GameEvent[] = [
     createEvent("trial", date, `Peneira no ${club.name}`, {
-      description: `Avaliação para o ${categoryLabel(category)}.`,
+      description: `Avaliação para o ${categoryLabel(category)} · dificuldade ${TRIAL_DIFFICULTY_LABELS[opportunity.difficulty]}.`,
     }),
   ];
 
@@ -117,7 +224,11 @@ export function attendTrial(
   });
 
   next = addOffer(
-    { ...next, morale: Math.min(100, next.morale + 10), reputation: Math.min(100, next.reputation + 2) },
+    {
+      ...next,
+      morale: Math.min(100, next.morale + 10),
+      reputation: Math.min(100, next.reputation + (opportunity.international ? 4 : 2)),
+    },
     offer,
   );
 
