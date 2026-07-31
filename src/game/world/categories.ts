@@ -53,19 +53,48 @@ export function isFormationCategory(code: CategoryCode) {
   return FORMATION_CATEGORIES.includes(code);
 }
 
-/** Sorts any list of categories from youngest to veteran. */
+/** Sorts any list of categories from youngest to professional. */
 export function sortCategories(codes: CategoryCode[]) {
   return [...codes].sort((a, b) => categoryOrder(a) - categoryOrder(b));
 }
 
-/** Natural category for a given age (used by trials and promotions). */
+/**
+ * U23 is never a natural age category: it is a club decision (see
+ * `isDevelopmentCategory`), used for athletes who already left the youth
+ * ladder but are not ready for the first team yet.
+ */
 export function categoryForAge(age: number): CategoryCode {
-  if (age >= 38) return "VET";
   const match = CATEGORIES.find(
-    (category) => category.maxAge !== undefined && age <= category.maxAge,
+    (category) =>
+      category.code !== "U23" && category.maxAge !== undefined && age <= category.maxAge,
   );
   return match?.code ?? "PRO";
 }
+
+/**
+ * Youth football registers athletes by the age they COMPLETE during the
+ * season's civil year, not by the age they have today. Someone who turns 18
+ * in October is already out of the Sub-17 from the first round of the season.
+ */
+export function seasonAge(birthDate: string, seasonYear: number) {
+  return seasonYear - Number(birthDate.slice(0, 4));
+}
+
+/** Category the athlete belongs to during a whole season. */
+export function categoryForSeason(birthDate: string, seasonYear: number): CategoryCode {
+  return categoryForAge(seasonAge(birthDate, seasonYear));
+}
+
+/** True while the athlete still plays inside the youth ladder. */
+export function isYouthCategory(code: CategoryCode) {
+  return code !== "PRO" && code !== "U23";
+}
+
+/** U23 — the bridge squad between the academy and the first team. */
+export function isDevelopmentCategory(code: CategoryCode) {
+  return code === "U23";
+}
+
 
 /** Can an athlete of this age legally play in that category? */
 export function isAgeEligible(code: CategoryCode, age: number) {
