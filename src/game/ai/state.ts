@@ -30,6 +30,7 @@ export function createCareerAi(player: Player): CareerAi {
     offers: [],
     agent: null,
     lastTrialWeek: -99,
+    lastApproachWeek: -99,
     nationalTeamLevel: null,
   };
 }
