@@ -182,6 +182,18 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   const situation = ai.club!;
   const events: GameEvent[] = [];
 
+  /* --- contract expiry --------------------------------------------- */
+  if (situation.contractUntilSeason < date.seasonYear) {
+    const released = releaseFromClub(
+      player,
+      ai,
+      date,
+      "O vínculo chegou ao fim sem renovação.",
+      "contractEnd",
+    );
+    return finish(released.player, released.ai, [...events, ...released.events]);
+  }
+
   const evaluation = evaluate({
     player,
     ai,
