@@ -2,8 +2,7 @@ import { CalendarClock, Handshake, TrendingUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ClubCrest } from "@/components/game/world/ClubCrest";
-import { OFFER_LABELS, TOPIC_LABELS, roleLabel, weeksLeft } from "@/game/ai";
-import { categoryLabel } from "@/game/world";
+import { OFFER_LABELS, TOPIC_LABELS, offerCategoryLabel, roleLabel, weeksLeft } from "@/game/ai";
 import { getClub } from "@/game/world";
 import type { ClubOffer, NegotiationTopic } from "@/game/types";
 
@@ -40,7 +39,10 @@ export function OfferCard({
           </p>
           <h3 className="text-display text-2xl uppercase leading-tight">{offer.clubName}</h3>
           <p className="text-xs text-muted-foreground">
-            {categoryLabel(offer.category)} · reputação {offer.clubReputation}
+            {club ? `${club.city}/${club.country}` : "Clube"} · reputação {offer.clubReputation}
+          </p>
+          <p className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-primary">
+            Categoria: {offerCategoryLabel(offer.category, club?.country)}
           </p>
         </div>
         <span className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground">
