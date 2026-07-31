@@ -18,13 +18,13 @@ function financeFor(reputation: number): FinanceLevel {
 /** Bigger clubs run the full youth ladder; smaller ones only the top rungs. */
 function categoriesFor(reputation: number): CategoryCode[] {
   if (reputation >= 75)
-    return ["U7", "U8", "U9", "U11", "U13", "U15", "U17", "U20", "U23", "PRO", "VET"];
+    return ["U7", "U8", "U9", "U11", "U13", "U15", "U17", "U20", "U23", "PRO"];
   if (reputation >= 62)
-    return ["U9", "U11", "U13", "U15", "U17", "U20", "U23", "PRO", "VET"];
-  if (reputation >= 50) return ["U11", "U13", "U15", "U17", "U20", "U23", "PRO", "VET"];
-  if (reputation >= 38) return ["U13", "U15", "U17", "U20", "PRO", "VET"];
-  if (reputation >= 28) return ["U15", "U17", "U20", "PRO", "VET"];
-  return ["U17", "U20", "PRO", "VET"];
+    return ["U9", "U11", "U13", "U15", "U17", "U20", "U23", "PRO"];
+  if (reputation >= 50) return ["U11", "U13", "U15", "U17", "U20", "U23", "PRO"];
+  if (reputation >= 38) return ["U13", "U15", "U17", "U20", "PRO"];
+  if (reputation >= 28) return ["U15", "U17", "U20", "PRO"];
+  return ["U17", "U20", "PRO"];
 }
 
 function academyFor(reputation: number, foundedYear: number) {
