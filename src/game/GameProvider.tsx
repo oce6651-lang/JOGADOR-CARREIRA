@@ -17,11 +17,14 @@ import {
   dismissCareerAgent,
   hireCareerAgent,
   negotiateCareerOffer,
+  offerCareerToClub,
+  requestCareerPromotion,
   simulateCareer,
   type NegotiationFeedback,
   type NewCareerInput,
 } from "./career";
 import type { AgentTemplate, TrialOpportunity } from "./ai";
+import type { Club } from "./world";
 import type { NegotiationTopic } from "./types";
 import type { SimulationScope } from "./simulation";
 import {
@@ -54,6 +57,10 @@ interface GameContextValue {
   declineOffer: (offerId: string) => void;
   attendTrial: (opportunity: TrialOpportunity) => boolean;
   hireAgent: (template: AgentTemplate) => void;
+  /** Agent offers the athlete to any club in the world. */
+  offerToClub: (club: Club) => { opened: boolean; message: string };
+  /** Agent asks the current club for a promotion to the next category. */
+  requestPromotion: () => { granted: boolean; message: string };
   dismissAgent: () => void;
   updateSettings: (patch: Partial<GameSettings>) => void;
 }
@@ -144,6 +151,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [updateCareer],
   );
 
+  const offerToClub = useCallback(
+    (club: Club) => {
+      if (!career) return { opened: false, message: "Carreira não carregada." };
+      const result = offerCareerToClub(career, club);
+      persist(result.career);
+      return { opened: result.opened, message: result.message };
+    },
+    [career, persist],
+  );
+
+  const requestPromotion = useCallback(() => {
+    if (!career) return { granted: false, message: "Carreira não carregada." };
+    const result = requestCareerPromotion(career);
+    persist(result.career);
+    return { granted: result.granted, message: result.message };
+  }, [career, persist]);
+
   const dismissAgent = useCallback(
     () => updateCareer((prev) => dismissCareerAgent(prev)),
     [updateCareer],
@@ -192,6 +216,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       attendTrial,
       hireAgent,
       dismissAgent,
+      offerToClub,
+      requestPromotion,
     }),
     [
       hydrated,
@@ -212,6 +238,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       attendTrial,
       hireAgent,
       dismissAgent,
+      offerToClub,
+      requestPromotion,
     ],
   );
 

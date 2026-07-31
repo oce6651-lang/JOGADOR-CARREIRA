@@ -8,12 +8,18 @@ import {
   negotiateOffer,
   trialOpportunities,
   createCareerAi,
+  assessApproach,
+  assessPromotion,
+  offerPlayerToClub,
+  requestPromotion,
+  type ApproachAssessment,
+  type PromotionRequest,
   type AgentTemplate,
   type NegotiationResult,
   type TrialOpportunity,
 } from "./ai";
 import { createRandom } from "./rng";
-import { CLUBS, categoryLabel, clampWorldYear } from "./world";
+import { CLUBS, categoryLabel, clampWorldYear, type Club } from "./world";
 import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
@@ -232,7 +238,13 @@ export function declineCareerOffer(career: Career, offerId: string): Career {
 /** Trials the athlete can attend right now (free agents only). */
 export function careerTrials(career: Career): TrialOpportunity[] {
   if (career.ai.club) return [];
-  return trialOpportunities(career.player, career.ai, playerAge(career), playerOverall(career));
+  return trialOpportunities(
+    career.player,
+    career.ai,
+    playerAge(career),
+    playerOverall(career),
+    career.timeline.current.seasonYear,
+  );
 }
 
 /** One trial per week — the athlete needs time to travel and recover. */
@@ -285,4 +297,97 @@ export function dismissCareerAgent(career: Career): Career {
       }),
     ],
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Agent work — approaching clubs and asking for promotions            */
+/* ------------------------------------------------------------------ */
+
+/** One approach per week: the agent cannot spam the whole football world. */
+export function canApproachClub(career: Career) {
+  return career.timeline.elapsedWeeks > (career.ai.lastApproachWeek ?? -99);
+}
+
+/** Odds of getting a club to even sit at the table. */
+export function approachAssessment(career: Career, club: Club): ApproachAssessment {
+  return assessApproach({
+    player: career.player,
+    ai: career.ai,
+    club,
+    overall: playerOverall(career),
+    age: playerAge(career),
+    seasonYear: career.timeline.current.seasonYear,
+    seasonStats: career.currentSeason.stats,
+  });
+}
+
+export function offerCareerToClub(
+  career: Career,
+  club: Club,
+): { career: Career; opened: boolean; message: string } {
+  if (!canApproachClub(career)) {
+    return { career, opened: false, message: "O empresário já trabalhou esta semana." };
+  }
+  const result = offerPlayerToClub({
+    player: career.player,
+    ai: career.ai,
+    club,
+    date: career.timeline.current,
+    elapsedWeeks: career.timeline.elapsedWeeks,
+    overall: playerOverall(career),
+    age: playerAge(career),
+    seasonStats: career.currentSeason.stats,
+    random: careerRandom(career, `approach:${club.id}`),
+  });
+  return {
+    career: withEvents({ ...career, ai: result.ai }, result.events),
+    opened: result.opened,
+    message: result.message,
+  };
+}
+
+/** Chance of convincing the club to move the athlete up a category. */
+export function promotionAssessment(career: Career): PromotionRequest | undefined {
+  return assessPromotion({
+    player: career.player,
+    ai: career.ai,
+    overall: playerOverall(career),
+    age: playerAge(career),
+    seasonStats: career.currentSeason.stats,
+  });
+}
+
+export function requestCareerPromotion(
+  career: Career,
+): { career: Career; granted: boolean; message: string } {
+  if (!canApproachClub(career)) {
+    return { career, granted: false, message: "O empresário já trabalhou esta semana." };
+  }
+  const result = requestPromotion({
+    player: career.player,
+    ai: career.ai,
+    date: career.timeline.current,
+    elapsedWeeks: career.timeline.elapsedWeeks,
+    overall: playerOverall(career),
+    age: playerAge(career),
+    seasonStats: career.currentSeason.stats,
+    random: careerRandom(career, "promotion"),
+  });
+  const next = withEvents(
+    { ...career, player: result.player, ai: result.ai },
+    result.events,
+  );
+  return {
+    career: {
+      ...next,
+      currentSeason: {
+        ...next.currentSeason,
+        category: result.ai.club
+          ? categoryLabel(result.ai.club.category)
+          : next.currentSeason.category,
+      },
+    },
+    granted: result.granted,
+    message: result.message,
+  };
 }

@@ -228,6 +228,8 @@ export function releaseFromClub(
   ai: CareerAi,
   date: GameDate,
   reason: string,
+  /** A contract simply running out is not the same as being let go. */
+  kind: "release" | "contractEnd" = "release",
 ): { player: Player; ai: CareerAi; events: GameEvent[] } {
   const situation = ai.club;
   if (!situation) return { player, ai, events: [] };
@@ -246,15 +248,25 @@ export function releaseFromClub(
     ai: {
       ...ai,
       club: null,
-      releases: ai.releases + 1,
-      morale: Math.max(10, ai.morale - 28),
+      releases: ai.releases + (kind === "release" ? 1 : 0),
+      morale: Math.max(10, ai.morale - (kind === "release" ? 28 : 12)),
       coachTrust: 40,
     },
     events: [
-      createEvent("transfer", date, `Dispensado pelo ${situation.clubName}`, {
-        description: reason,
-        tone: "danger",
-      }),
+      createEvent(
+        "transfer",
+        date,
+        kind === "release"
+          ? `Dispensado pelo ${situation.clubName}`
+          : `Fim de contrato com o ${situation.clubName}`,
+        {
+          description:
+            kind === "release"
+              ? reason
+              : `${reason} O atleta está livre no mercado: pode receber propostas, treinar por conta e disputar peneiras.`,
+          tone: kind === "release" ? "danger" : "warning",
+        },
+      ),
     ],
   };
 }

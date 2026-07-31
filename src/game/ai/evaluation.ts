@@ -22,7 +22,6 @@ const CATEGORY_BASE: Record<CategoryCode, number> = {
   U20: 50,
   U23: 56,
   PRO: 60,
-  VET: 54,
 };
 
 /** How much the club reputation raises the bar inside a category. */
@@ -37,7 +36,6 @@ const REPUTATION_WEIGHT: Record<CategoryCode, number> = {
   U20: 0.3,
   U23: 0.32,
   PRO: 0.36,
-  VET: 0.3,
 };
 
 
@@ -108,7 +106,6 @@ const EXPECTED_AGE: Record<CategoryCode, number> = {
   U20: 19,
   U23: 22,
   PRO: 26,
-  VET: 34,
 };
 
 

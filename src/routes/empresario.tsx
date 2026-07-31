@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BadgeCheck, UserRoundCheck } from "lucide-react";
 import { useEffect } from "react";
 
+import { AgentDeskPanel } from "@/components/game/agent/AgentDeskPanel";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { Button } from "@/components/ui/button";
 import { availableAgents, netWage, reputationLabel } from "@/game/ai";
@@ -83,6 +84,11 @@ function AgentPage() {
         </div>
       ) : null}
 
+      <AgentDeskPanel />
+
+      <p className="mb-3 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+        Empresários disponíveis
+      </p>
       <div className="grid gap-3">
         {options
           .filter((agent) => agent.name !== current?.name)

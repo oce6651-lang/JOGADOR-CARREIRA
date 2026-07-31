@@ -14,6 +14,7 @@ export * from "./reputation";
 export * from "./agents";
 export * from "./offers";
 export * from "./trials";
+export * from "./representation";
 export * from "./nationalTeam";
 export * from "./decisions";
 export * from "./headlines";

@@ -105,6 +105,17 @@ function defaultMessage(kind: OfferKind, club: Club, category: CategoryCode) {
   }
 }
 
+/**
+ * How the destination squad is presented to the player. European clubs call
+ * their bridge squad "Equipe B" instead of Sub-23.
+ */
+export function offerCategoryLabel(category: CategoryCode, clubCountry?: string) {
+  if (category === "U23" && clubCountry && !["BRA", "ARG"].includes(clubCountry)) {
+    return "Equipe B";
+  }
+  return categoryLabel(category);
+}
+
 export function addOffer(ai: CareerAi, offer: ClubOffer): CareerAi {
   const withoutSameClub = ai.offers.filter(
     (item) => !(item.clubId === offer.clubId && item.kind === offer.kind),

@@ -546,6 +546,8 @@ export interface CareerAi {
   agent: Agent | null;
   /** elapsedWeeks of the last trial attended (one per week). */
   lastTrialWeek: number;
+  /** Week of the last approach made by the agent (sondagem/promoção). */
+  lastApproachWeek?: number;
   /** National team level the athlete currently belongs to. */
   nationalTeamLevel: CallUpRecord["level"] | null;
 }

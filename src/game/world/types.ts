@@ -22,8 +22,7 @@ export type CategoryCode =
   | "U17"
   | "U20"
   | "U23"
-  | "PRO"
-  | "VET";
+  | "PRO";
 
 export interface CategoryDefinition {
   code: CategoryCode;
@@ -32,7 +31,7 @@ export interface CategoryDefinition {
   maxAge?: number;
   /** Minimum age allowed to be registered in the category. */
   minAge?: number;
-  /** Ordering from youngest to veteran. */
+  /** Ordering from youngest to professional. */
   order: number;
 }
 
