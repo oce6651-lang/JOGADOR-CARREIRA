@@ -2,12 +2,7 @@ import { clampAttribute, flattenAttributes } from "../player/attributes";
 import { calculateOverall, keyAttributes } from "../player/overall";
 import type { Random } from "../rng";
 import { chance } from "../rng";
-import type {
-  AttributeChange,
-  AttributeKey,
-  PlayerAttributes,
-  PositionCode,
-} from "../types";
+import type { AttributeChange, AttributeKey, PlayerAttributes, PositionCode } from "../types";
 
 export interface ProgressionContext {
   age: number;
@@ -20,6 +15,8 @@ export interface ProgressionContext {
   load: number;
   /** Average match rating in the period (0 when he did not play). */
   form: number;
+  /** Hidden development phase multiplier (breakthrough, plateau, setback...). */
+  phaseMultiplier?: number;
 }
 
 /** Age curve: teens grow fast, prime is stable, veterans decline. */
@@ -74,7 +71,8 @@ export function progressAttributes(
     context.personalityGrowth *
     (0.35 + context.load * 0.9) *
     (0.7 + room * 1.6) *
-    (context.form ? 0.75 + (context.form - 6) * 0.12 : 0.85);
+    (context.form ? 0.75 + (context.form - 6) * 0.12 : 0.85) *
+    (context.phaseMultiplier ?? 1);
 
   const decline = declineFactor(context.age);
   const key = new Set<AttributeKey>(keyAttributes(context.position, 8));

@@ -1,7 +1,7 @@
 import type { Foot, Nationality, PositionDefinition } from "./types";
 
 export const GAME_NAME = "Project Football Career";
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 /** Weeks in one in-game season. */
 export const WEEKS_PER_SEASON = 52;

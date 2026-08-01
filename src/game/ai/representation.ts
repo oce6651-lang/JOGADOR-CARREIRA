@@ -195,6 +195,8 @@ export function offerPlayerToClub(input: {
     overall,
     elapsedWeeks,
     ai: attempted,
+    age: input.age,
+    seasonYear: date.seasonYear,
     fromClubName: ai.club?.clubName,
     random,
     message: `${ai.agent?.name ?? "O atleta"} levou o nome ao ${club.name}, que abriu negociação para o ${categoryLabel(assessment.category)}.`,

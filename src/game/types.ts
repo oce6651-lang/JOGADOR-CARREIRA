@@ -430,6 +430,14 @@ export type SquadRole =
   | "outOfSquad";
 
 /** Where the athlete plays right now, decided entirely by the career AI. */
+/**
+ * Nature of the agreement with the club.
+ * - `formation`: youth football school, only a stipend (auxílio) is allowed.
+ * - `youthPro`: first professional deal signed inside the academy (16+).
+ * - `professional`: full professional contract.
+ */
+export type ContractType = "formation" | "youthPro" | "professional";
+
 export interface ClubSituation {
   spellId: EntityId;
   clubId: EntityId;
@@ -448,6 +456,14 @@ export interface ClubSituation {
   parentClubName?: string;
   /** Weeks spent in the current category — feeds promotion decisions. */
   weeksInCategory: number;
+  /** Nature of the deal: formation stipend or professional contract. */
+  contractType?: ContractType;
+  /** Release clause in BRL (0 = none). */
+  releaseClause?: number;
+  /** Bonus per appearance, in BRL. */
+  appearanceBonus?: number;
+  /** Bonus per goal (or clean sheet for keepers), in BRL. */
+  goalBonus?: number;
 }
 
 /** A club watching the athlete. Interest grows and decays over time. */
@@ -468,17 +484,45 @@ export interface ScoutingInterest {
 export type OfferKind = "trial" | "contract" | "renewal" | "loan" | "transfer";
 
 /** What the athlete (or his agent) tries to improve in a negotiation. */
-export type NegotiationTopic = "wage" | "seasons" | "role";
+export type NegotiationTopic = "wage" | "seasons" | "role" | "clause" | "bonus";
 
 export interface ContractTerms {
-  /** Weekly wage in BRL. */
+  /** Weekly wage in BRL (stipend when the deal is a formation agreement). */
   weeklyWage: number;
   /** Contract length in seasons. */
   seasons: number;
   /** Squad role promised by the club. */
   role: SquadRole;
-  /** One-off signing bonus in BRL. */
+  /** One-off signing bonus in BRL (luvas). */
   signingBonus: number;
+  /** Nature of the deal. */
+  contractType: ContractType;
+  /** Release clause in BRL — 0 when the club refuses to set one. */
+  releaseClause: number;
+  /** Bonus paid per appearance, in BRL. */
+  appearanceBonus: number;
+  /** Bonus paid per goal (clean sheet for keepers), in BRL. */
+  goalBonus: number;
+  /** True when the deal only starts in the next season (pré-contrato). */
+  preContract: boolean;
+}
+
+/** Unpredictable development phase the athlete is going through. */
+export type DevelopmentPhaseId =
+  | "breakthrough"
+  | "steady"
+  | "plateau"
+  | "setback"
+  | "lateBloom";
+
+export interface DevelopmentState {
+  phase: DevelopmentPhaseId;
+  /** Weeks remaining in the current phase. */
+  weeksLeft: number;
+  /** Multiplier applied to weekly growth while the phase lasts. */
+  multiplier: number;
+  /** elapsedWeeks when the phase started. */
+  startedWeek: number;
 }
 
 /** A proposal waiting for the player's answer. Never resolved automatically. */
@@ -550,6 +594,8 @@ export interface CareerAi {
   lastApproachWeek?: number;
   /** National team level the athlete currently belongs to. */
   nationalTeamLevel: CallUpRecord["level"] | null;
+  /** Current (hidden) development phase — makes evolution unpredictable. */
+  development?: DevelopmentState;
 }
 
 

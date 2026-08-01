@@ -4,6 +4,7 @@ import { addStatus, removeStatus } from "../player/status";
 import type { Random } from "../rng";
 import { randomInt } from "../rng";
 import type {
+  ContractTerms,
   CareerAi,
   ClubSituation,
   GameDate,
@@ -12,7 +13,8 @@ import type {
   SquadRole,
 } from "../types";
 
-import { categoryLabel, type CategoryCode, type Club } from "../world";
+import { categoryLabel, seasonAge, type CategoryCode, type Club } from "../world";
+import { contractTypeFor } from "./contracts";
 import { requiredOverall } from "./evaluation";
 
 /**
@@ -25,12 +27,7 @@ import { requiredOverall } from "./evaluation";
 export type MoveType = "youth" | "permanent" | "loan";
 
 /** Weekly wage estimate, driven by category, club money and player level. */
-export function estimateWage(
-  club: Club,
-  category: CategoryCode,
-  overall: number,
-  random: Random,
-) {
+export function estimateWage(club: Club, category: CategoryCode, overall: number, random: Random) {
   if (category !== "PRO" && category !== "U23") {
     const base = 200 + club.reputation * 12 + overall * 4;
     return Math.round(base * (0.85 + random() * 0.4));
@@ -57,7 +54,7 @@ export function joinClub(
     parent?: ClubSituation;
     random: Random;
     /** Terms agreed by the player during the negotiation. */
-    terms?: { weeklyWage: number; seasons: number; role: SquadRole };
+    terms?: ContractTerms;
   },
 ): { player: Player; ai: CareerAi; events: GameEvent[] } {
   const { club, category, date, overall, type, parent, random, terms } = options;
@@ -74,23 +71,25 @@ export function joinClub(
     category,
     role: terms?.role ?? (category === "PRO" ? "reserve" : "bench"),
     joinedSeason: date.seasonYear,
-    contractUntilSeason:
-      date.seasonYear + (terms?.seasons ?? contractLength(category, random)),
+    contractUntilSeason: date.seasonYear + (terms?.seasons ?? contractLength(category, random)),
     weeklyWage: wage,
     onLoan: type === "loan",
+    contractType:
+      terms?.contractType ??
+      contractTypeFor(category, seasonAge(player.birthDate, date.seasonYear)),
+    releaseClause: terms?.releaseClause ?? 0,
+    appearanceBonus: terms?.appearanceBonus ?? 0,
+    goalBonus: terms?.goalBonus ?? 0,
     parentClubId: parent?.clubId,
     parentClubName: parent?.clubName,
     weeksInCategory: 0,
   };
 
-
   const nextPlayer: Player = {
     ...player,
     statuses: addStatus(
       removeStatus(player.statuses, "unsigned"),
-      type === "loan"
-        ? { id: "onLoan", note: club.name }
-        : { id: "contracted", note: club.name },
+      type === "loan" ? { id: "onLoan", note: club.name } : { id: "contracted", note: club.name },
     ),
     history: {
       ...player.history,
@@ -127,9 +126,7 @@ export function joinClub(
     createEvent(
       "transfer",
       date,
-      type === "loan"
-        ? `Emprestado ao ${club.name}`
-        : `Contratado pelo ${club.name}`,
+      type === "loan" ? `Emprestado ao ${club.name}` : `Contratado pelo ${club.name}`,
       {
         description: `${categoryLabel(category)} · ${club.city}/${club.state} · nível exigido ${requiredOverall(category, club.reputation)}.`,
         tone: "positive",
@@ -237,10 +234,9 @@ export function releaseFromClub(
   const closed = closeSpell(player, situation.spellId, date);
   const nextPlayer: Player = {
     ...closed,
-    statuses: addStatus(
-      removeStatus(removeStatus(closed.statuses, "contracted"), "onLoan"),
-      { id: "unsigned" },
-    ),
+    statuses: addStatus(removeStatus(removeStatus(closed.statuses, "contracted"), "onLoan"), {
+      id: "unsigned",
+    }),
   };
 
   return {

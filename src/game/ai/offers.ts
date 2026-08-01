@@ -14,7 +14,8 @@ import type {
   SquadRole,
 } from "../types";
 import { categoryLabel, getClub, type CategoryCode, type Club } from "../world";
-import { contractLength, estimateWage, joinClub } from "./clubMoves";
+import { joinClub } from "./clubMoves";
+import { buildContractTerms } from "./contracts";
 import { negotiationLeverage } from "./reputation";
 import { ROLE_ORDER, roleLabel } from "./squad";
 
@@ -41,6 +42,8 @@ export const TOPIC_LABELS: Record<NegotiationTopic, string> = {
   wage: "Pedir salário maior",
   seasons: "Ajustar duração do contrato",
   role: "Exigir mais espaço no elenco",
+  clause: "Reduzir multa rescisória",
+  bonus: "Pedir luvas e bônus",
 };
 
 export interface OfferInput {
@@ -53,22 +56,32 @@ export interface OfferInput {
   role?: SquadRole;
   fromClubName?: string;
   message?: string;
+  /** Athlete age — decides stipend vs professional contract. */
+  age: number;
+  /** Season the deal is signed in — drives the era wage scale. */
+  seasonYear: number;
+  /** Deal that only starts next season. */
+  preContract?: boolean;
   random: Random;
 }
 
 export function buildOffer(input: OfferInput): ClubOffer {
   const { kind, club, category, overall, elapsedWeeks, ai, random } = input;
-  const wage = estimateWage(club, category, overall, random);
-  const seasons = contractLength(category, random);
-  const role: SquadRole =
-    input.role ?? (category === "PRO" ? "reserve" : "bench");
+  const role: SquadRole = input.role ?? (category === "PRO" ? "reserve" : "bench");
 
-  const terms: ContractTerms = {
-    weeklyWage: kind === "renewal" && ai.club ? Math.round(ai.club.weeklyWage * 1.12) : wage,
-    seasons: kind === "loan" ? 1 : seasons,
+  const terms: ContractTerms = buildContractTerms({
+    club,
+    category,
+    overall,
+    age: input.age,
+    reputation: ai.reputation,
+    seasonYear: input.seasonYear,
     role,
-    signingBonus: kind === "loan" ? 0 : Math.round(wage * randomInt(2, 10, random)),
-  };
+    random,
+    loan: kind === "loan",
+    preContract: input.preContract,
+    weeklyWage: kind === "renewal" && ai.club ? Math.round(ai.club.weeklyWage * 1.12) : undefined,
+  });
 
   return {
     id: createId("contract"),
@@ -233,6 +246,18 @@ function improveTerms(
     const longer = leverage > 0.45;
     terms.seasons = Math.max(1, Math.min(5, terms.seasons + (longer ? 1 : -1)));
     message = `Novo vínculo proposto: ${terms.seasons} temporada${terms.seasons > 1 ? "s" : ""}.`;
+  } else if (topic === "clause") {
+    const cut = 0.55 + random() * 0.25;
+    terms.releaseClause = Math.round((terms.releaseClause * cut) / 1000) * 1000;
+    message = terms.releaseClause
+      ? `Multa rescisória reduzida para R$ ${terms.releaseClause.toLocaleString("pt-BR")}.`
+      : `O ${offer.clubName} abriu mão da multa rescisória.`;
+  } else if (topic === "bonus") {
+    const boost = 1.25 + leverage * 0.6;
+    terms.signingBonus = Math.round(terms.signingBonus * boost);
+    terms.appearanceBonus = Math.round(terms.appearanceBonus * boost);
+    terms.goalBonus = Math.round(terms.goalBonus * boost);
+    message = `O ${offer.clubName} melhorou luvas e bônus de produtividade.`;
   } else {
     const index = ROLE_ORDER.indexOf(terms.role);
     terms.role = ROLE_ORDER[Math.min(ROLE_ORDER.length - 1, index + 1)];
@@ -318,20 +343,20 @@ export function acceptOffer(
     };
   }
 
-  const joined = joinClub(player, { ...ai, offers: remaining }, {
-    club,
-    category: offer.category,
-    date,
-    overall,
-    type: offer.kind === "loan" ? "loan" : offer.category === "PRO" ? "permanent" : "youth",
-    parent: offer.kind === "loan" ? (ai.club ?? undefined) : undefined,
-    random,
-    terms: {
-      weeklyWage: offer.terms.weeklyWage,
-      seasons: offer.terms.seasons,
-      role: offer.terms.role,
+  const joined = joinClub(
+    player,
+    { ...ai, offers: remaining },
+    {
+      club,
+      category: offer.category,
+      date,
+      overall,
+      type: offer.kind === "loan" ? "loan" : offer.category === "PRO" ? "permanent" : "youth",
+      parent: offer.kind === "loan" ? (ai.club ?? undefined) : undefined,
+      random,
+      terms: offer.terms,
     },
-  });
+  );
 
   return {
     player: joined.player,

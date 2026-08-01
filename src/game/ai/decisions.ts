@@ -15,6 +15,8 @@ import {
   categoryOrder,
   sortCategories,
   getCategory,
+  isAgeEligible,
+  PROFESSIONAL_AGE,
   getClub,
   nextCategory,
   CLUBS,
@@ -23,12 +25,7 @@ import {
 } from "../world";
 import { changeCategory, releaseFromClub } from "./clubMoves";
 import { evaluate, levelGap, type Evaluation } from "./evaluation";
-import {
-  entryCategoryFor,
-  homeCountryFor,
-  plannedEntryCategory,
-  reachableClubs,
-} from "./market";
+import { entryCategoryFor, homeCountryFor, plannedEntryCategory, reachableClubs } from "./market";
 import { evaluateCallUp } from "./nationalTeam";
 import { addOffer, buildOffer } from "./offers";
 import { decideRole, isMarginal, roleLabel } from "./squad";
@@ -146,6 +143,8 @@ function reviewFreeAgent(ctx: AiContext): AiOutcome {
     overall,
     elapsedWeeks: ctx.elapsedWeeks,
     ai,
+    age,
+    seasonYear: date.seasonYear,
     random,
     message: `O ${club.name} convidou o atleta para uma avaliação no ${categoryLabel(target)}. Aceitar garante vaga direta na peneira.`,
   });
@@ -168,7 +167,7 @@ function pickTrialClub(candidates: Club[], overall: number, random: Random) {
   const sorted = [...candidates].sort((a, b) => b.reputation - a.reputation);
   const window = sorted.slice(0, Math.max(3, Math.ceil(sorted.length * 0.25)));
   const bias = Math.min(window.length - 1, Math.floor((overall / 100) * window.length));
-  return chance(0.6, random) ? window[bias] ?? pick(window, random) : pick(sorted, random);
+  return chance(0.6, random) ? (window[bias] ?? pick(window, random)) : pick(sorted, random);
 }
 
 /* ------------------------------------------------------------------ */
@@ -241,12 +240,7 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
 
     if (target && ready) {
       const moved = changeCategory(player, ai, target, date, true);
-      return finish(
-        moved.player,
-        moved.ai,
-        [...events, ...moved.events],
-        categoryLabel(target),
-      );
+      return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(target));
     }
 
     const released = releaseFromClub(
@@ -283,6 +277,8 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
         overall,
         elapsedWeeks: ctx.elapsedWeeks,
         ai,
+        age,
+        seasonYear: date.seasonYear,
         role: "rotation",
         fromClubName: situation.clubName,
         random,
@@ -315,6 +311,8 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
         overall,
         elapsedWeeks: ctx.elapsedWeeks,
         ai,
+        age,
+        seasonYear: date.seasonYear,
         role: ai.club.role,
         random,
         message: `O ${situation.clubName} quer renovar o contrato do atleta.`,
@@ -375,7 +373,9 @@ function evaluatePromotion(
   const readyForTarget =
     levelGap(ctx.overall, target, club.reputation) >= (target === "PRO" ? -6 : -3);
 
-  if (overAge && ctx.seasonEnd && evaluation.score > -18 && readyForTarget) return target;
+  if (overAge && ctx.seasonEnd && evaluation.score > -18 && readyForTarget) {
+    return skipCategory(club, target, ctx, evaluation) ?? target;
+  }
   if (!settled) return undefined;
 
   const dominating =
@@ -384,8 +384,33 @@ function evaluatePromotion(
     evaluation.form >= 6.9 &&
     ctx.seasonStats.appearances >= 6;
 
-  if (dominating && readyForTarget) return target;
+  if (dominating && readyForTarget) {
+    return skipCategory(club, target, ctx, evaluation) ?? target;
+  }
   return undefined;
+}
+
+/**
+ * Exceptional athletes skip a step of the ladder (Sub-15 straight to Sub-20,
+ * Sub-17 straight to the first team). It only happens when he is clearly
+ * above the next category too, and never below the legal professional age.
+ */
+function skipCategory(
+  club: Club,
+  target: CategoryCode,
+  ctx: AiContext,
+  evaluation: Evaluation,
+): CategoryCode | undefined {
+  if (evaluation.score < 42 || evaluation.gap < 9 || evaluation.form < 7.2) return undefined;
+
+  const jump = nextAvailableCategory(club, target);
+  if (!jump) return undefined;
+  if (!isAgeEligible(jump, ctx.age)) return undefined;
+  if (jump === "PRO" && ctx.age < PROFESSIONAL_AGE) return undefined;
+  if (levelGap(ctx.overall, jump, club.reputation) < (jump === "PRO" ? -2 : 0)) {
+    return undefined;
+  }
+  return jump;
 }
 
 /**
@@ -461,8 +486,7 @@ function updateScouting(
       (club) =>
         club.id !== situation.clubId &&
         club.reputation > situation.clubReputation + 4 &&
-        club.reputation <=
-          situation.clubReputation + 20 + Math.max(0, evaluation.score - 18) &&
+        club.reputation <= situation.clubReputation + 20 + Math.max(0, evaluation.score - 18) &&
         !scouting.some((interest) => interest.clubId === club.id),
     );
     if (observers.length && chance(0.5, ctx.random)) {

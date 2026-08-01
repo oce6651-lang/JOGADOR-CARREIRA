@@ -2,14 +2,15 @@ import { createEvent } from "../events";
 import type { Random } from "../rng";
 import { chance } from "../rng";
 import type { CareerAi, ClubOffer, GameDate, GameEvent, Player } from "../types";
-import { categoryForSeason, categoryLabel, type CategoryCode, type Club } from "../world";
-import { levelGap } from "./evaluation";
 import {
-  entryCategoryFor,
-  homeCountryFor,
-  plannedEntryCategory,
-  reachableClubs,
-} from "./market";
+  categoryForSeason,
+  categoryLabel,
+  seasonAge,
+  type CategoryCode,
+  type Club,
+} from "../world";
+import { levelGap } from "./evaluation";
+import { entryCategoryFor, homeCountryFor, plannedEntryCategory, reachableClubs } from "./market";
 import { addOffer, buildOffer } from "./offers";
 
 /**
@@ -83,6 +84,8 @@ export function trialOpportunities(
   age: number,
   overall: number,
   seasonYear: number,
+  /** Weekly seed — makes the open trials rotate instead of being always the same. */
+  random: Random,
 ): TrialOpportunity[] {
   const wanted = categoryForSeason(player.birthDate, seasonYear);
   const home = homeCountryFor(player, ai);
@@ -145,11 +148,34 @@ export function trialOpportunities(
   const sortByReputation = (a: TrialOpportunity, b: TrialOpportunity) =>
     b.club.reputation - a.club.reputation;
 
-  // Almost every open trial is domestic; abroad is the exception.
+  // Clubs do not open trials every week: draw a different regional shortlist
+  // each week, biased towards the clubs closest to the athlete's level.
   return [
-    ...domestic.sort(sortByReputation).slice(0, 10),
-    ...abroad.sort(sortByReputation).slice(0, 3),
+    ...drawTrials(domestic, 8, random).sort(sortByReputation),
+    ...drawTrials(abroad, 2, random).sort(sortByReputation),
   ];
+}
+
+/** Weighted draw without repetition — better chances have more tickets. */
+function drawTrials(pool: TrialOpportunity[], size: number, random: Random) {
+  const remaining = [...pool];
+  const drawn: TrialOpportunity[] = [];
+  while (remaining.length && drawn.length < size) {
+    const weights = remaining.map((item) => 0.25 + item.successChance);
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    let ticket = random() * total;
+    let index = remaining.length - 1;
+    for (let i = 0; i < remaining.length; i += 1) {
+      ticket -= weights[i];
+      if (ticket <= 0) {
+        index = i;
+        break;
+      }
+    }
+    drawn.push(remaining[index]);
+    remaining.splice(index, 1);
+  }
+  return drawn;
 }
 
 function originFor(input: {
@@ -163,7 +189,11 @@ function originFor(input: {
   if (!input.international) return "domestic";
   if (input.invited) return "invitation";
   if (input.projected >= 70 && input.reputation >= 35) return "level";
-  if (input.agentReach >= 60 && input.reputation >= 25 && input.clubReputation <= input.agentReach + 15) {
+  if (
+    input.agentReach >= 60 &&
+    input.reputation >= 25 &&
+    input.clubReputation <= input.agentReach + 15
+  ) {
     return "agent";
   }
   if (input.reputation >= 55 && input.clubReputation <= 60) return "tournament";
@@ -219,6 +249,8 @@ export function attendTrial(
     overall,
     elapsedWeeks,
     ai: next,
+    age: seasonAge(player.birthDate, date.seasonYear),
+    seasonYear: date.seasonYear,
     random,
     message: `Aprovado na peneira do ${club.name}. A diretoria ofereceu contrato para o ${categoryLabel(category)}.`,
   });

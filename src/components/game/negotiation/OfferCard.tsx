@@ -2,11 +2,22 @@ import { CalendarClock, Handshake, TrendingUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ClubCrest } from "@/components/game/world/ClubCrest";
-import { OFFER_LABELS, TOPIC_LABELS, offerCategoryLabel, roleLabel, weeksLeft } from "@/game/ai";
+import {
+  OFFER_LABELS,
+  TOPIC_LABELS,
+  contractTypeLabel,
+  monthlyWage,
+  offerCategoryLabel,
+  roleLabel,
+  wageLabel,
+  weeksLeft,
+} from "@/game/ai";
 import { getClub } from "@/game/world";
 import type { ClubOffer, NegotiationTopic } from "@/game/types";
 
-const TOPICS: NegotiationTopic[] = ["wage", "seasons", "role"];
+const TOPICS: NegotiationTopic[] = ["wage", "seasons", "role", "bonus", "clause"];
+
+const brl = (value: number) => `R$ ${Math.round(value).toLocaleString("pt-BR")}`;
 
 interface OfferCardProps {
   offer: ClubOffer;
@@ -54,15 +65,37 @@ export function OfferCard({
       <p className="text-sm text-muted-foreground">{offer.message}</p>
 
       {offer.kind === "trial" ? null : (
-        <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <Term label="Salário" value={`R$ ${offer.terms.weeklyWage.toLocaleString("pt-BR")}/sem`} />
-          <Term label="Duração" value={`${offer.terms.seasons} temporada(s)`} />
-          <Term label="Papel" value={roleLabel(offer.terms.role)} />
-          <Term
-            label="Luvas"
-            value={offer.terms.signingBonus ? `R$ ${offer.terms.signingBonus.toLocaleString("pt-BR")}` : "—"}
-          />
-        </dl>
+        <>
+          <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+            {contractTypeLabel(offer.terms.contractType)}
+            {offer.terms.preContract ? " · pré-contrato" : ""}
+          </p>
+          <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+            <Term
+              label={wageLabel(offer.terms.contractType)}
+              value={`${brl(monthlyWage(offer.terms.weeklyWage))}/mês`}
+            />
+            <Term label="Duração" value={`${offer.terms.seasons} temporada(s)`} />
+            <Term label="Papel" value={roleLabel(offer.terms.role)} />
+            <Term
+              label="Luvas"
+              value={offer.terms.signingBonus ? brl(offer.terms.signingBonus) : "—"}
+            />
+            <Term
+              label="Multa rescisória"
+              value={offer.terms.releaseClause ? brl(offer.terms.releaseClause) : "Sem multa"}
+            />
+            <Term
+              label="Bônus por jogo"
+              value={offer.terms.appearanceBonus ? brl(offer.terms.appearanceBonus) : "—"}
+            />
+            <Term
+              label="Bônus por gol"
+              value={offer.terms.goalBonus ? brl(offer.terms.goalBonus) : "—"}
+            />
+            <Term label="Semanal" value={`${brl(offer.terms.weeklyWage)}/sem`} />
+          </dl>
+        </>
       )}
 
       {feedback ? (

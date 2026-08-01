@@ -12,6 +12,7 @@ export * from "./clubMoves";
 export * from "./market";
 export * from "./reputation";
 export * from "./agents";
+export * from "./contracts";
 export * from "./offers";
 export * from "./trials";
 export * from "./representation";

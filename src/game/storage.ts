@@ -146,7 +146,48 @@ function migrateCareer(career: Career): Career | null {
     };
   }
 
+  // v5 -> v6: full contracts (type, clause, bonuses) and pending offers get
+  // the new terms; legacy "VET" spells become professional ones.
+  if (next.ai.club && next.ai.club.contractType === undefined) {
+    next = {
+      ...next,
+      ai: {
+        ...next.ai,
+        club: {
+          ...next.ai.club,
+          category: (next.ai.club.category as string) === "VET" ? "PRO" : next.ai.club.category,
+          contractType:
+            next.ai.club.weeklyWage > 0 && next.ai.club.category !== "U15"
+              ? "professional"
+              : "formation",
+          releaseClause: 0,
+          appearanceBonus: 0,
+          goalBonus: 0,
+        },
+      },
+    };
+  }
+
+  if (next.ai.offers.some((offer) => offer.terms.contractType === undefined)) {
+    next = {
+      ...next,
+      ai: {
+        ...next.ai,
+        offers: next.ai.offers.map((offer) => ({
+          ...offer,
+          terms: {
+            ...offer.terms,
+            contractType: offer.terms.weeklyWage > 800 ? "professional" : "formation",
+            releaseClause: 0,
+            appearanceBonus: 0,
+            goalBonus: 0,
+            preContract: false,
+          },
+        })),
+      },
+    };
+  }
+
   // Future migrations chain here.
   return { ...next, version: SAVE_VERSION };
-
 }
