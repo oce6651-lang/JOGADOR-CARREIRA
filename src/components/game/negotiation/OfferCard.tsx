@@ -93,10 +93,7 @@ export function OfferCard({
               label="Bônus por gol"
               value={offer.terms.goalBonus ? brl(offer.terms.goalBonus) : "—"}
             />
-            <Term
-              label="Semanal"
-              value={`${brl(offer.terms.weeklyWage)}/sem`}
-            />
+            <Term label="Semanal" value={`${brl(offer.terms.weeklyWage)}/sem`} />
           </dl>
         </>
       )}

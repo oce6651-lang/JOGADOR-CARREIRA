@@ -85,10 +85,7 @@ export function weeklyWageFor(input: WageInput) {
   const base =
     (600 + club.reputation * 95 + Math.max(0, overall - 50) * 260) * (0.45 + ladder * 0.75);
   const fame = 1 + reputation / 160;
-  return Math.max(
-    200,
-    Math.round(base * financeFactor(club) * era * fame * noise),
-  );
+  return Math.max(200, Math.round(base * financeFactor(club) * era * fame * noise));
 }
 
 export function contractSeasons(type: ContractType, age: number, random: Random) {
@@ -123,8 +120,7 @@ export function buildContractTerms(input: ContractTermsInput): ContractTerms {
   const weeklyWage = input.weeklyWage ?? weeklyWageFor(input);
   const seasons = loan ? 1 : contractSeasons(contractType, age, random);
 
-  const signingBonus =
-    loan || stipend ? 0 : Math.round(weeklyWage * randomInt(3, 14, random));
+  const signingBonus = loan || stipend ? 0 : Math.round(weeklyWage * randomInt(3, 14, random));
 
   // Clause scales with wage, club ambition and how much of a bet he is.
   const clauseFactor = stipend ? 90 : 140 + club.reputation * 4;

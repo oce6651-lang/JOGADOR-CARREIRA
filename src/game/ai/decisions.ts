@@ -25,12 +25,7 @@ import {
 } from "../world";
 import { changeCategory, releaseFromClub } from "./clubMoves";
 import { evaluate, levelGap, type Evaluation } from "./evaluation";
-import {
-  entryCategoryFor,
-  homeCountryFor,
-  plannedEntryCategory,
-  reachableClubs,
-} from "./market";
+import { entryCategoryFor, homeCountryFor, plannedEntryCategory, reachableClubs } from "./market";
 import { evaluateCallUp } from "./nationalTeam";
 import { addOffer, buildOffer } from "./offers";
 import { decideRole, isMarginal, roleLabel } from "./squad";
@@ -172,7 +167,7 @@ function pickTrialClub(candidates: Club[], overall: number, random: Random) {
   const sorted = [...candidates].sort((a, b) => b.reputation - a.reputation);
   const window = sorted.slice(0, Math.max(3, Math.ceil(sorted.length * 0.25)));
   const bias = Math.min(window.length - 1, Math.floor((overall / 100) * window.length));
-  return chance(0.6, random) ? window[bias] ?? pick(window, random) : pick(sorted, random);
+  return chance(0.6, random) ? (window[bias] ?? pick(window, random)) : pick(sorted, random);
 }
 
 /* ------------------------------------------------------------------ */
@@ -245,12 +240,7 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
 
     if (target && ready) {
       const moved = changeCategory(player, ai, target, date, true);
-      return finish(
-        moved.player,
-        moved.ai,
-        [...events, ...moved.events],
-        categoryLabel(target),
-      );
+      return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(target));
     }
 
     const released = releaseFromClub(
@@ -496,8 +486,7 @@ function updateScouting(
       (club) =>
         club.id !== situation.clubId &&
         club.reputation > situation.clubReputation + 4 &&
-        club.reputation <=
-          situation.clubReputation + 20 + Math.max(0, evaluation.score - 18) &&
+        club.reputation <= situation.clubReputation + 20 + Math.max(0, evaluation.score - 18) &&
         !scouting.some((interest) => interest.clubId === club.id),
     );
     if (observers.length && chance(0.5, ctx.random)) {

@@ -2,12 +2,7 @@ import { clampAttribute, flattenAttributes } from "../player/attributes";
 import { calculateOverall, keyAttributes } from "../player/overall";
 import type { Random } from "../rng";
 import { chance } from "../rng";
-import type {
-  AttributeChange,
-  AttributeKey,
-  PlayerAttributes,
-  PositionCode,
-} from "../types";
+import type { AttributeChange, AttributeKey, PlayerAttributes, PositionCode } from "../types";
 
 export interface ProgressionContext {
   age: number;

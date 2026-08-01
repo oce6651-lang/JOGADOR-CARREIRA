@@ -10,12 +10,7 @@ import {
   type Club,
 } from "../world";
 import { levelGap } from "./evaluation";
-import {
-  entryCategoryFor,
-  homeCountryFor,
-  plannedEntryCategory,
-  reachableClubs,
-} from "./market";
+import { entryCategoryFor, homeCountryFor, plannedEntryCategory, reachableClubs } from "./market";
 import { addOffer, buildOffer } from "./offers";
 
 /**
@@ -194,7 +189,11 @@ function originFor(input: {
   if (!input.international) return "domestic";
   if (input.invited) return "invitation";
   if (input.projected >= 70 && input.reputation >= 35) return "level";
-  if (input.agentReach >= 60 && input.reputation >= 25 && input.clubReputation <= input.agentReach + 15) {
+  if (
+    input.agentReach >= 60 &&
+    input.reputation >= 25 &&
+    input.clubReputation <= input.agentReach + 15
+  ) {
     return "agent";
   }
   if (input.reputation >= 55 && input.clubReputation <= 60) return "tournament";

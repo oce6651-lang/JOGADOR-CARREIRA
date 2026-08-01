@@ -88,7 +88,10 @@ export function isVacation(week: number) {
 }
 
 /** Simulates the requested period and returns the new save + a full report. */
-export function simulate(career: Career, scope: SimulationScope): {
+export function simulate(
+  career: Career,
+  scope: SimulationScope,
+): {
   career: Career;
   report: SimulationReport;
 } {
@@ -468,10 +471,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
 
   /* --- career AI ------------------------------------------------------ */
   let categoryChange: string | undefined;
-  if (
-    !isRetired(player) &&
-    shouldReview(ai, { elapsedWeeks: timeline.elapsedWeeks, seasonEnd })
-  ) {
+  if (!isRetired(player) && shouldReview(ai, { elapsedWeeks: timeline.elapsedWeeks, seasonEnd })) {
     const review = runCareerReview({
       player,
       ai,

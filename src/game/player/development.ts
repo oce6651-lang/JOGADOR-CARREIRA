@@ -141,10 +141,7 @@ export function advanceDevelopment(
 }
 
 /** A serious injury can break a promising phase. */
-export function breakDevelopment(
-  elapsedWeeks: number,
-  random: Random,
-): DevelopmentState {
+export function breakDevelopment(elapsedWeeks: number, random: Random): DevelopmentState {
   return {
     phase: "setback",
     weeksLeft: randomInt(10, 26, random),

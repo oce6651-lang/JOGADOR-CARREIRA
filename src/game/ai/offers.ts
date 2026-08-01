@@ -80,8 +80,7 @@ export function buildOffer(input: OfferInput): ClubOffer {
     random,
     loan: kind === "loan",
     preContract: input.preContract,
-    weeklyWage:
-      kind === "renewal" && ai.club ? Math.round(ai.club.weeklyWage * 1.12) : undefined,
+    weeklyWage: kind === "renewal" && ai.club ? Math.round(ai.club.weeklyWage * 1.12) : undefined,
   });
 
   return {
@@ -344,16 +343,20 @@ export function acceptOffer(
     };
   }
 
-  const joined = joinClub(player, { ...ai, offers: remaining }, {
-    club,
-    category: offer.category,
-    date,
-    overall,
-    type: offer.kind === "loan" ? "loan" : offer.category === "PRO" ? "permanent" : "youth",
-    parent: offer.kind === "loan" ? (ai.club ?? undefined) : undefined,
-    random,
-    terms: offer.terms,
-  });
+  const joined = joinClub(
+    player,
+    { ...ai, offers: remaining },
+    {
+      club,
+      category: offer.category,
+      date,
+      overall,
+      type: offer.kind === "loan" ? "loan" : offer.category === "PRO" ? "permanent" : "youth",
+      parent: offer.kind === "loan" ? (ai.club ?? undefined) : undefined,
+      random,
+      terms: offer.terms,
+    },
+  );
 
   return {
     player: joined.player,
