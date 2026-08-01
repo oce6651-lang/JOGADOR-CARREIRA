@@ -155,7 +155,8 @@ function migrateCareer(career: Career): Career | null {
         ...next.ai,
         club: {
           ...next.ai.club,
-          category: next.ai.club.category === "VET" ? "PRO" : next.ai.club.category,
+          category:
+            (next.ai.club.category as string) === "VET" ? "PRO" : next.ai.club.category,
           contractType:
             next.ai.club.weeklyWage > 0 && next.ai.club.category !== "U15"
               ? "professional"
