@@ -4,6 +4,7 @@ import { addStatus, removeStatus } from "../player/status";
 import type { Random } from "../rng";
 import { randomInt } from "../rng";
 import type {
+  ContractTerms,
   CareerAi,
   ClubSituation,
   GameDate,
@@ -12,7 +13,8 @@ import type {
   SquadRole,
 } from "../types";
 
-import { categoryLabel, type CategoryCode, type Club } from "../world";
+import { categoryLabel, seasonAge, type CategoryCode, type Club } from "../world";
+import { contractTypeFor } from "./contracts";
 import { requiredOverall } from "./evaluation";
 
 /**
@@ -57,7 +59,7 @@ export function joinClub(
     parent?: ClubSituation;
     random: Random;
     /** Terms agreed by the player during the negotiation. */
-    terms?: { weeklyWage: number; seasons: number; role: SquadRole };
+    terms?: ContractTerms;
   },
 ): { player: Player; ai: CareerAi; events: GameEvent[] } {
   const { club, category, date, overall, type, parent, random, terms } = options;
@@ -78,6 +80,10 @@ export function joinClub(
       date.seasonYear + (terms?.seasons ?? contractLength(category, random)),
     weeklyWage: wage,
     onLoan: type === "loan",
+    contractType: terms?.contractType ?? contractTypeFor(category, seasonAge(player.birthDate, date.seasonYear)),
+    releaseClause: terms?.releaseClause ?? 0,
+    appearanceBonus: terms?.appearanceBonus ?? 0,
+    goalBonus: terms?.goalBonus ?? 0,
     parentClubId: parent?.clubId,
     parentClubName: parent?.clubName,
     weeksInCategory: 0,

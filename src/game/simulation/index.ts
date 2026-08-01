@@ -35,6 +35,12 @@ import { createId } from "../ids";
 import { rollInjury } from "./injury";
 import { matchToStatLine, randomOpponent, simulateMatch } from "./match";
 import { mergeChanges, progressAttributes } from "./progression";
+import {
+  advanceDevelopment,
+  breakDevelopment,
+  developmentPhaseDescription,
+  developmentPhaseHeadline,
+} from "../player/development";
 import { addSeasonStats, createSeasonProgress, finalizeSeason } from "./season";
 
 export * from "./injury";
@@ -301,6 +307,10 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       injuries.push(injury);
       ai = {
         ...ai,
+        development:
+          injury.weeksOut >= 6
+            ? breakDevelopment(career.timeline.elapsedWeeks, random)
+            : ai.development,
         sharpness: Math.max(0, ai.sharpness - injury.weeksOut * 4),
         fitness: Math.max(20, ai.fitness - injury.weeksOut * 2),
         morale: Math.max(5, ai.morale - 10 - injury.weeksOut),
@@ -335,6 +345,23 @@ function simulateSingleWeek(career: Career): WeekOutcome {
   });
   ai = decayMorale(ai);
 
+  /* --- development phase --------------------------------------------- */
+  const developmentTick = advanceDevelopment(
+    ai.development,
+    age,
+    career.timeline.elapsedWeeks,
+    random,
+  );
+  ai = { ...ai, development: developmentTick.state };
+  if (developmentTick.changed && !vacation) {
+    events.push(
+      createEvent("growth", date, developmentPhaseHeadline(developmentTick.state.phase), {
+        description: developmentPhaseDescription(developmentTick.state.phase),
+        tone: developmentTick.state.multiplier >= 1 ? "positive" : "warning",
+      }),
+    );
+  }
+
   /* --- progression -------------------------------------------------- */
   const personalityGrowth = player.personality.reduce(
     (acc, trait) => acc * (trait.effects.growth ?? 1),
@@ -359,6 +386,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       personalityGrowth: personalityGrowth * (0.9 + ai.morale / 500),
       load,
       form: stats.appearances ? stats.ratingSum / stats.appearances : 0,
+      phaseMultiplier: developmentTick.state.multiplier,
     },
     random,
   );

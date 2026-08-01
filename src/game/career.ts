@@ -244,6 +244,7 @@ export function careerTrials(career: Career): TrialOpportunity[] {
     playerAge(career),
     playerOverall(career),
     career.timeline.current.seasonYear,
+    createRandom(`${career.id}:trials:${career.timeline.elapsedWeeks}`),
   );
 }
 
