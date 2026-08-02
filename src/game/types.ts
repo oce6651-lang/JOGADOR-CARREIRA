@@ -241,11 +241,21 @@ export interface SeasonRecord {
   clubId?: EntityId;
   clubName?: string;
   category?: string;
+  /** Main competition disputed in the season, when known. */
+  competitionName?: string;
+  /** Age the athlete reached at the end of the season. */
+  age?: number;
+  /** Market value and wage snapshot at the end of the season. */
+  marketValue?: number;
+  weeklyWage?: number;
+  titles?: TitleRecord[];
+  awards?: AwardRecord[];
   stats: MatchStatLine;
   overallStart: number;
   overallEnd: number;
   attributes: PlayerAttributes;
 }
+
 
 export interface MatchRecord {
   id: EntityId;
@@ -662,7 +672,25 @@ export interface Career {
   currentSeason: SeasonProgress;
   /** Career AI state — drives every automatic decision. */
   ai: CareerAi;
+  /** Permanent competition history lived through this career. */
+  competitionHistory: CompetitionSeasonRecord[];
 }
+
+/** A competition edition finished while this career was being played. */
+export interface CompetitionSeasonRecord {
+  id: EntityId;
+  competitionId: EntityId;
+  competitionName: string;
+  seasonYear: number;
+  championClubId: EntityId;
+  championClubName: string;
+  runnerUpClubName?: string;
+  /** True when the athlete's club disputed the edition. */
+  playerInvolved: boolean;
+  /** True when the athlete himself lifted the trophy. */
+  playerChampion: boolean;
+}
+
 
 
 /** Live accumulator for the ongoing season. Finalised into a SeasonSummary. */
@@ -689,7 +717,14 @@ export interface CareerSummary {
   age: number;
   seasonYear: number;
   updatedAt: number;
+  /** Save-slot metadata for the "carreiras salvas" screen. */
+  clubName?: string;
+  category?: string;
+  overall?: number;
+  status?: CareerStatus;
+  createdAt?: number;
 }
+
 
 export interface GameSettings {
   soundEnabled: boolean;

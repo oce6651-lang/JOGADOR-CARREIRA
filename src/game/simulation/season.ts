@@ -41,11 +41,19 @@ export function addSeasonStats(
   return { ...progress, stats: mergeStatLines(progress.stats, stats) };
 }
 
+export interface SeasonContext {
+  clubId?: string;
+  competitionName?: string;
+  marketValue?: number;
+  weeklyWage?: number;
+}
+
 /** Closes the season, producing both the permanent record and the UI summary. */
 export function finalizeSeason(
   progress: SeasonProgress,
   player: Player,
   ageEnd: number,
+  context: SeasonContext = {},
 ): { summary: SeasonSummary; record: SeasonRecord } {
   const overallEnd = calculateOverall(player.attributes, player.position);
   const attributeChanges = diffAttributes(
@@ -74,8 +82,15 @@ export function finalizeSeason(
   const record: SeasonRecord = {
     id: createId("event"),
     seasonYear: progress.seasonYear,
+    clubId: context.clubId,
     clubName: progress.clubName,
     category: progress.category,
+    competitionName: context.competitionName,
+    age: ageEnd,
+    marketValue: context.marketValue,
+    weeklyWage: context.weeklyWage,
+    titles: progress.titles,
+    awards: progress.awards,
     stats: progress.stats,
     overallStart: progress.overallStart,
     overallEnd,
@@ -84,6 +99,7 @@ export function finalizeSeason(
 
   return { summary, record };
 }
+
 
 function buildHighlights(progress: SeasonProgress, overallDelta: number): string[] {
   const highlights: string[] = [];

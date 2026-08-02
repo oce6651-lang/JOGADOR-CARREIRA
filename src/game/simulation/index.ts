@@ -18,8 +18,9 @@ import {
   runCareerReview,
   selectionProfile,
   shouldReview,
+  estimateMarketValue,
 } from "../ai";
-import { categoryLabel } from "../world";
+import { categoryLabel, competitionEdition, competitionsForClub } from "../world";
 import type {
   AttributeChange,
   CareerAi,
@@ -30,6 +31,7 @@ import type {
   Player,
   SeasonSummary,
   SimulationReport,
+  TitleRecord,
 } from "../types";
 import { createId } from "../ids";
 import { rollInjury } from "./injury";
@@ -495,8 +497,75 @@ function simulateSingleWeek(career: Career): WeekOutcome {
   }
 
   let nextSeason = season;
+  let competitionHistory = career.competitionHistory ?? [];
   if (seasonEnd) {
-    const { summary, record } = finalizeSeason(season, player, newAge);
+    const finishedYear = season.seasonYear;
+    const clubId = ai.club?.clubId;
+    const disputed = clubId
+      ? competitionsForClub(clubId).filter(
+          (competition) =>
+            competition.category === ai.club!.category || competition.scope !== "state",
+        )
+      : [];
+
+    const editions = disputed
+      .map((competition) => competitionEdition(competition.id, finishedYear))
+      .filter((edition): edition is NonNullable<typeof edition> => !!edition);
+
+    const wonTitles: TitleRecord[] = editions
+      .filter((edition) => edition.championClubId === clubId && season.stats.appearances > 0)
+      .map((edition) => ({
+        id: createId("event"),
+        competition: edition.competitionName,
+        seasonYear: finishedYear,
+        clubName: ai.club?.clubName,
+      }));
+
+    if (wonTitles.length) {
+      season = { ...season, titles: [...season.titles, ...wonTitles] };
+      player = {
+        ...player,
+        history: { ...player.history, titles: [...wonTitles, ...player.history.titles] },
+      };
+      for (const title of wonTitles) {
+        events.push(
+          createEvent("title", nextDate, `Campeão: ${title.competition}`, {
+            description: `${title.clubName} conquistou a ${title.competition} de ${finishedYear}.`,
+            tone: "positive",
+          }),
+        );
+      }
+    }
+
+    competitionHistory = [
+      ...editions.map((edition) => ({
+        id: createId("event"),
+        competitionId: edition.competitionId,
+        competitionName: edition.competitionName,
+        seasonYear: finishedYear,
+        championClubId: edition.championClubId,
+        championClubName: edition.championClubName,
+        runnerUpClubName: edition.runnerUpClubName,
+        playerInvolved: true,
+        playerChampion: edition.championClubId === clubId && season.stats.appearances > 0,
+      })),
+      ...competitionHistory,
+    ];
+
+    const marketValue = estimateMarketValue(
+      calculateOverall(player.attributes, player.position),
+      player.hidden.potential,
+      newAge,
+      ai.reputation,
+      ai.club?.category ?? "U17",
+    );
+
+    const { summary, record } = finalizeSeason(season, player, newAge, {
+      clubId,
+      competitionName: disputed[0]?.name,
+      marketValue,
+      weeklyWage: ai.club?.weeklyWage ?? 0,
+    });
     const withChange: SeasonSummary = { ...summary, categoryChange };
     seasonSummaries.push(withChange);
     player = {
@@ -504,12 +573,17 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       history: {
         ...player.history,
         seasons: [record, ...player.history.seasons],
+        marketValues: [
+          { date: nextDate, value: marketValue },
+          ...player.history.marketValues,
+        ],
         overallBySeason: [
           { seasonYear: record.seasonYear, overall: record.overallEnd, age: newAge },
           ...player.history.overallBySeason,
         ],
       },
     };
+
     events.push(
       createEvent("seasonEnd", nextDate, `Fim da temporada ${summary.seasonYear}`, {
         description: summary.highlights.join(" "),
@@ -539,6 +613,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     currentSeason: nextSeason,
     events: appendEvents(career.events, events),
     pendingSeasonSummaries: [...career.pendingSeasonSummaries, ...seasonSummaries],
+    competitionHistory,
   };
 
   return {

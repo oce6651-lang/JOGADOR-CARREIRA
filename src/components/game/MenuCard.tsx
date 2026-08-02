@@ -1,11 +1,12 @@
 import type { LucideIcon } from "lucide-react";
 import { ChevronRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import type { LinkProps } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
 
 interface MenuCardProps {
-  to: "/" | "/novo-jogo" | "/carreira" | "/mundo" | "/configuracoes" | "/creditos";
+  to: LinkProps["to"];
   icon: LucideIcon;
   title: string;
   description: string;

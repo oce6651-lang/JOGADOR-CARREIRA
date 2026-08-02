@@ -169,6 +169,20 @@ function CareerPage() {
         <ChevronsRight className="size-6 text-primary" />
       </Link>
 
+      <Link
+        to="/historico"
+        className="panel mt-3 flex items-center justify-between gap-4 p-5 transition-colors hover:border-primary/60"
+      >
+        <div>
+          <p className="text-display text-2xl uppercase">Histórico da carreira</p>
+          <p className="text-sm text-muted-foreground">
+            Linha do tempo por temporada, clubes, títulos, prêmios e finanças.
+          </p>
+        </div>
+        <ChevronsRight className="size-6 text-primary" />
+      </Link>
+
+
       <section className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="panel space-y-3 p-6">
           <h2 className="text-display text-2xl uppercase">Perfil</h2>

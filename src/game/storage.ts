@@ -3,11 +3,17 @@ import { ageAt } from "./calendar";
 import { createCareerAi } from "./ai";
 
 import { createPlayer } from "./player";
+import { calculateOverall } from "./player/overall";
 import { createSeasonProgress } from "./simulation";
-import type { Career, GameEvent, GameSettings } from "./types";
+import { categoryLabel } from "./world";
+import type { Career, CareerSummary, GameEvent, GameSettings } from "./types";
 
+/** Legacy single-slot key — migrated into the slot index on first load. */
 const CAREER_KEY = "pfc:career:v1";
 const SETTINGS_KEY = "pfc:settings:v1";
+const INDEX_KEY = "pfc:saves:index:v1";
+const ACTIVE_KEY = "pfc:saves:active:v1";
+const slotKey = (id: string) => `pfc:save:${id}`;
 
 export const DEFAULT_SETTINGS: GameSettings = {
   soundEnabled: true,
@@ -22,33 +28,128 @@ function isBrowser() {
 
 /**
  * Save layer. Isolated on purpose: swapping localStorage for a cloud backend
- * later only touches this file.
+ * later only touches this file. Careers live in independent slots so the
+ * player can keep dozens of parallel stories forever.
  */
-export function loadCareer(): Career | null {
+
+function readIndex(): CareerSummary[] {
+  if (!isBrowser()) return [];
+  try {
+    const raw = localStorage.getItem(INDEX_KEY);
+    const list = raw ? (JSON.parse(raw) as CareerSummary[]) : [];
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeIndex(list: CareerSummary[]) {
+  if (!isBrowser()) return;
+  try {
+    localStorage.setItem(INDEX_KEY, JSON.stringify(list));
+  } catch {
+    /* ignore */
+  }
+}
+
+function summarize(career: Career): CareerSummary {
+  return {
+    id: career.id,
+    playerName: career.player.fullName,
+    position: career.player.position,
+    age: ageAt(career.player.birthDate, career.timeline.current.date),
+    seasonYear: career.timeline.current.seasonYear,
+    updatedAt: career.updatedAt,
+    createdAt: career.createdAt,
+    status: career.status,
+    overall: calculateOverall(career.player.attributes, career.player.position),
+    clubName: career.ai?.club?.clubName,
+    category: career.ai?.club ? categoryLabel(career.ai.club.category) : undefined,
+  };
+}
+
+/** All saves, most recently played first. */
+export function listSaves(): CareerSummary[] {
+  migrateLegacySlot();
+  return [...readIndex()].sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export function loadCareerById(id: string): Career | null {
   if (!isBrowser()) return null;
   try {
-    const raw = localStorage.getItem(CAREER_KEY);
+    const raw = localStorage.getItem(slotKey(id));
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Career;
-    return migrateCareer(parsed);
+    return migrateCareer(JSON.parse(raw) as Career);
   } catch {
     return null;
   }
 }
 
+/** Moves a pre-slot save into the new index (runs at most once). */
+function migrateLegacySlot() {
+  if (!isBrowser()) return;
+  const raw = localStorage.getItem(CAREER_KEY);
+  if (!raw) return;
+  try {
+    const career = migrateCareer(JSON.parse(raw) as Career);
+    if (career) {
+      localStorage.setItem(slotKey(career.id), JSON.stringify(career));
+      const index = readIndex().filter((entry) => entry.id !== career.id);
+      writeIndex([summarize(career), ...index]);
+      localStorage.setItem(ACTIVE_KEY, career.id);
+    }
+  } catch {
+    /* ignore */
+  }
+  localStorage.removeItem(CAREER_KEY);
+}
+
+/** The career currently being played. */
+export function loadCareer(): Career | null {
+  if (!isBrowser()) return null;
+  migrateLegacySlot();
+  const activeId = localStorage.getItem(ACTIVE_KEY);
+  if (activeId) {
+    const career = loadCareerById(activeId);
+    if (career) return career;
+  }
+  const [latest] = listSaves();
+  return latest ? loadCareerById(latest.id) : null;
+}
+
+export function setActiveCareer(id: string | null) {
+  if (!isBrowser()) return;
+  if (id) localStorage.setItem(ACTIVE_KEY, id);
+  else localStorage.removeItem(ACTIVE_KEY);
+}
+
 export function saveCareer(career: Career) {
   if (!isBrowser()) return;
   try {
-    localStorage.setItem(CAREER_KEY, JSON.stringify(career));
+    localStorage.setItem(slotKey(career.id), JSON.stringify(career));
+    localStorage.setItem(ACTIVE_KEY, career.id);
+    const index = readIndex().filter((entry) => entry.id !== career.id);
+    writeIndex([summarize(career), ...index]);
   } catch {
     /* storage full or unavailable — ignore */
   }
 }
 
-export function deleteCareer() {
+export function deleteCareerById(id: string) {
   if (!isBrowser()) return;
+  localStorage.removeItem(slotKey(id));
+  writeIndex(readIndex().filter((entry) => entry.id !== id));
+  if (localStorage.getItem(ACTIVE_KEY) === id) localStorage.removeItem(ACTIVE_KEY);
+}
+
+/** Deletes the active save (used by "abandonar carreira"). */
+export function deleteCareer(id?: string) {
+  if (!isBrowser()) return;
+  const target = id ?? localStorage.getItem(ACTIVE_KEY);
+  if (target) deleteCareerById(target);
   localStorage.removeItem(CAREER_KEY);
 }
+
 
 export function loadSettings(): GameSettings {
   if (!isBrowser()) return DEFAULT_SETTINGS;
@@ -76,7 +177,9 @@ interface LegacyLogEntry {
 /** Forward-compatible save migration hook. */
 function migrateCareer(career: Career): Career | null {
   if (!career || typeof career !== "object" || !career.player) return null;
-  if (career.version === SAVE_VERSION) return career;
+  if (career.version === SAVE_VERSION) {
+    return career.competitionHistory ? career : { ...career, competitionHistory: [] };
+  }
 
   let next = career;
 
@@ -186,6 +289,11 @@ function migrateCareer(career: Career): Career | null {
         })),
       },
     };
+  }
+
+  // v6 -> v7: permanent competition history + multi-slot saves.
+  if (!Array.isArray(next.competitionHistory)) {
+    next = { ...next, competitionHistory: [] };
   }
 
   // Future migrations chain here.
