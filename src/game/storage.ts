@@ -177,7 +177,9 @@ interface LegacyLogEntry {
 /** Forward-compatible save migration hook. */
 function migrateCareer(career: Career): Career | null {
   if (!career || typeof career !== "object" || !career.player) return null;
-  if (career.version === SAVE_VERSION) return career;
+  if (career.version === SAVE_VERSION) {
+    return career.competitionHistory ? career : { ...career, competitionHistory: [] };
+  }
 
   let next = career;
 
@@ -287,6 +289,11 @@ function migrateCareer(career: Career): Career | null {
         })),
       },
     };
+  }
+
+  // v6 -> v7: permanent competition history + multi-slot saves.
+  if (!Array.isArray(next.competitionHistory)) {
+    next = { ...next, competitionHistory: [] };
   }
 
   // Future migrations chain here.
