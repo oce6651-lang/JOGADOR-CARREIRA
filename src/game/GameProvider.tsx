@@ -30,12 +30,16 @@ import type { SimulationScope } from "./simulation";
 import {
   DEFAULT_SETTINGS,
   deleteCareer,
+  deleteCareerById,
+  listSaves,
   loadCareer,
+  loadCareerById,
   loadSettings,
   saveCareer,
   saveSettings,
+  setActiveCareer,
 } from "./storage";
-import type { Career, GameSettings, SimulationReport } from "./types";
+import type { Career, CareerSummary, GameSettings, SimulationReport } from "./types";
 
 interface GameContextValue {
   /** True once localStorage has been read on the client. */
@@ -63,6 +67,10 @@ interface GameContextValue {
   requestPromotion: () => { granted: boolean; message: string };
   dismissAgent: () => void;
   updateSettings: (patch: Partial<GameSettings>) => void;
+  /** Every save slot stored on this device. */
+  saves: CareerSummary[];
+  loadSave: (id: string) => boolean;
+  deleteSave: (id: string) => void;
 }
 
 const GameContext = createContext<GameContextValue | null>(null);
@@ -73,16 +81,36 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [lastReport, setLastReport] = useState<SimulationReport | null>(null);
   const [simulating, setSimulating] = useState(false);
+  const [saves, setSaves] = useState<CareerSummary[]>([]);
 
   useEffect(() => {
     setCareer(loadCareer());
     setSettings(loadSettings());
+    setSaves(listSaves());
     setHydrated(true);
   }, []);
 
   const persist = useCallback((next: Career | null) => {
     setCareer(next);
-    if (next) saveCareer(next);
+    if (next) {
+      saveCareer(next);
+      setSaves(listSaves());
+    }
+  }, []);
+
+  const loadSave = useCallback((id: string) => {
+    const loaded = loadCareerById(id);
+    if (!loaded) return false;
+    setActiveCareer(id);
+    setCareer(loaded);
+    setLastReport(null);
+    return true;
+  }, []);
+
+  const deleteSave = useCallback((id: string) => {
+    deleteCareerById(id);
+    setSaves(listSaves());
+    setCareer((prev) => (prev && prev.id === id ? null : prev));
   }, []);
 
   const startNewCareer = useCallback(
@@ -100,6 +128,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!prev) return prev;
       const next = { ...updater(prev), updatedAt: Date.now() };
       saveCareer(next);
+      setSaves(listSaves());
       return next;
     });
   }, []);
@@ -110,6 +139,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!prev) return prev;
       const { career: next, report } = simulateCareer(prev, scope);
       saveCareer(next);
+      setSaves(listSaves());
       setLastReport(report);
       return next;
     });
@@ -183,10 +213,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
   );
 
   const abandonCareer = useCallback(() => {
-    deleteCareer();
+    deleteCareer(career?.id);
+    setSaves(listSaves());
     setCareer(null);
     setLastReport(null);
-  }, []);
+  }, [career?.id]);
 
   const updateSettings = useCallback((patch: Partial<GameSettings>) => {
     setSettings((prev) => {
@@ -201,6 +232,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       hydrated,
       career,
       settings,
+      saves,
+      loadSave,
+      deleteSave,
       lastReport,
       simulating,
       startNewCareer,
@@ -223,6 +257,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       hydrated,
       career,
       settings,
+      saves,
+      loadSave,
+      deleteSave,
       lastReport,
       simulating,
       startNewCareer,
