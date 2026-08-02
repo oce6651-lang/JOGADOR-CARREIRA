@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Gamepad2, Globe2, Play, Settings, Sparkles, Trophy } from "lucide-react";
+import { FolderOpen, Gamepad2, Globe2, Play, Settings, Sparkles, Trophy } from "lucide-react";
 
 import { GameShell } from "@/components/game/GameShell";
-import { FolderOpen } from "lucide-react";
 import { MenuCard } from "@/components/game/MenuCard";
 import { GAME_NAME, positionLabel } from "@/game/constants";
 import { playerAge, playerFullName } from "@/game/career";
