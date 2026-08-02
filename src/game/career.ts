@@ -92,6 +92,8 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     timeline,
     events,
     pendingSeasonSummaries: [],
+    competitionHistory: [],
+
     currentSeason: createSeasonProgress(player, timeline.current.seasonYear, age),
     ai: createCareerAi(player),
   };
