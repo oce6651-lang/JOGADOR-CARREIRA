@@ -241,11 +241,21 @@ export interface SeasonRecord {
   clubId?: EntityId;
   clubName?: string;
   category?: string;
+  /** Main competition disputed in the season, when known. */
+  competitionName?: string;
+  /** Age the athlete reached at the end of the season. */
+  age?: number;
+  /** Market value and wage snapshot at the end of the season. */
+  marketValue?: number;
+  weeklyWage?: number;
+  titles?: TitleRecord[];
+  awards?: AwardRecord[];
   stats: MatchStatLine;
   overallStart: number;
   overallEnd: number;
   attributes: PlayerAttributes;
 }
+
 
 export interface MatchRecord {
   id: EntityId;
