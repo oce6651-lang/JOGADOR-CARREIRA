@@ -672,7 +672,25 @@ export interface Career {
   currentSeason: SeasonProgress;
   /** Career AI state — drives every automatic decision. */
   ai: CareerAi;
+  /** Permanent competition history lived through this career. */
+  competitionHistory: CompetitionSeasonRecord[];
 }
+
+/** A competition edition finished while this career was being played. */
+export interface CompetitionSeasonRecord {
+  id: EntityId;
+  competitionId: EntityId;
+  competitionName: string;
+  seasonYear: number;
+  championClubId: EntityId;
+  championClubName: string;
+  runnerUpClubName?: string;
+  /** True when the athlete's club disputed the edition. */
+  playerInvolved: boolean;
+  /** True when the athlete himself lifted the trophy. */
+  playerChampion: boolean;
+}
+
 
 
 /** Live accumulator for the ongoing season. Finalised into a SeasonSummary. */
