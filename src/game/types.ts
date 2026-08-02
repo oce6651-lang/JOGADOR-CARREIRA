@@ -717,7 +717,14 @@ export interface CareerSummary {
   age: number;
   seasonYear: number;
   updatedAt: number;
+  /** Save-slot metadata for the "carreiras salvas" screen. */
+  clubName?: string;
+  category?: string;
+  overall?: number;
+  status?: CareerStatus;
+  createdAt?: number;
 }
+
 
 export interface GameSettings {
   soundEnabled: boolean;
