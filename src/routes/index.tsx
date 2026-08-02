@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Gamepad2, Globe2, Play, Settings, Sparkles, Trophy } from "lucide-react";
 
 import { GameShell } from "@/components/game/GameShell";
+import { FolderOpen } from "lucide-react";
 import { MenuCard } from "@/components/game/MenuCard";
 import { GAME_NAME, positionLabel } from "@/game/constants";
 import { playerAge, playerFullName } from "@/game/career";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/")({
 });
 
 function MainMenu() {
-  const { career, hydrated } = useGame();
+  const { career, hydrated, saves } = useGame();
 
   return (
     <GameShell className="flex min-h-screen flex-col justify-center">
@@ -69,6 +70,17 @@ function MainMenu() {
           accent="gold"
           disabled={!hydrated || !career}
           delay={120}
+        />
+        <MenuCard
+          to="/carreiras"
+          icon={FolderOpen}
+          title="Carreiras Salvas"
+          description={
+            hydrated && saves.length
+              ? `${saves.length} carreira(s) neste dispositivo`
+              : "Gerencie e retome seus saves"
+          }
+          delay={150}
         />
         <MenuCard
           to="/mundo"
