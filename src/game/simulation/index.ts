@@ -18,8 +18,9 @@ import {
   runCareerReview,
   selectionProfile,
   shouldReview,
+  estimateMarketValue,
 } from "../ai";
-import { categoryLabel } from "../world";
+import { categoryLabel, competitionEdition, competitionsForClub } from "../world";
 import type {
   AttributeChange,
   CareerAi,
@@ -30,6 +31,7 @@ import type {
   Player,
   SeasonSummary,
   SimulationReport,
+  TitleRecord,
 } from "../types";
 import { createId } from "../ids";
 import { rollInjury } from "./injury";
@@ -611,6 +613,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     currentSeason: nextSeason,
     events: appendEvents(career.events, events),
     pendingSeasonSummaries: [...career.pendingSeasonSummaries, ...seasonSummaries],
+    competitionHistory,
   };
 
   return {

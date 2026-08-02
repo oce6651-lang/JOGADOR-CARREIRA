@@ -12,6 +12,7 @@ export * from "./clubs";
 export * from "./competitions";
 export * from "./standings";
 export * from "./era";
+export * from "./history";
 
 
 import { CLUBS } from "./clubs";
