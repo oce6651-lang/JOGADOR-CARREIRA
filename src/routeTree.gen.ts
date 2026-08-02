@@ -20,6 +20,7 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as EmpresarioRouteImport } from './routes/empresario'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as CarreirasRouteImport } from './routes/carreiras'
 import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MundoIndexRouteImport } from './routes/mundo.index'
@@ -81,6 +82,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CarreirasRoute = CarreirasRouteImport.update({
+  id: '/carreiras',
+  path: '/carreiras',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CarreiraRoute = CarreiraRouteImport.update({
   id: '/carreira',
   path: '/carreira',
@@ -111,6 +117,7 @@ const MundoClubeClubSlugRoute = MundoClubeClubSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carreira': typeof CarreiraRoute
+  '/carreiras': typeof CarreirasRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/empresario': typeof EmpresarioRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carreira': typeof CarreiraRoute
+  '/carreiras': typeof CarreirasRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/empresario': typeof EmpresarioRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/carreira': typeof CarreiraRoute
+  '/carreiras': typeof CarreirasRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/empresario': typeof EmpresarioRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/carreira'
+    | '/carreiras'
     | '/configuracoes'
     | '/creditos'
     | '/empresario'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/carreira'
+    | '/carreiras'
     | '/configuracoes'
     | '/creditos'
     | '/empresario'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/carreira'
+    | '/carreiras'
     | '/configuracoes'
     | '/creditos'
     | '/empresario'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarreiraRoute: typeof CarreiraRoute
+  CarreirasRoute: typeof CarreirasRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
   EmpresarioRoute: typeof EmpresarioRoute
@@ -313,6 +326,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/carreiras': {
+      id: '/carreiras'
+      path: '/carreiras'
+      fullPath: '/carreiras'
+      preLoaderRoute: typeof CarreirasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/carreira': {
       id: '/carreira'
       path: '/carreira'
@@ -368,6 +388,7 @@ const MundoRouteWithChildren = MundoRoute._addFileChildren(MundoRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarreiraRoute: CarreiraRoute,
+  CarreirasRoute: CarreirasRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
   EmpresarioRoute: EmpresarioRoute,
