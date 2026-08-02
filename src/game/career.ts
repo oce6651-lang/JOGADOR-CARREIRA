@@ -159,8 +159,14 @@ export function toSummary(career: Career): CareerSummary {
     age: playerAge(career),
     seasonYear: career.timeline.current.seasonYear,
     updatedAt: career.updatedAt,
+    createdAt: career.createdAt,
+    status: career.status,
+    overall: playerOverall(career),
+    clubName: career.ai?.club?.clubName,
+    category: career.ai?.club ? categoryLabel(career.ai.club.category) : undefined,
   };
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Negotiations, trials and agents                                     */
