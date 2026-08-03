@@ -3,6 +3,7 @@ import type { Random } from "../rng";
 import { chance } from "../rng";
 import type { Agent, CareerAi, GameDate, GameEvent, MatchStatLine, Player } from "../types";
 import {
+  canAdvanceTo,
   categoryForSeason,
   categoryLabel,
   categoryOrder,
@@ -255,6 +256,7 @@ export function assessPromotion(input: {
   const situation = ai.club;
   const target = promotionTarget(ai);
   if (!situation || !target) return undefined;
+  if (!canAdvanceTo(situation.category, target, age)) return undefined;
 
   const club = getClub(situation.clubId);
   if (!club) return undefined;
