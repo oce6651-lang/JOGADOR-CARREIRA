@@ -9,13 +9,14 @@ export const CATEGORIES: CategoryDefinition[] = [
   { code: "U7", label: "Sub-7", maxAge: 7, minAge: 5, order: 0 },
   { code: "U8", label: "Sub-8", maxAge: 8, minAge: 6, order: 1 },
   { code: "U9", label: "Sub-9", maxAge: 9, minAge: 7, order: 2 },
-  { code: "U11", label: "Sub-11", maxAge: 11, minAge: 8, order: 3 },
-  { code: "U13", label: "Sub-13", maxAge: 13, minAge: 10, order: 4 },
-  { code: "U15", label: "Sub-15", maxAge: 15, minAge: 12, order: 5 },
-  { code: "U17", label: "Sub-17", maxAge: 17, minAge: 14, order: 6 },
-  { code: "U20", label: "Sub-20", maxAge: 20, minAge: 15, order: 7 },
-  { code: "U23", label: "Sub-23", maxAge: 23, minAge: 16, order: 8 },
+  { code: "U11", label: "Sub-11", maxAge: 11, minAge: 9, order: 3 },
+  { code: "U13", label: "Sub-13", maxAge: 13, minAge: 11, order: 4 },
+  { code: "U15", label: "Sub-15", maxAge: 15, minAge: 13, order: 5 },
+  { code: "U17", label: "Sub-17", maxAge: 17, minAge: 15, order: 6 },
+  { code: "U20", label: "Sub-20", maxAge: 20, minAge: 17, order: 7 },
+  { code: "U23", label: "Sub-23", maxAge: 23, minAge: 19, order: 8 },
   { code: "PRO", label: "Profissional", minAge: 16, order: 9 },
+
 ];
 
 
