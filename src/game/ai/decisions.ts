@@ -1,4 +1,5 @@
 import { createEvent } from "../events";
+import { createId } from "../ids";
 import type { Random } from "../rng";
 import { chance, pick } from "../rng";
 import type {
@@ -10,13 +11,12 @@ import type {
   ScoutingInterest,
 } from "../types";
 import {
+  canAdvanceTo,
   categoryForSeason,
   categoryLabel,
   categoryOrder,
   sortCategories,
   getCategory,
-  isAgeEligible,
-  PROFESSIONAL_AGE,
   getClub,
   nextCategory,
   CLUBS,
@@ -220,11 +220,27 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   ai = scouted.ai;
   events.push(...scouted.events);
 
-  /* --- promotion -------------------------------------------------- */
+  /* --- promotion (always the player's decision) --------------------- */
   const promotion = evaluatePromotion(ai, evaluation, ctx);
-  if (promotion) {
-    const moved = changeCategory(player, ai, promotion, date, true);
-    return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(promotion));
+  if (promotion && !ai.pendingPromotion) {
+    ai = {
+      ...ai,
+      pendingPromotion: {
+        id: createId("event"),
+        category: promotion,
+        categoryLabel: categoryLabel(promotion),
+        clubName: situation.clubName,
+        message: `A comissão técnica do ${situation.clubName} quer subir o atleta do ${categoryLabel(situation.category)} para o ${categoryLabel(promotion)}.`,
+        createdWeek: ctx.elapsedWeeks,
+        mandatory: false,
+      },
+    };
+    events.push(
+      createEvent("milestone", date, `Convite para o ${categoryLabel(promotion)}`, {
+        description: "O atleta precisa decidir se aceita subir de categoria.",
+        tone: "positive",
+      }),
+    );
   }
 
   /* --- seasonal category migration --------------------------------- */
@@ -238,9 +254,28 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
     const ready = evaluation.score >= -22 || evaluation.potential >= 0.45;
     const target = club ? plannedCategoryFor(club, seasonCategory, ready) : undefined;
 
-    if (target && ready) {
-      const moved = changeCategory(player, ai, target, date, true);
-      return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(target));
+    if (target && ready && canAdvanceTo(situation.category, target, ctx.age)) {
+      if (!ai.pendingPromotion) {
+        ai = {
+          ...ai,
+          pendingPromotion: {
+            id: createId("event"),
+            category: target,
+            categoryLabel: categoryLabel(target),
+            clubName: situation.clubName,
+            message: `O atleta passou da idade do ${categoryLabel(situation.category)}. O ${situation.clubName} abriu vaga no ${categoryLabel(target)} — recusar significa deixar o clube.`,
+            createdWeek: ctx.elapsedWeeks,
+            mandatory: true,
+          },
+        };
+        events.push(
+          createEvent("milestone", date, `Subida obrigatória ao ${categoryLabel(target)}`, {
+            description: "Decida em Carreira: aceitar a nova categoria ou sair do clube.",
+            tone: "warning",
+          }),
+        );
+      }
+      return finish(player, ai, events);
     }
 
     const released = releaseFromClub(
@@ -251,6 +286,7 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
     );
     return finish(released.player, released.ai, [...events, ...released.events]);
   }
+
 
   /* --- release / stay --------------------------------------------- */
   const failing = evaluation.score <= -34 && evaluation.gap <= -6;
@@ -366,6 +402,7 @@ function evaluatePromotion(
 
   const target = nextAvailableCategory(club, situation.category);
   if (!target) return undefined;
+  if (!canAdvanceTo(situation.category, target, ctx.age)) return undefined;
 
   const maxAge = getCategory(situation.category)?.maxAge;
   const overAge = maxAge !== undefined && ctx.age > maxAge;
@@ -374,7 +411,7 @@ function evaluatePromotion(
     levelGap(ctx.overall, target, club.reputation) >= (target === "PRO" ? -6 : -3);
 
   if (overAge && ctx.seasonEnd && evaluation.score > -18 && readyForTarget) {
-    return skipCategory(club, target, ctx, evaluation) ?? target;
+    return skipCategory(club, situation.category, target, ctx, evaluation) ?? target;
   }
   if (!settled) return undefined;
 
@@ -385,7 +422,7 @@ function evaluatePromotion(
     ctx.seasonStats.appearances >= 6;
 
   if (dominating && readyForTarget) {
-    return skipCategory(club, target, ctx, evaluation) ?? target;
+    return skipCategory(club, situation.category, target, ctx, evaluation) ?? target;
   }
   return undefined;
 }
@@ -397,6 +434,7 @@ function evaluatePromotion(
  */
 function skipCategory(
   club: Club,
+  from: CategoryCode,
   target: CategoryCode,
   ctx: AiContext,
   evaluation: Evaluation,
@@ -405,8 +443,7 @@ function skipCategory(
 
   const jump = nextAvailableCategory(club, target);
   if (!jump) return undefined;
-  if (!isAgeEligible(jump, ctx.age)) return undefined;
-  if (jump === "PRO" && ctx.age < PROFESSIONAL_AGE) return undefined;
+  if (!canAdvanceTo(from, jump, ctx.age)) return undefined;
   if (levelGap(ctx.overall, jump, club.reputation) < (jump === "PRO" ? -2 : 0)) {
     return undefined;
   }
@@ -510,5 +547,43 @@ function updateScouting(
     }
   }
 
+  /* --- interest turns into a formal transfer bid -------------------- */
+  const suitor = scouting.find(
+    (interest) =>
+      interest.level >= 70 &&
+      !ai.offers.some((offer) => offer.clubId === interest.clubId && offer.kind === "transfer"),
+  );
+  if (suitor && chance(0.45, ctx.random)) {
+    const club = getClub(suitor.clubId);
+    if (club) {
+      const category = entryCategoryFor(club, situation.category);
+      ai = addOffer(
+        ai,
+        buildOffer({
+          kind: "transfer",
+          club,
+          category,
+          overall: ctx.overall,
+          elapsedWeeks: ctx.elapsedWeeks,
+          ai,
+          age: ctx.age,
+          seasonYear: ctx.date.seasonYear,
+          role: category === "PRO" ? "rotation" : "starter",
+          fromClubName: situation.clubName,
+          random: ctx.random,
+          message: `O ${club.name} formalizou uma proposta de transferência ao ${situation.clubName} para atuar no ${categoryLabel(category)}.`,
+        }),
+      );
+      scouting = scouting.filter((interest) => interest.clubId !== suitor.clubId);
+      events.push(
+        createEvent("contract", ctx.date, `Proposta do ${club.name}`, {
+          description: "Uma proposta de transferência aguarda decisão em Negociações.",
+          tone: "positive",
+        }),
+      );
+    }
+  }
+
   return { ai: { ...ai, scouting }, events };
+
 }

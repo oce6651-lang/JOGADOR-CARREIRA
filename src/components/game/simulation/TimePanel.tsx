@@ -1,4 +1,4 @@
-import { CalendarDays, Cake, ChevronsRight, Play, Trophy } from "lucide-react";
+import { CalendarDays, Cake, ChevronsRight, FastForward, Play, Trophy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/game/Stats";
@@ -52,7 +52,7 @@ export function TimePanel({
 
       <ProgressBar label="Progresso da temporada" value={date.week} max={WEEKS_PER_SEASON} />
 
-      <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <Button
           onClick={() => onSimulate("match")}
           disabled={busy || !canPlayMatch}
@@ -77,6 +77,15 @@ export function TimePanel({
         >
           <ChevronsRight className="size-4" />
           <ChevronsRight className="-ml-3 size-4" /> Simular mês
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() => onSimulate("year")}
+          disabled={busy}
+          className="text-display justify-center text-base uppercase"
+          title="Simula a temporada inteira de uma vez"
+        >
+          <FastForward className="size-4" /> Simular ano
         </Button>
       </div>
       {!canPlayMatch ? (

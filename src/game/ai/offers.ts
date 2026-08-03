@@ -351,7 +351,16 @@ export function acceptOffer(
       category: offer.category,
       date,
       overall,
-      type: offer.kind === "loan" ? "loan" : offer.category === "PRO" ? "permanent" : "youth",
+      type:
+        offer.kind === "loan"
+          ? "loan"
+          : offer.kind === "transfer" || offer.category === "PRO"
+            ? "permanent"
+            : "youth",
+      fee:
+        offer.kind === "transfer" && ai.club
+          ? Math.round((offer.terms.weeklyWage * 52 * 2.4) / 1000) * 1000
+          : 0,
       parent: offer.kind === "loan" ? (ai.club ?? undefined) : undefined,
       random,
       terms: offer.terms,

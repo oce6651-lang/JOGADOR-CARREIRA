@@ -7,7 +7,7 @@ import { SeasonTimeline } from "@/components/game/history/SeasonTimeline";
 import { StatCard } from "@/components/game/Stats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGame } from "@/game/GameProvider";
-import { formatMoney, formatRating } from "@/game/format";
+import { formatFee, formatMoney, formatRating } from "@/game/format";
 
 export const Route = createFileRoute("/historico")({
   head: () => ({
@@ -133,7 +133,7 @@ function HistoryPage() {
                   {transfer.fromClub ?? "Sem clube"} → <strong>{transfer.toClub}</strong>
                 </p>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {transfer.date.seasonYear} · {formatMoney(transfer.fee)}
+                  {transfer.date.seasonYear} · {formatFee(transfer.fee)}
                 </p>
               </div>
             ))

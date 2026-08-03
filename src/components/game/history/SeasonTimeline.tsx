@@ -47,7 +47,10 @@ export function SeasonTimeline({ seasons }: { seasons: SeasonRecord[] }) {
                 <Td className="text-left">{season.clubName ?? "Sem clube"}</Td>
                 <Td className="text-left text-muted-foreground">{season.category ?? "—"}</Td>
                 <Td className="text-left text-muted-foreground">
-                  {season.competitionName ?? "—"}
+                  {season.competitions?.length
+                    ? season.competitions.slice(0, 2).join(", ") +
+                      (season.competitions.length > 2 ? ` +${season.competitions.length - 2}` : "")
+                    : (season.competitionName ?? "—")}
                 </Td>
                 <Td>{season.age ?? "—"}</Td>
                 <Td>{season.stats.appearances}</Td>

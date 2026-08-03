@@ -55,9 +55,12 @@ export function joinClub(
     random: Random;
     /** Terms agreed by the player during the negotiation. */
     terms?: ContractTerms;
+    /** Fee paid by the new club — 0 means a free transfer. */
+    fee?: number;
   },
 ): { player: Player; ai: CareerAi; events: GameEvent[] } {
   const { club, category, date, overall, type, parent, random, terms } = options;
+  const fee = options.fee ?? 0;
   const spellId = createId("contract");
   const wage = terms?.weeklyWage ?? estimateWage(club, category, overall, random);
   const events: GameEvent[] = [];
@@ -110,8 +113,15 @@ export function joinClub(
           date,
           fromClub: parent?.clubName,
           toClub: club.name,
-          fee: 0,
-          type: type === "youth" ? "youth" : type === "loan" ? "loan" : "free",
+          fee,
+          type:
+            type === "youth"
+              ? "youth"
+              : type === "loan"
+                ? "loan"
+                : fee > 0
+                  ? "permanent"
+                  : "free",
         },
         ...player.history.transfers,
       ],

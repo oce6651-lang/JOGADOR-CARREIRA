@@ -174,6 +174,43 @@ export const ARGENTINA_CLUBS: ClubRow[] = [
   ["platense", "Club Atlético Platense", "Platense", "Vicente López", "BA", 1905, "Ciudad de Vicente López", 22000, 55, 2, c("#8a4b2a", "#ffffff", "#000000")],
 ];
 
+
+export const NETHERLANDS_CLUBS: ClubRow[] = [
+  ["ajax", "AFC Ajax", "Ajax", "Amsterdã", "NH", 1900, "Johan Cruijff ArenA", 55500, 84, 1, c("#d2122e", "#ffffff", "#000000")],
+  ["psv", "PSV Eindhoven", "PSV", "Eindhoven", "NB", 1913, "Philips Stadion", 35000, 84, 1, c("#e30613", "#ffffff", "#000000")],
+  ["feyenoord", "Feyenoord", "Feyenoord", "Roterdã", "ZH", 1908, "De Kuip", 51117, 83, 1, c("#e30613", "#ffffff", "#000000")],
+  ["az-alkmaar", "AZ Alkmaar", "AZ", "Alkmaar", "NH", 1967, "AFAS Stadion", 19478, 74, 1, c("#e30613", "#ffffff", "#000000")],
+  ["twente", "FC Twente", "Twente", "Enschede", "OV", 1965, "De Grolsch Veste", 30205, 70, 1, c("#e30613", "#ffffff", "#000000")],
+  ["utrecht", "FC Utrecht", "Utrecht", "Utrecht", "UT", 1970, "Stadion Galgenwaard", 23750, 66, 1, c("#e30613", "#ffffff", "#000000")],
+  ["vitesse", "SBV Vitesse", "Vitesse", "Arnhem", "GE", 1892, "GelreDome", 21248, 62, 1, c("#ffe600", "#000000", "#ffffff")],
+  ["heerenveen", "SC Heerenveen", "Heerenveen", "Heerenveen", "OV", 1920, "Abe Lenstra Stadion", 27224, 60, 1, c("#0a51a1", "#ffffff", "#e30613")],
+  ["sparta-rotterdam", "Sparta Rotterdam", "Sparta", "Roterdã", "ZH", 1888, "Het Kasteel", 11026, 56, 1, c("#e30613", "#ffffff", "#000000")],
+  ["nec", "NEC Nijmegen", "NEC", "Nijmegen", "GE", 1900, "Goffertstadion", 12500, 57, 1, c("#e30613", "#00843d", "#ffffff")],
+  ["go-ahead-eagles", "Go Ahead Eagles", "Go Ahead", "Deventer", "OV", 1902, "De Adelaarshorst", 10400, 54, 1, c("#e30613", "#ffe600", "#000000")],
+  ["fortuna-sittard", "Fortuna Sittard", "Fortuna", "Sittard", "LI", 1968, "Fortuna Sittard Stadion", 12500, 52, 1, c("#ffe600", "#000000", "#ffffff")],
+  ["willem-ii", "Willem II", "Willem II", "Tilburg", "NB", 1896, "Koning Willem II Stadion", 14500, 51, 2, c("#e30613", "#0a51a1", "#ffffff")],
+  ["roda-jc", "Roda JC Kerkrade", "Roda JC", "Kerkrade", "LI", 1962, "Parkstad Limburg Stadion", 19979, 48, 2, c("#ffe600", "#000000", "#ffffff")],
+  ["den-bosch", "FC Den Bosch", "Den Bosch", "'s-Hertogenbosch", "NB", 1965, "De Vliert", 8250, 44, 2, c("#0a51a1", "#ffffff", "#000000")],
+];
+
+export const MEXICO_CLUBS: ClubRow[] = [
+  ["club-america", "Club América", "América", "Cidade do México", "CMX", 1916, "Estadio Azteca", 87523, 80, 1, c("#ffe600", "#0a2896", "#ffffff")],
+  ["chivas", "CD Guadalajara", "Chivas", "Guadalajara", "JAL", 1906, "Estadio Akron", 49850, 78, 1, c("#e30613", "#ffffff", "#0a2896")],
+  ["cruz-azul", "Cruz Azul", "Cruz Azul", "Cidade do México", "CMX", 1927, "Estadio Ciudad de los Deportes", 33042, 76, 1, c("#0a2896", "#ffffff", "#e30613")],
+  ["tigres-uanl", "Tigres UANL", "Tigres", "Monterrey", "NLE", 1960, "Estadio Universitario", 41615, 78, 1, c("#ffe600", "#0a2896", "#ffffff")],
+  ["monterrey", "CF Monterrey", "Monterrey", "Monterrey", "NLE", 1945, "Estadio BBVA", 53500, 77, 1, c("#0a2896", "#ffffff", "#ffe600")],
+  ["pumas", "Pumas UNAM", "Pumas", "Cidade do México", "CMX", 1954, "Estadio Olímpico Universitario", 72449, 71, 1, c("#0a2896", "#ffe600", "#ffffff")],
+  ["toluca", "Deportivo Toluca", "Toluca", "Toluca", "CMX", 1917, "Estadio Nemesio Díez", 30000, 70, 1, c("#e30613", "#ffffff", "#000000")],
+  ["santos-laguna", "Santos Laguna", "Santos", "Torreón", "SIN", 1983, "Estadio Corona", 30000, 66, 1, c("#00843d", "#ffffff", "#000000")],
+  ["pachuca", "CF Pachuca", "Pachuca", "Pachuca", "CMX", 1901, "Estadio Hidalgo", 30000, 69, 1, c("#0a2896", "#ffffff", "#e30613")],
+  ["leon", "Club León", "León", "León", "MIC", 1944, "Estadio Nou Camp", 31297, 66, 1, c("#00843d", "#ffffff", "#ffe600")],
+  ["atlas", "Atlas FC", "Atlas", "Guadalajara", "JAL", 1916, "Estadio Jalisco", 55020, 63, 1, c("#e30613", "#000000", "#ffffff")],
+  ["tijuana", "Club Tijuana", "Xolos", "Tijuana", "SIN", 2007, "Estadio Caliente", 27333, 61, 1, c("#e30613", "#000000", "#ffffff")],
+  ["necaxa", "Club Necaxa", "Necaxa", "Aguascalientes", "MIC", 1923, "Estadio Victoria", 25000, 58, 1, c("#e30613", "#ffffff", "#000000")],
+  ["puebla", "Club Puebla", "Puebla", "Puebla", "PUE", 1944, "Estadio Cuauhtémoc", 51726, 57, 1, c("#0a2896", "#ffffff", "#000000")],
+  ["merida", "Venados FC", "Venados", "Mérida", "YUC", 1959, "Estadio Carlos Iturralde", 15000, 46, 2, c("#e30613", "#ffe600", "#ffffff")],
+];
+
 /** Every non-Brazilian dataset, keyed by country code. */
 export const INTERNATIONAL_CLUBS: { country: string; rows: ClubRow[] }[] = [
   { country: "ENG", rows: ENGLAND_CLUBS },
@@ -183,4 +220,6 @@ export const INTERNATIONAL_CLUBS: { country: string; rows: ClubRow[] }[] = [
   { country: "FRA", rows: FRANCE_CLUBS },
   { country: "POR", rows: PORTUGAL_CLUBS },
   { country: "ARG", rows: ARGENTINA_CLUBS },
+  { country: "NED", rows: NETHERLANDS_CLUBS },
+  { country: "MEX", rows: MEXICO_CLUBS },
 ];

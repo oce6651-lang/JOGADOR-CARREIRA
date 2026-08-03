@@ -50,9 +50,14 @@ export * from "./match";
 export * from "./progression";
 export * from "./season";
 
-export type SimulationScope = "match" | "week" | "month";
+export type SimulationScope = "match" | "week" | "month" | "year";
 
-const SCOPE_WEEKS: Record<SimulationScope, number> = { match: 1, week: 1, month: 4 };
+const SCOPE_WEEKS: Record<SimulationScope, number> = {
+  match: 1,
+  week: 1,
+  month: 4,
+  year: WEEKS_PER_SEASON,
+};
 /** Safety cap when looking for the next match. */
 const MAX_MATCH_SEARCH_WEEKS = 8;
 
@@ -563,6 +568,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     const { summary, record } = finalizeSeason(season, player, newAge, {
       clubId,
       competitionName: disputed[0]?.name,
+      competitions: disputed.map((competition) => competition.name),
       marketValue,
       weeklyWage: ai.club?.weeklyWage ?? 0,
     });

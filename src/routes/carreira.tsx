@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { PromotionCard } from "@/components/game/career/PromotionCard";
 import { EventList } from "@/components/game/events/EventList";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { SeasonSummaryDialog } from "@/components/game/simulation/SeasonSummaryDialog";
@@ -56,7 +57,8 @@ const SHORTCUTS = [
   { to: "/peneiras" as const, label: "Peneiras", icon: Target },
   { to: "/empresario" as const, label: "Empresário", icon: Briefcase },
   { to: "/selecoes" as const, label: "Seleções", icon: Flag },
-  { to: "/mundo" as const, label: "Campeonatos", icon: Trophy },
+  { to: "/mundo" as const, label: "Mundo", icon: Trophy },
+  { to: "/competicoes" as const, label: "Competições", icon: Trophy },
 ];
 
 
@@ -80,6 +82,8 @@ function CareerPage() {
     dismissReport,
     dismissSeasonSummary,
     abandonCareer,
+    acceptPromotion,
+    declinePromotion,
   } = useGame();
   const [filter, setFilter] = useState<"all" | GameEventType>("all");
 
@@ -129,6 +133,14 @@ function CareerPage() {
         busy={simulating}
         onSimulate={simulate}
       />
+
+      {career.ai.pendingPromotion ? (
+        <PromotionCard
+          promotion={career.ai.pendingPromotion}
+          onAccept={acceptPromotion}
+          onDecline={declinePromotion}
+        />
+      ) : null}
 
       <section className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard

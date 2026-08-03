@@ -146,6 +146,7 @@ const CONTINENTAL: CompetitionSeed[] = (
     ["sul-americana", "CONMEBOL Sul-Americana", "Sul-Americana", "continental", 2002, ["BRA", "ARG"]],
     ["champions-league", "UEFA Champions League", "Champions", "continental", 1955, ["ENG", "ESP", "ITA", "GER", "FRA", "POR"]],
     ["europa-league", "UEFA Europa League", "Europa League", "continental", 1971, ["ENG", "ESP", "ITA", "GER", "FRA", "POR"]],
+    ["concacaf-champions", "CONCACAF Champions Cup", "Concachampions", "continental", 1962, ["MEX"]],
     ["mundial-de-clubes", "Mundial de Clubes FIFA", "Mundial", "world", 2000, []],
   ] as const
 ).map(([slug, name, shortName, scope, foundedYear, countries]) => ({
@@ -228,6 +229,18 @@ const SEEDS: CompetitionSeed[] = [
   nationalLeague("FRA", "ligue-2", "Ligue 2", "Ligue 2", 2, 1933, c("#0a2896", "#ffffff", "#e2001a")),
   nationalCup("FRA", "coupe-de-france", "Coupe de France", "Coupe de France", 1917, c("#0a2896", "#ffffff", "#e2001a")),
   youthCompetition("FRA", "championnat-national-u19", "Championnat National U19", "National U19", "U20", 60, "league", 1998, c("#091c3e", "#dcb46a", "#ffffff")),
+
+  /* Países Baixos */
+  nationalLeague("NED", "eredivisie", "Eredivisie", "Eredivisie", 1, 1956, c("#e30613", "#ffffff", "#0a51a1")),
+  nationalLeague("NED", "eerste-divisie", "Eerste Divisie", "Eerste Divisie", 2, 1956, c("#0a51a1", "#ffffff", "#e30613")),
+  nationalCup("NED", "knvb-beker", "KNVB Beker", "KNVB Beker", 1898, c("#ff6b00", "#ffffff", "#000000")),
+  youthCompetition("NED", "eredivisie-u21", "Eredivisie Sub-21", "Sub-21 NED", "U23", 55, "league", 2013, c("#e30613", "#ffffff", "#000000")),
+
+  /* México */
+  nationalLeague("MEX", "liga-mx", "Liga MX", "Liga MX", 1, 1943, c("#00843d", "#ffffff", "#e30613")),
+  nationalLeague("MEX", "liga-de-expansion", "Liga de Expansión MX", "Expansión MX", 2, 1994, c("#0a2896", "#ffffff", "#ffe600")),
+  nationalCup("MEX", "copa-mx", "Copa MX", "Copa MX", 1932, c("#ffe600", "#00843d", "#ffffff")),
+  youthCompetition("MEX", "liga-mx-sub-20", "Liga MX Sub-20", "Sub-20 MEX", "U20", 55, "league", 2010, c("#00843d", "#ffe600", "#ffffff")),
 
   ...CONTINENTAL,
 ];

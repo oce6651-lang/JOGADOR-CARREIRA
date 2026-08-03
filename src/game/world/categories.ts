@@ -9,13 +9,14 @@ export const CATEGORIES: CategoryDefinition[] = [
   { code: "U7", label: "Sub-7", maxAge: 7, minAge: 5, order: 0 },
   { code: "U8", label: "Sub-8", maxAge: 8, minAge: 6, order: 1 },
   { code: "U9", label: "Sub-9", maxAge: 9, minAge: 7, order: 2 },
-  { code: "U11", label: "Sub-11", maxAge: 11, minAge: 8, order: 3 },
-  { code: "U13", label: "Sub-13", maxAge: 13, minAge: 10, order: 4 },
-  { code: "U15", label: "Sub-15", maxAge: 15, minAge: 12, order: 5 },
-  { code: "U17", label: "Sub-17", maxAge: 17, minAge: 14, order: 6 },
-  { code: "U20", label: "Sub-20", maxAge: 20, minAge: 15, order: 7 },
-  { code: "U23", label: "Sub-23", maxAge: 23, minAge: 16, order: 8 },
+  { code: "U11", label: "Sub-11", maxAge: 11, minAge: 9, order: 3 },
+  { code: "U13", label: "Sub-13", maxAge: 13, minAge: 11, order: 4 },
+  { code: "U15", label: "Sub-15", maxAge: 15, minAge: 13, order: 5 },
+  { code: "U17", label: "Sub-17", maxAge: 17, minAge: 15, order: 6 },
+  { code: "U20", label: "Sub-20", maxAge: 20, minAge: 17, order: 7 },
+  { code: "U23", label: "Sub-23", maxAge: 23, minAge: 19, order: 8 },
   { code: "PRO", label: "Profissional", minAge: 16, order: 9 },
+
 ];
 
 
@@ -115,4 +116,23 @@ export function eligibleCategories(age: number): CategoryCode[] {
 /** Next category above the given one, or undefined at the top. */
 export function nextCategory(code: CategoryCode): CategoryCode | undefined {
   return CATEGORIES[categoryOrder(code) + 1]?.code;
+}
+
+/** Minimum age at which the athlete may be moved up a category at all. */
+export const MIN_PROMOTION_AGE = 11;
+
+/** How many rungs the athlete may skip at once (1 = one step ahead only). */
+export const MAX_CATEGORY_JUMP = 2;
+
+/**
+ * Strict football rules for moving UP the ladder. A promotion is only legal
+ * when the athlete is old enough for the destination, at least 11 years old,
+ * never a professional before 16 and never more than two rungs ahead.
+ */
+export function canAdvanceTo(from: CategoryCode, to: CategoryCode, age: number) {
+  const distance = categoryOrder(to) - categoryOrder(from);
+  if (distance <= 0 || distance > MAX_CATEGORY_JUMP) return false;
+  if (age < MIN_PROMOTION_AGE) return false;
+  if (to === "PRO" && age < PROFESSIONAL_AGE) return false;
+  return isAgeEligible(to, age);
 }
