@@ -293,6 +293,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissAgent,
       offerToClub,
       requestPromotion,
+      acceptPromotion,
+      declinePromotion,
     ],
   );
 
