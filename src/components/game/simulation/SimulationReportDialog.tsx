@@ -20,6 +20,7 @@ const SCOPE_LABEL: Record<SimulationReport["scope"], string> = {
   match: "Próxima partida",
   week: "Semana simulada",
   month: "Mês simulado",
+  year: "Temporada simulada",
 };
 
 /** Post-simulation digest: what actually happened in the period. */
