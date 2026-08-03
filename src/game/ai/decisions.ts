@@ -404,6 +404,7 @@ function evaluatePromotion(
 
   const target = nextAvailableCategory(club, situation.category);
   if (!target) return undefined;
+  if (!canAdvanceTo(situation.category, target, ctx.age)) return undefined;
 
   const maxAge = getCategory(situation.category)?.maxAge;
   const overAge = maxAge !== undefined && ctx.age > maxAge;
@@ -412,7 +413,7 @@ function evaluatePromotion(
     levelGap(ctx.overall, target, club.reputation) >= (target === "PRO" ? -6 : -3);
 
   if (overAge && ctx.seasonEnd && evaluation.score > -18 && readyForTarget) {
-    return skipCategory(club, target, ctx, evaluation) ?? target;
+    return skipCategory(club, situation.category, target, ctx, evaluation) ?? target;
   }
   if (!settled) return undefined;
 
@@ -423,7 +424,7 @@ function evaluatePromotion(
     ctx.seasonStats.appearances >= 6;
 
   if (dominating && readyForTarget) {
-    return skipCategory(club, target, ctx, evaluation) ?? target;
+    return skipCategory(club, situation.category, target, ctx, evaluation) ?? target;
   }
   return undefined;
 }
@@ -435,6 +436,7 @@ function evaluatePromotion(
  */
 function skipCategory(
   club: Club,
+  from: CategoryCode,
   target: CategoryCode,
   ctx: AiContext,
   evaluation: Evaluation,
@@ -443,8 +445,7 @@ function skipCategory(
 
   const jump = nextAvailableCategory(club, target);
   if (!jump) return undefined;
-  if (!isAgeEligible(jump, ctx.age)) return undefined;
-  if (jump === "PRO" && ctx.age < PROFESSIONAL_AGE) return undefined;
+  if (!canAdvanceTo(from, jump, ctx.age)) return undefined;
   if (levelGap(ctx.overall, jump, club.reputation) < (jump === "PRO" ? -2 : 0)) {
     return undefined;
   }
