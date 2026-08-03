@@ -400,3 +400,79 @@ export function requestCareerPromotion(
     message: result.message,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Conscious category promotions                                       */
+/* ------------------------------------------------------------------ */
+
+/** Promotion invitation waiting for the athlete's answer, if any. */
+export function pendingPromotion(career: Career) {
+  return career.ai.pendingPromotion;
+}
+
+/** The athlete accepts moving up a category inside his club. */
+export function acceptCareerPromotion(career: Career): Career {
+  const invite = career.ai.pendingPromotion;
+  if (!invite || !career.ai.club) return career;
+
+  const cleared = { ...career.ai, pendingPromotion: undefined };
+  const moved = changeCategory(
+    career.player,
+    cleared,
+    invite.category,
+    career.timeline.current,
+    true,
+  );
+
+  const next = withEvents(
+    { ...career, player: moved.player, ai: moved.ai },
+    moved.events,
+  );
+  return {
+    ...next,
+    currentSeason: {
+      ...next.currentSeason,
+      category: categoryLabel(invite.category),
+    },
+  };
+}
+
+/**
+ * The athlete refuses the move. Refusing a mandatory promotion (he outgrew
+ * the category) means leaving the club.
+ */
+export function declineCareerPromotion(career: Career): Career {
+  const invite = career.ai.pendingPromotion;
+  if (!invite) return career;
+
+  const cleared = { ...career.ai, pendingPromotion: undefined };
+
+  if (!invite.mandatory) {
+    return withEvents(
+      { ...career, ai: { ...cleared, coachTrust: Math.max(0, cleared.coachTrust - 8) } },
+      [
+        createEvent(
+          "contract",
+          career.timeline.current,
+          `Subida ao ${invite.categoryLabel} recusada`,
+          {
+            description: `O atleta preferiu seguir na categoria atual do ${invite.clubName}.`,
+            tone: "warning",
+          },
+        ),
+      ],
+    );
+  }
+
+  const released = releaseFromClub(
+    career.player,
+    cleared,
+    career.timeline.current,
+    `O atleta recusou a subida ao ${invite.categoryLabel} e deixou o ${invite.clubName}.`,
+  );
+  const next = withEvents(
+    { ...career, player: released.player, ai: released.ai },
+    released.events,
+  );
+  return { ...next, status: "unsigned" };
+}
