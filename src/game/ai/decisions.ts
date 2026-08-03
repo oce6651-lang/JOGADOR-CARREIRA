@@ -220,11 +220,27 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   ai = scouted.ai;
   events.push(...scouted.events);
 
-  /* --- promotion -------------------------------------------------- */
+  /* --- promotion (always the player's decision) --------------------- */
   const promotion = evaluatePromotion(ai, evaluation, ctx);
-  if (promotion) {
-    const moved = changeCategory(player, ai, promotion, date, true);
-    return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(promotion));
+  if (promotion && !ai.pendingPromotion) {
+    ai = {
+      ...ai,
+      pendingPromotion: {
+        id: createId("event"),
+        category: promotion,
+        categoryLabel: categoryLabel(promotion),
+        clubName: situation.clubName,
+        message: `A comissão técnica do ${situation.clubName} quer subir o atleta do ${categoryLabel(situation.category)} para o ${categoryLabel(promotion)}.`,
+        createdWeek: ctx.elapsedWeeks,
+        mandatory: false,
+      },
+    };
+    events.push(
+      createEvent("milestone", date, `Convite para o ${categoryLabel(promotion)}`, {
+        description: "O atleta precisa decidir se aceita subir de categoria.",
+        tone: "positive",
+      }),
+    );
   }
 
   /* --- seasonal category migration --------------------------------- */
@@ -238,9 +254,28 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
     const ready = evaluation.score >= -22 || evaluation.potential >= 0.45;
     const target = club ? plannedCategoryFor(club, seasonCategory, ready) : undefined;
 
-    if (target && ready) {
-      const moved = changeCategory(player, ai, target, date, true);
-      return finish(moved.player, moved.ai, [...events, ...moved.events], categoryLabel(target));
+    if (target && ready && canAdvanceTo(situation.category, target, ctx.age)) {
+      if (!ai.pendingPromotion) {
+        ai = {
+          ...ai,
+          pendingPromotion: {
+            id: createId("event"),
+            category: target,
+            categoryLabel: categoryLabel(target),
+            clubName: situation.clubName,
+            message: `O atleta passou da idade do ${categoryLabel(situation.category)}. O ${situation.clubName} abriu vaga no ${categoryLabel(target)} — recusar significa deixar o clube.`,
+            createdWeek: ctx.elapsedWeeks,
+            mandatory: true,
+          },
+        };
+        events.push(
+          createEvent("milestone", date, `Subida obrigatória ao ${categoryLabel(target)}`, {
+            description: "Decida em Carreira: aceitar a nova categoria ou sair do clube.",
+            tone: "warning",
+          }),
+        );
+      }
+      return finish(player, ai, events);
     }
 
     const released = releaseFromClub(
@@ -251,6 +286,7 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
     );
     return finish(released.player, released.ai, [...events, ...released.events]);
   }
+
 
   /* --- release / stay --------------------------------------------- */
   const failing = evaluation.score <= -34 && evaluation.gap <= -6;
