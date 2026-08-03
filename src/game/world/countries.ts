@@ -193,7 +193,48 @@ export const COUNTRIES: Country[] = [
       ["NAQ", "Nova Aquitânia"],
     ]),
   },
+  {
+    id: "country_ned",
+    code: "NED",
+    name: "Países Baixos",
+    flag: "🇳🇱",
+    confederation: "UEFA",
+    playable: true,
+    seasonStartMonth: 7,
+    currency: "R$",
+    wageIndex: 2.6,
+    states: states([
+      ["NH", "Holanda do Norte"],
+      ["ZH", "Holanda do Sul"],
+      ["NB", "Brabante do Norte"],
+      ["GE", "Guéldria"],
+      ["OV", "Overissel"],
+      ["UT", "Utrecht"],
+      ["LI", "Limburgo"],
+    ]),
+  },
+  {
+    id: "country_mex",
+    code: "MEX",
+    name: "México",
+    flag: "🇲🇽",
+    confederation: "CONCACAF",
+    playable: true,
+    seasonStartMonth: 6,
+    currency: "R$",
+    wageIndex: 1.9,
+    states: states([
+      ["CMX", "Cidade do México"],
+      ["JAL", "Jalisco"],
+      ["NLE", "Nuevo León"],
+      ["PUE", "Puebla"],
+      ["MIC", "Michoacán"],
+      ["SIN", "Sinaloa"],
+      ["YUC", "Yucatán"],
+    ]),
+  },
 ];
+
 
 const BY_CODE = new Map(COUNTRIES.map((country) => [country.code, country]));
 
