@@ -631,7 +631,7 @@ export interface SimulationReport {
   from: GameDate;
   to: GameDate;
   weeks: number;
-  scope: "match" | "week" | "month";
+  scope: "match" | "week" | "month" | "year";
   events: GameEvent[];
   stats: MatchStatLine;
   trainings: number;
