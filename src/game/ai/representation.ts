@@ -25,10 +25,13 @@ import { addOffer, buildOffer } from "./offers";
  * a higher category inside the squad he already belongs to.
  */
 
+/** Ceiling of the agency market: elite clubs never answer an agent's call. */
+export const AGENT_REACH_CAP = 70;
+
 /** Highest club reputation the agent has real contacts in. */
 export function agentReach(agent: Agent | null) {
   if (!agent) return 34;
-  return Math.round(30 + agent.quality * 0.72);
+  return Math.min(AGENT_REACH_CAP, Math.round(30 + agent.quality * 0.72));
 }
 
 export type ApproachBlock = "none" | "noAgent" | "outOfReach";
@@ -87,6 +90,10 @@ export function assessApproach(input: {
       block: club.reputation <= 30 ? "none" : "noAgent",
       marketValue,
     };
+  }
+
+  if (club.reputation > AGENT_REACH_CAP) {
+    return { club, category, chance: 0, reach, block: "outOfReach", marketValue };
   }
 
   const overReach = club.reputation - reach;

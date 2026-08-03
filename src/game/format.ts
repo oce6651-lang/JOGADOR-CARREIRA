@@ -13,6 +13,12 @@ export function formatMoney(value?: number) {
   return currency.format(value);
 }
 
+/** Transfer fee label: zero means a free move. */
+export function formatFee(value?: number) {
+  if (!value) return "Livre";
+  return formatMoney(value);
+}
+
 export function formatRating(sum: number, appearances: number) {
   if (!appearances) return "—";
   return (sum / appearances).toFixed(2).replace(".", ",");
