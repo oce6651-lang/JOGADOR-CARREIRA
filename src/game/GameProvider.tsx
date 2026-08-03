@@ -10,6 +10,8 @@ import {
 
 import {
   acceptCareerOffer,
+  acceptCareerPromotion,
+  declineCareerPromotion,
   acknowledgeSeasonSummary,
   attendCareerTrial,
   createCareer,
@@ -65,6 +67,8 @@ interface GameContextValue {
   offerToClub: (club: Club) => { opened: boolean; message: string };
   /** Agent asks the current club for a promotion to the next category. */
   requestPromotion: () => { granted: boolean; message: string };
+  acceptPromotion: () => void;
+  declinePromotion: () => void;
   dismissAgent: () => void;
   updateSettings: (patch: Partial<GameSettings>) => void;
   /** Every save slot stored on this device. */
@@ -198,6 +202,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return { granted: result.granted, message: result.message };
   }, [career, persist]);
 
+  const acceptPromotion = useCallback(
+    () => updateCareer((prev) => acceptCareerPromotion(prev)),
+    [updateCareer],
+  );
+
+  const declinePromotion = useCallback(
+    () => updateCareer((prev) => declineCareerPromotion(prev)),
+    [updateCareer],
+  );
+
   const dismissAgent = useCallback(
     () => updateCareer((prev) => dismissCareerAgent(prev)),
     [updateCareer],
@@ -252,6 +266,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissAgent,
       offerToClub,
       requestPromotion,
+      acceptPromotion,
+      declinePromotion,
     }),
     [
       hydrated,
