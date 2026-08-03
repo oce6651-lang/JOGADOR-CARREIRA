@@ -1,4 +1,5 @@
 import { createEvent } from "../events";
+import { createId } from "../ids";
 import type { Random } from "../rng";
 import { chance, pick } from "../rng";
 import type {
@@ -10,6 +11,7 @@ import type {
   ScoutingInterest,
 } from "../types";
 import {
+  canAdvanceTo,
   categoryForSeason,
   categoryLabel,
   categoryOrder,
