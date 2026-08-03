@@ -20,6 +20,7 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as EmpresarioRouteImport } from './routes/empresario'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as CompeticoesRouteImport } from './routes/competicoes'
 import { Route as CarreirasRouteImport } from './routes/carreiras'
 import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
@@ -82,6 +83,11 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompeticoesRoute = CompeticoesRouteImport.update({
+  id: '/competicoes',
+  path: '/competicoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CarreirasRoute = CarreirasRouteImport.update({
   id: '/carreiras',
   path: '/carreiras',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carreira': typeof CarreiraRoute
   '/carreiras': typeof CarreirasRoute
+  '/competicoes': typeof CompeticoesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/empresario': typeof EmpresarioRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carreira': typeof CarreiraRoute
   '/carreiras': typeof CarreirasRoute
+  '/competicoes': typeof CompeticoesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/empresario': typeof EmpresarioRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/carreira': typeof CarreiraRoute
   '/carreiras': typeof CarreirasRoute
+  '/competicoes': typeof CompeticoesRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/empresario': typeof EmpresarioRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carreira'
     | '/carreiras'
+    | '/competicoes'
     | '/configuracoes'
     | '/creditos'
     | '/empresario'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carreira'
     | '/carreiras'
+    | '/competicoes'
     | '/configuracoes'
     | '/creditos'
     | '/empresario'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/'
     | '/carreira'
     | '/carreiras'
+    | '/competicoes'
     | '/configuracoes'
     | '/creditos'
     | '/empresario'
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarreiraRoute: typeof CarreiraRoute
   CarreirasRoute: typeof CarreirasRoute
+  CompeticoesRoute: typeof CompeticoesRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
   EmpresarioRoute: typeof EmpresarioRoute
@@ -326,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConfiguracoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/competicoes': {
+      id: '/competicoes'
+      path: '/competicoes'
+      fullPath: '/competicoes'
+      preLoaderRoute: typeof CompeticoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/carreiras': {
       id: '/carreiras'
       path: '/carreiras'
@@ -389,6 +409,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarreiraRoute: CarreiraRoute,
   CarreirasRoute: CarreirasRoute,
+  CompeticoesRoute: CompeticoesRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
   EmpresarioRoute: EmpresarioRoute,
