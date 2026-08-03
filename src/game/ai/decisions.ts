@@ -17,8 +17,6 @@ import {
   categoryOrder,
   sortCategories,
   getCategory,
-  isAgeEligible,
-  PROFESSIONAL_AGE,
   getClub,
   nextCategory,
   CLUBS,
