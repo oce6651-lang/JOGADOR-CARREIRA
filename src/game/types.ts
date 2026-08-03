@@ -235,6 +235,18 @@ export interface MatchStatLine {
   ratingSum: number;
 }
 
+/** Club proposal to move the athlete up a category — the player decides. */
+export interface PendingPromotion {
+  id: EntityId;
+  category: string;
+  categoryLabel: string;
+  clubName: string;
+  message: string;
+  createdWeek: number;
+  /** True when the athlete can no longer stay in the current category. */
+  mandatory: boolean;
+}
+
 export interface SeasonRecord {
   id: EntityId;
   seasonYear: number;
@@ -243,6 +255,8 @@ export interface SeasonRecord {
   category?: string;
   /** Main competition disputed in the season, when known. */
   competitionName?: string;
+  /** Every competition the club disputed in the season. */
+  competitions?: string[];
   /** Age the athlete reached at the end of the season. */
   age?: number;
   /** Market value and wage snapshot at the end of the season. */
@@ -602,6 +616,8 @@ export interface CareerAi {
   lastTrialWeek: number;
   /** Week of the last approach made by the agent (sondagem/promoção). */
   lastApproachWeek?: number;
+  /** Promotion invitation waiting for the player's conscious decision. */
+  pendingPromotion?: PendingPromotion;
   /** National team level the athlete currently belongs to. */
   nationalTeamLevel: CallUpRecord["level"] | null;
   /** Current (hidden) development phase — makes evolution unpredictable. */
