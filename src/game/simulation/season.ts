@@ -44,6 +44,7 @@ export function addSeasonStats(
 export interface SeasonContext {
   clubId?: string;
   competitionName?: string;
+  competitions?: string[];
   marketValue?: number;
   weeklyWage?: number;
 }
@@ -86,6 +87,7 @@ export function finalizeSeason(
     clubName: progress.clubName,
     category: progress.category,
     competitionName: context.competitionName,
+    competitions: context.competitions,
     age: ageEnd,
     marketValue: context.marketValue,
     weeklyWage: context.weeklyWage,
