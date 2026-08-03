@@ -10,6 +10,8 @@ import {
   createCareerAi,
   assessApproach,
   assessPromotion,
+  changeCategory,
+  releaseFromClub,
   offerPlayerToClub,
   requestPromotion,
   type ApproachAssessment,
