@@ -547,5 +547,43 @@ function updateScouting(
     }
   }
 
+  /* --- interest turns into a formal transfer bid -------------------- */
+  const suitor = scouting.find(
+    (interest) =>
+      interest.level >= 70 &&
+      !ai.offers.some((offer) => offer.clubId === interest.clubId && offer.kind === "transfer"),
+  );
+  if (suitor && chance(0.45, ctx.random)) {
+    const club = getClub(suitor.clubId);
+    if (club) {
+      const category = entryCategoryFor(club, situation.category);
+      ai = addOffer(
+        ai,
+        buildOffer({
+          kind: "transfer",
+          club,
+          category,
+          overall: ctx.overall,
+          elapsedWeeks: ctx.elapsedWeeks,
+          ai,
+          age: ctx.age,
+          seasonYear: ctx.date.seasonYear,
+          role: category === "PRO" ? "rotation" : "starter",
+          fromClubName: situation.clubName,
+          random: ctx.random,
+          message: `O ${club.name} formalizou uma proposta de transferência ao ${situation.clubName} para atuar no ${categoryLabel(category)}.`,
+        }),
+      );
+      scouting = scouting.filter((interest) => interest.clubId !== suitor.clubId);
+      events.push(
+        createEvent("contract", ctx.date, `Proposta do ${club.name}`, {
+          description: "Uma proposta de transferência aguarda decisão em Negociações.",
+          tone: "positive",
+        }),
+      );
+    }
+  }
+
   return { ai: { ...ai, scouting }, events };
+
 }
