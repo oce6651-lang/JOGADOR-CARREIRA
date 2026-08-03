@@ -238,7 +238,7 @@ export interface MatchStatLine {
 /** Club proposal to move the athlete up a category — the player decides. */
 export interface PendingPromotion {
   id: EntityId;
-  category: string;
+  category: CategoryCode;
   categoryLabel: string;
   clubName: string;
   message: string;
