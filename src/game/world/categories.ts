@@ -117,3 +117,22 @@ export function eligibleCategories(age: number): CategoryCode[] {
 export function nextCategory(code: CategoryCode): CategoryCode | undefined {
   return CATEGORIES[categoryOrder(code) + 1]?.code;
 }
+
+/** Minimum age at which the athlete may be moved up a category at all. */
+export const MIN_PROMOTION_AGE = 11;
+
+/** How many rungs the athlete may skip at once (1 = one step ahead only). */
+export const MAX_CATEGORY_JUMP = 2;
+
+/**
+ * Strict football rules for moving UP the ladder. A promotion is only legal
+ * when the athlete is old enough for the destination, at least 11 years old,
+ * never a professional before 16 and never more than two rungs ahead.
+ */
+export function canAdvanceTo(from: CategoryCode, to: CategoryCode, age: number) {
+  const distance = categoryOrder(to) - categoryOrder(from);
+  if (distance <= 0 || distance > MAX_CATEGORY_JUMP) return false;
+  if (age < MIN_PROMOTION_AGE) return false;
+  if (to === "PRO" && age < PROFESSIONAL_AGE) return false;
+  return isAgeEligible(to, age);
+}
