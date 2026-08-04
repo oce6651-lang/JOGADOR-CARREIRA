@@ -26,13 +26,33 @@ import { addOffer, buildOffer } from "./offers";
  * a higher category inside the squad he already belongs to.
  */
 
-/** Ceiling of the agency market: elite clubs never answer an agent's call. */
+/** Ceiling of the agency market outside the agent's own region. */
 export const AGENT_REACH_CAP = 70;
 
-/** Highest club reputation the agent has real contacts in. */
-export function agentReach(agent: Agent | null) {
+/** Inside his own state the agent knows everyone — even the giants. */
+export const AGENT_HOME_REACH_CAP = 98;
+
+/** True when the club sits inside the agent's region of origin. */
+export function isHomeTurf(agent: Agent | null, club: Club) {
+  if (!agent?.homeCountry) return false;
+  return (
+    agent.homeCountry === club.country &&
+    !!agent.homeState &&
+    agent.homeState === club.state
+  );
+}
+
+/**
+ * Highest club reputation the agent has real contacts in. Away from home he is
+ * capped at 70; in the state where he built his career he reaches up to 98,
+ * always scaled by how good he actually is.
+ */
+export function agentReach(agent: Agent | null, club?: Club) {
   if (!agent) return 34;
-  return Math.min(AGENT_REACH_CAP, Math.round(30 + agent.quality * 0.72));
+  const home = club ? isHomeTurf(agent, club) : false;
+  const cap = home ? AGENT_HOME_REACH_CAP : AGENT_REACH_CAP;
+  const raw = home ? 44 + agent.quality * 0.62 : 30 + agent.quality * 0.72;
+  return Math.min(cap, Math.round(raw));
 }
 
 export type ApproachBlock = "none" | "noAgent" | "outOfReach";
