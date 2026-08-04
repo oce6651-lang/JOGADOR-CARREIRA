@@ -217,8 +217,20 @@ export function offerPlayerToClub(input: {
     };
   }
 
+  // An agent's call almost never becomes a contract straight away: in most
+  // cases the club only agrees to look at the athlete on a trial period. Only
+  // someone clearly above the club's level skips the evaluation.
+  const gap = levelGap(overall, assessment.category, club.reputation);
+  const straightToContract =
+    gap >= 10 ||
+    (gap >= 6 && input.player.hidden.potential - overall >= 14 && ai.reputation >= 45);
+  const directChance = straightToContract ? 0.75 : 0.2;
+  const direct = chance(directChance, random);
+
+  const kind = direct ? (ai.club ? "transfer" : "contract") : "trial";
+
   const offer = buildOffer({
-    kind: ai.club ? "transfer" : "contract",
+    kind,
     club,
     category: assessment.category,
     overall,
@@ -228,19 +240,30 @@ export function offerPlayerToClub(input: {
     seasonYear: date.seasonYear,
     fromClubName: ai.club?.clubName,
     random,
-    message: `${ai.agent?.name ?? "O atleta"} levou o nome ao ${club.name}, que abriu negociação para o ${categoryLabel(assessment.category)}.`,
+    message: direct
+      ? `${ai.agent?.name ?? "O atleta"} levou o nome ao ${club.name}, que abriu negociação para o ${categoryLabel(assessment.category)}.`
+      : `${ai.agent?.name ?? "O atleta"} conseguiu um período de testes no ${club.name} para o ${categoryLabel(assessment.category)}.`,
   });
 
   return {
     ai: addOffer({ ...attempted, morale: Math.min(100, attempted.morale + 4) }, offer),
     events: [
-      createEvent("contract", date, `${club.name} abriu negociação`, {
-        description: `Proposta para o ${categoryLabel(assessment.category)}. Analise em Negociações.`,
-        tone: "positive",
-      }),
+      createEvent(
+        "contract",
+        date,
+        direct ? `${club.name} abriu negociação` : `${club.name} marcou um teste`,
+        {
+          description: direct
+            ? `Proposta para o ${categoryLabel(assessment.category)}. Analise em Negociações.`
+            : `Convite para avaliação no ${categoryLabel(assessment.category)}. Confira em Peneiras.`,
+          tone: "positive",
+        },
+      ),
     ],
     opened: true,
-    message: `O ${club.name} abriu negociação! A proposta está em Negociações.`,
+    message: direct
+      ? `O ${club.name} abriu negociação! A proposta está em Negociações.`
+      : `O ${club.name} aceitou avaliar o atleta em um período de testes.`,
   };
 }
 
