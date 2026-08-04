@@ -289,6 +289,39 @@ function HistoryPage() {
           )}
         </TabsContent>
 
+        <TabsContent value="transfers" className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Cada mudança de clube fica registrada com valor, tipo e categoria de destino.
+          </p>
+          {history.transfers.length ? (
+            [...history.transfers]
+              .sort((a, b) => b.date.seasonYear - a.date.seasonYear)
+              .map((transfer) => (
+                <div
+                  key={transfer.id}
+                  className="panel flex flex-wrap items-center justify-between gap-3 p-4"
+                >
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                      {transfer.date.seasonYear}
+                    </p>
+                    <p className="text-display text-lg uppercase leading-tight">
+                      {transfer.fromClub ?? "Sem clube"} → {transfer.toClub}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {TRANSFER_TYPE_LABEL[transfer.type]}
+                    </p>
+                  </div>
+                  <p className="text-display text-xl uppercase text-primary">
+                    {formatFee(transfer.fee)}
+                  </p>
+                </div>
+              ))
+          ) : (
+            <Empty label="Nenhuma transferência registrada." />
+          )}
+        </TabsContent>
+
         <TabsContent value="finance" className="grid gap-4 md:grid-cols-2">
           <div className="space-y-3">
             <h3 className="text-display text-xl uppercase">Salários</h3>
