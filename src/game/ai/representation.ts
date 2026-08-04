@@ -82,7 +82,7 @@ export function assessApproach(input: {
 }): ApproachAssessment {
   const { player, ai, club, overall, age, seasonYear } = input;
   const agent = ai.agent;
-  const reach = agentReach(agent);
+  const reach = agentReach(agent, club);
   const projected =
     overall + Math.max(0, player.hidden.potential - overall) * 0.3 + ai.reputation * 0.06;
 
@@ -113,7 +113,8 @@ export function assessApproach(input: {
     };
   }
 
-  if (club.reputation > AGENT_REACH_CAP) {
+  const cap = isHomeTurf(agent, club) ? AGENT_HOME_REACH_CAP : AGENT_REACH_CAP;
+  if (club.reputation > cap) {
     return { club, category, chance: 0, reach, block: "outOfReach", marketValue };
   }
 
