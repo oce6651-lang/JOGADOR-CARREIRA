@@ -584,6 +584,10 @@ export interface Agent {
   minReputation: number;
   hiredSeason?: number;
   description: string;
+  /** Country where the agent has his strongest contacts. */
+  homeCountry?: string;
+  /** State/region of origin — where he can reach even the biggest clubs. */
+  homeState?: string;
 }
 
 /** Persistent brain of the career: context every AI decision reads from. */
