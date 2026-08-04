@@ -41,6 +41,43 @@ function HistoryPage() {
     return [...career.competitionHistory].filter((entry) => entry.playerChampion);
   }, [career]);
 
+  /**
+   * One row per competition the athlete actually took part in. Season stats are
+   * the aggregate of the campaign — the club and category tell where he played.
+   */
+  const playerCompetitions = useMemo(() => {
+    if (!career) return [];
+    const { seasons } = career.player.history;
+    return seasons
+      .flatMap((season) => {
+        const names = season.competitions?.length
+          ? season.competitions
+          : season.competitionName
+            ? [season.competitionName]
+            : [];
+        return names.map((competition) => ({
+          key: `${season.id}-${competition}`,
+          seasonYear: season.seasonYear,
+          competition,
+          clubName: season.clubName ?? "Sem clube",
+          category: season.category ?? "—",
+          appearances: season.stats.appearances,
+          goals: season.stats.goals,
+          assists: season.stats.assists,
+          rating: formatRating(season.stats.ratingSum, season.stats.appearances),
+          honours: [
+            ...(season.titles ?? [])
+              .filter((title) => title.competition === competition)
+              .map((title) => `Campeão`),
+            ...(season.awards ?? [])
+              .filter((award) => award.name.includes(competition))
+              .map((award) => award.name),
+          ],
+        }));
+      })
+      .sort((a, b) => b.seasonYear - a.seasonYear);
+  }, [career]);
+
   if (!career) {
     return (
       <GameShell>
@@ -94,6 +131,7 @@ function HistoryPage() {
           <TabsTrigger value="clubs">Clubes</TabsTrigger>
           <TabsTrigger value="honours">Conquistas</TabsTrigger>
           <TabsTrigger value="competitions">Competições</TabsTrigger>
+          <TabsTrigger value="transfers">Transferências</TabsTrigger>
           <TabsTrigger value="finance">Financeiro</TabsTrigger>
         </TabsList>
 
