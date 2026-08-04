@@ -2,6 +2,7 @@ import { createRandom } from "../rng";
 import { getClub } from "./clubs";
 import { COMPETITIONS, getCompetition } from "./competitions";
 import { clubExistsIn, competitionExistsIn } from "./era";
+import { generateName } from "./names";
 import type { Club, Competition } from "./types";
 
 /**
@@ -73,6 +74,32 @@ export function competitionEdition(
     random,
   );
 
+  // Individual awards follow the same deterministic draw, but champions and
+  // strong sides only bias the result — an artilheiro from a mid table club
+  // is perfectly possible, exactly like in real football.
+  const award = (
+    label: string,
+    pool: Club[],
+    range?: [number, number],
+  ): CompetitionAward | undefined => {
+    const club = drawWinner(pool, random) ?? champion;
+    const value = range
+      ? Math.round(range[0] + random() * (range[1] - range[0]))
+      : undefined;
+    return {
+      name: generateName(`${competition.slug}:${seasonYear}:${label}`),
+      clubId: club.id,
+      clubName: club.name,
+      value,
+    };
+  };
+
+  const matches = competition.format === "league" ? clubs.length * 2 - 2 : 12;
+  const scorerRange: [number, number] = [
+    Math.max(5, Math.round(matches * 0.35)),
+    Math.max(9, Math.round(matches * 0.75)),
+  ];
+
   return {
     competitionId: competition.id,
     competitionName: competition.name,
@@ -81,6 +108,13 @@ export function competitionEdition(
     championClubName: champion.name,
     runnerUpClubId: runnerUp?.id,
     runnerUpClubName: runnerUp?.name,
+    topScorer: award("scorer", clubs, scorerRange),
+    topAssists: award("assists", clubs, [
+      Math.max(4, Math.round(scorerRange[0] * 0.7)),
+      Math.max(6, Math.round(scorerRange[1] * 0.7)),
+    ]),
+    bestPlayer: award("mvp", [champion, ...clubs]),
+    bestGoalkeeper: award("keeper", [champion, ...clubs]),
   };
 }
 
