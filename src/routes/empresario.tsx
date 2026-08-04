@@ -5,7 +5,9 @@ import { useEffect } from "react";
 import { AgentDeskPanel } from "@/components/game/agent/AgentDeskPanel";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { Button } from "@/components/ui/button";
-import { availableAgents, netWage, reputationLabel } from "@/game/ai";
+import { agentMarket, netWage, reputationLabel } from "@/game/ai";
+import { ageAt } from "@/game/calendar";
+import { calculateOverall } from "@/game/player";
 import { useGame } from "@/game/GameProvider";
 
 export const Route = createFileRoute("/empresario")({
@@ -44,7 +46,16 @@ function AgentPage() {
   }
 
   const current = career.ai.agent;
-  const options = availableAgents(career.ai.reputation);
+  const market = agentMarket({
+    player: career.player,
+    ai: career.ai,
+    overall: calculateOverall(career.player.attributes, career.player.position),
+    age: ageAt(career.player.birthDate, career.timeline.current),
+    totals: career.player.history.totals,
+    spells: career.player.history.clubs.length,
+  });
+  const options = market.filter((entry) => entry.interested).map((entry) => entry.template);
+  const refused = market.filter((entry) => !entry.interested);
   const wage = career.ai.club?.weeklyWage ?? 0;
 
   return (
