@@ -122,8 +122,35 @@ function AgentPage() {
 
       {options.length <= (current ? 1 : 0) ? (
         <p className="mt-4 text-sm text-muted-foreground">
-          Aumente sua reputação em campo para atrair empresários mais influentes.
+          Nenhum empresário quer assinar com você agora. Jogue, ganhe reputação e mostre serviço
+          em um clube antes de tentar de novo.
         </p>
+      ) : null}
+
+      {refused.length ? (
+        <>
+          <p className="mb-3 mt-8 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            Recusaram representá-lo
+          </p>
+          <div className="grid gap-2">
+            {refused.map((entry) => (
+              <article
+                key={entry.template.name}
+                className="panel flex flex-wrap items-center justify-between gap-3 p-4 opacity-70"
+              >
+                <div className="min-w-0">
+                  <p className="text-display text-lg uppercase leading-tight">
+                    {entry.template.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{entry.reason}</p>
+                </div>
+                <span className="text-xs uppercase tracking-[0.2em] text-destructive">
+                  Recusado
+                </span>
+              </article>
+            ))}
+          </div>
+        </>
       ) : null}
     </GameShell>
   );
