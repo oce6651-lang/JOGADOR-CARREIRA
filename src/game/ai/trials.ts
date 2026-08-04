@@ -101,15 +101,16 @@ export function trialOpportunities(
   const opportunities = clubs
     .map((club) => {
       const international = club.country !== home;
-      const origin = originFor({
-        international,
-        invited: invited.has(club.id),
-        projected,
-        agentReach,
-        reputation: ai.reputation,
-        clubReputation: club.reputation,
-      });
-      if (!origin && !invited.has(club.id)) return null;
+      const origin =
+        originFor({
+          international,
+          invited: invited.has(club.id),
+          projected,
+          agentReach,
+          reputation: ai.reputation,
+          clubReputation: club.reputation,
+        }) ?? (invited.has(club.id) ? "agent" : null);
+      if (!origin) return null;
 
       const category = plannedEntryCategory(club, entryCategoryFor(club, wanted), projected, age);
       const gap = levelGap(overall, category, club.reputation);
