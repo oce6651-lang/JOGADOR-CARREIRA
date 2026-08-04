@@ -13,6 +13,8 @@ import type { EntityId } from "../types";
 /* ------------------------------------------------------------------ */
 
 export type CategoryCode =
+  | "U5"
+  | "U6"
   | "U7"
   | "U8"
   | "U9"
