@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useGame } from "@/game/GameProvider";
 import { isDeveloper } from "@/game/dev";
-import { ATTRIBUTE_GROUPS, clampAttribute } from "@/game/player/attributes";
+import { ATTRIBUTE_CATEGORIES, clampAttribute } from "@/game/player/attributes";
 import type { AttributeKey } from "@/game/types";
 
 export const Route = createFileRoute("/desenvolvedor")({
@@ -166,8 +166,8 @@ function DeveloperPage() {
 
       <h2 className="text-display mb-3 text-xl uppercase">Atributos</h2>
       <div className="grid gap-4 md:grid-cols-3">
-        {ATTRIBUTE_GROUPS.map((group) => (
-          <div key={group.key} className="panel space-y-3 p-4">
+        {ATTRIBUTE_CATEGORIES.map((group) => (
+          <div key={group.id} className="panel space-y-3 p-4">
             <p className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
               <ShieldCheck className="size-3.5" /> {group.label}
             </p>
@@ -177,7 +177,7 @@ function DeveloperPage() {
                 label={attribute.label}
                 value={
                   (career.player.attributes as unknown as Record<string, Record<string, number>>)[
-                    group.key
+                    group.id
                   ][attribute.key]
                 }
                 onChange={(value) => setAttribute(attribute.key, value)}
