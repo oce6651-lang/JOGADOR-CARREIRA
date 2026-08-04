@@ -180,6 +180,49 @@ function HistoryPage() {
         </TabsContent>
 
         <TabsContent value="competitions" className="space-y-3">
+          <h3 className="text-display text-xl uppercase">Competições disputadas</h3>
+          {playerCompetitions.length ? (
+            <div className="panel overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    <th className="px-3 py-3 text-left">Temp.</th>
+                    <th className="px-3 py-3 text-left">Competição</th>
+                    <th className="px-3 py-3 text-left">Clube</th>
+                    <th className="px-3 py-3 text-left">Categoria</th>
+                    <th className="px-3 py-3 text-right">J</th>
+                    <th className="px-3 py-3 text-right">G</th>
+                    <th className="px-3 py-3 text-right">A</th>
+                    <th className="px-3 py-3 text-right">Nota</th>
+                    <th className="px-3 py-3 text-left">Títulos e prêmios</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {playerCompetitions.map((row) => (
+                    <tr key={row.key} className="border-b border-border/50 last:border-0">
+                      <td className="px-3 py-2.5 font-semibold">{row.seasonYear}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5">{row.competition}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5">{row.clubName}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                        {row.category}
+                      </td>
+                      <td className="px-3 py-2.5 text-right">{row.appearances}</td>
+                      <td className="px-3 py-2.5 text-right">{row.goals}</td>
+                      <td className="px-3 py-2.5 text-right">{row.assists}</td>
+                      <td className="px-3 py-2.5 text-right">{row.rating}</td>
+                      <td className="px-3 py-2.5 text-xs text-primary">
+                        {row.honours.length ? row.honours.join(" · ") : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Empty label="O atleta ainda não disputou competições." />
+          )}
+
+          <h3 className="text-display mt-6 text-xl uppercase">Edições concluídas</h3>
           <p className="text-sm text-muted-foreground">
             Todas as edições disputadas pelos clubes do atleta ficam registradas para sempre.
             {honours.length ? ` Você venceu ${honours.length} delas.` : ""}
