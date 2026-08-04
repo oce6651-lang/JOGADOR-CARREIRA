@@ -9,6 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGame } from "@/game/GameProvider";
 import { formatFee, formatMoney, formatRating } from "@/game/format";
 
+const TRANSFER_TYPE_LABEL: Record<string, string> = {
+  youth: "Categoria de base",
+  free: "Transferência livre",
+  permanent: "Transferência definitiva",
+  loan: "Empréstimo",
+};
+
 export const Route = createFileRoute("/historico")({
   head: () => ({
     meta: [
