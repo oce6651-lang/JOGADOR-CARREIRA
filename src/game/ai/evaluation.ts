@@ -12,6 +12,8 @@ import { categoryOrder, type CategoryCode } from "../world";
 
 /** Overall a fully average player of that category is expected to have. */
 const CATEGORY_BASE: Record<CategoryCode, number> = {
+  U5: 5,
+  U6: 6,
   U7: 8,
   U8: 10,
   U9: 13,
@@ -26,6 +28,8 @@ const CATEGORY_BASE: Record<CategoryCode, number> = {
 
 /** How much the club reputation raises the bar inside a category. */
 const REPUTATION_WEIGHT: Record<CategoryCode, number> = {
+  U5: 0.05,
+  U6: 0.06,
   U7: 0.08,
   U8: 0.1,
   U9: 0.12,
@@ -96,6 +100,8 @@ export function ageScore(age: number, category: CategoryCode) {
 }
 
 const EXPECTED_AGE: Record<CategoryCode, number> = {
+  U5: 5,
+  U6: 6,
   U7: 7,
   U8: 8,
   U9: 9,
