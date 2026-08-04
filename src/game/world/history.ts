@@ -13,6 +13,15 @@ import type { Club, Competition } from "./types";
  * the draw, but upsets happen.
  */
 
+export interface CompetitionAward {
+  /** Awarded player name (generated deterministically). */
+  name: string;
+  clubId: string;
+  clubName: string;
+  /** Goals / assists for the statistical awards. */
+  value?: number;
+}
+
 export interface CompetitionEdition {
   competitionId: string;
   competitionName: string;
@@ -21,6 +30,10 @@ export interface CompetitionEdition {
   championClubName: string;
   runnerUpClubId?: string;
   runnerUpClubName?: string;
+  topScorer?: CompetitionAward;
+  topAssists?: CompetitionAward;
+  bestPlayer?: CompetitionAward;
+  bestGoalkeeper?: CompetitionAward;
 }
 
 function eligibleClubs(competition: Competition, seasonYear: number): Club[] {
