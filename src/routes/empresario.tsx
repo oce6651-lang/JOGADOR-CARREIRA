@@ -50,7 +50,7 @@ function AgentPage() {
     player: career.player,
     ai: career.ai,
     overall: calculateOverall(career.player.attributes, career.player.position),
-    age: ageAt(career.player.birthDate, career.timeline.current.iso),
+    age: ageAt(career.player.birthDate, career.timeline.current.date),
     totals: career.player.history.totals,
     spells: career.player.history.clubs.length,
   });
