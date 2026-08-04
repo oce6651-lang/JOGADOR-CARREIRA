@@ -1,9 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Home } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { GameShell, PageHeader } from "@/components/game/GameShell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { isDeveloper, lockDeveloper, unlockDeveloper } from "@/game/dev";
 import { useGame } from "@/game/GameProvider";
 
 export const Route = createFileRoute("/configuracoes")({
