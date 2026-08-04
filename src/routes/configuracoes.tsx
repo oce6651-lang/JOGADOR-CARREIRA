@@ -79,6 +79,78 @@ function SettingsPage() {
           </span>
         </div>
       </div>
+
+      <DeveloperGate />
     </GameShell>
+  );
+}
+
+/** Discreet entry point: invisible until the authorised code is entered. */
+function DeveloperGate() {
+  const [unlocked, setUnlocked] = useState(false);
+  const [code, setCode] = useState("");
+  const [asking, setAsking] = useState(false);
+
+  useEffect(() => {
+    setUnlocked(isDeveloper());
+  }, []);
+
+  if (unlocked) {
+    return (
+      <div className="mt-10 flex items-center justify-between gap-3">
+        <Link
+          to="/desenvolvedor"
+          className="text-xs uppercase tracking-[0.25em] text-primary hover:underline"
+        >
+          Modo Desenvolvedor
+        </Link>
+        <button
+          type="button"
+          className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-destructive"
+          onClick={() => {
+            lockDeveloper();
+            setUnlocked(false);
+          }}
+        >
+          Bloquear
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-10 text-right">
+      {asking ? (
+        <form
+          className="flex justify-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (unlockDeveloper(code)) {
+              setUnlocked(true);
+              setAsking(false);
+            }
+            setCode("");
+          }}
+        >
+          <Input
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder="Código de acesso"
+            className="h-8 w-48"
+          />
+          <Button type="submit" size="sm" variant="secondary">
+            Entrar
+          </Button>
+        </form>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAsking(true)}
+          className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/40 transition-colors hover:text-muted-foreground"
+        >
+          Modo Desenvolvedor
+        </button>
+      )}
+    </div>
   );
 }
