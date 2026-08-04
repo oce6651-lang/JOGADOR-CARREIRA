@@ -6,9 +6,9 @@ export const SAVE_VERSION = 7;
 /** Weeks in one in-game season. */
 export const WEEKS_PER_SEASON = 52;
 
-/** Age range allowed when creating an athlete. */
-export const MIN_START_AGE = 7;
-export const MAX_START_AGE = 50;
+/** Age range allowed when creating an athlete (any positive age). */
+export const MIN_START_AGE = 1;
+export const MAX_START_AGE = 60;
 
 /** Earliest season a career can start in. */
 export const MIN_START_YEAR = 1930;

@@ -69,7 +69,9 @@ export function progressAttributes(
     growthFactor(context.age) *
     context.growthRate *
     context.personalityGrowth *
-    (0.35 + context.load * 0.9) *
+    // Minutes are the engine of development: a player who barely features
+    // stagnates, one who plays every week evolves far faster.
+    (0.08 + context.load * 1.7) *
     (0.7 + room * 1.6) *
     (context.form ? 0.75 + (context.form - 6) * 0.12 : 0.85) *
     (context.phaseMultiplier ?? 1);
