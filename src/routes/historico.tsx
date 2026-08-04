@@ -9,6 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGame } from "@/game/GameProvider";
 import { formatFee, formatMoney, formatRating } from "@/game/format";
 
+const TRANSFER_TYPE_LABEL: Record<string, string> = {
+  youth: "Categoria de base",
+  free: "Transferência livre",
+  permanent: "Transferência definitiva",
+  loan: "Empréstimo",
+};
+
 export const Route = createFileRoute("/historico")({
   head: () => ({
     meta: [
@@ -39,6 +46,43 @@ function HistoryPage() {
   const honours = useMemo(() => {
     if (!career) return [];
     return [...career.competitionHistory].filter((entry) => entry.playerChampion);
+  }, [career]);
+
+  /**
+   * One row per competition the athlete actually took part in. Season stats are
+   * the aggregate of the campaign — the club and category tell where he played.
+   */
+  const playerCompetitions = useMemo(() => {
+    if (!career) return [];
+    const { seasons } = career.player.history;
+    return seasons
+      .flatMap((season) => {
+        const names = season.competitions?.length
+          ? season.competitions
+          : season.competitionName
+            ? [season.competitionName]
+            : [];
+        return names.map((competition) => ({
+          key: `${season.id}-${competition}`,
+          seasonYear: season.seasonYear,
+          competition,
+          clubName: season.clubName ?? "Sem clube",
+          category: season.category ?? "—",
+          appearances: season.stats.appearances,
+          goals: season.stats.goals,
+          assists: season.stats.assists,
+          rating: formatRating(season.stats.ratingSum, season.stats.appearances),
+          honours: [
+            ...(season.titles ?? [])
+              .filter((title) => title.competition === competition)
+              .map((title) => `Campeão`),
+            ...(season.awards ?? [])
+              .filter((award) => award.name.includes(competition))
+              .map((award) => award.name),
+          ],
+        }));
+      })
+      .sort((a, b) => b.seasonYear - a.seasonYear);
   }, [career]);
 
   if (!career) {
@@ -94,6 +138,7 @@ function HistoryPage() {
           <TabsTrigger value="clubs">Clubes</TabsTrigger>
           <TabsTrigger value="honours">Conquistas</TabsTrigger>
           <TabsTrigger value="competitions">Competições</TabsTrigger>
+          <TabsTrigger value="transfers">Transferências</TabsTrigger>
           <TabsTrigger value="finance">Financeiro</TabsTrigger>
         </TabsList>
 
@@ -180,6 +225,49 @@ function HistoryPage() {
         </TabsContent>
 
         <TabsContent value="competitions" className="space-y-3">
+          <h3 className="text-display text-xl uppercase">Competições disputadas</h3>
+          {playerCompetitions.length ? (
+            <div className="panel overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                    <th className="px-3 py-3 text-left">Temp.</th>
+                    <th className="px-3 py-3 text-left">Competição</th>
+                    <th className="px-3 py-3 text-left">Clube</th>
+                    <th className="px-3 py-3 text-left">Categoria</th>
+                    <th className="px-3 py-3 text-right">J</th>
+                    <th className="px-3 py-3 text-right">G</th>
+                    <th className="px-3 py-3 text-right">A</th>
+                    <th className="px-3 py-3 text-right">Nota</th>
+                    <th className="px-3 py-3 text-left">Títulos e prêmios</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {playerCompetitions.map((row) => (
+                    <tr key={row.key} className="border-b border-border/50 last:border-0">
+                      <td className="px-3 py-2.5 font-semibold">{row.seasonYear}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5">{row.competition}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5">{row.clubName}</td>
+                      <td className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                        {row.category}
+                      </td>
+                      <td className="px-3 py-2.5 text-right">{row.appearances}</td>
+                      <td className="px-3 py-2.5 text-right">{row.goals}</td>
+                      <td className="px-3 py-2.5 text-right">{row.assists}</td>
+                      <td className="px-3 py-2.5 text-right">{row.rating}</td>
+                      <td className="px-3 py-2.5 text-xs text-primary">
+                        {row.honours.length ? row.honours.join(" · ") : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <Empty label="O atleta ainda não disputou competições." />
+          )}
+
+          <h3 className="text-display mt-6 text-xl uppercase">Edições concluídas</h3>
           <p className="text-sm text-muted-foreground">
             Todas as edições disputadas pelos clubes do atleta ficam registradas para sempre.
             {honours.length ? ` Você venceu ${honours.length} delas.` : ""}
@@ -205,6 +293,39 @@ function HistoryPage() {
             ))
           ) : (
             <Empty label="Nenhuma edição concluída durante esta carreira." />
+          )}
+        </TabsContent>
+
+        <TabsContent value="transfers" className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Cada mudança de clube fica registrada com valor, tipo e categoria de destino.
+          </p>
+          {history.transfers.length ? (
+            [...history.transfers]
+              .sort((a, b) => b.date.seasonYear - a.date.seasonYear)
+              .map((transfer) => (
+                <div
+                  key={transfer.id}
+                  className="panel flex flex-wrap items-center justify-between gap-3 p-4"
+                >
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                      {transfer.date.seasonYear}
+                    </p>
+                    <p className="text-display text-lg uppercase leading-tight">
+                      {transfer.fromClub ?? "Sem clube"} → {transfer.toClub}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {TRANSFER_TYPE_LABEL[transfer.type]}
+                    </p>
+                  </div>
+                  <p className="text-display text-xl uppercase text-primary">
+                    {formatFee(transfer.fee)}
+                  </p>
+                </div>
+              ))
+          ) : (
+            <Empty label="Nenhuma transferência registrada." />
           )}
         </TabsContent>
 

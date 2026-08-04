@@ -101,14 +101,15 @@ export function trialOpportunities(
   const opportunities = clubs
     .map((club) => {
       const international = club.country !== home;
-      const origin = originFor({
-        international,
-        invited: invited.has(club.id),
-        projected,
-        agentReach,
-        reputation: ai.reputation,
-        clubReputation: club.reputation,
-      });
+      const origin =
+        originFor({
+          international,
+          invited: invited.has(club.id),
+          projected,
+          agentReach,
+          reputation: ai.reputation,
+          clubReputation: club.reputation,
+        }) ?? (invited.has(club.id) ? "agent" : null);
       if (!origin) return null;
 
       const category = plannedEntryCategory(club, entryCategoryFor(club, wanted), projected, age);
@@ -124,9 +125,18 @@ export function trialOpportunities(
         ai.reputation * 0.0022 +
         agentReach * 0.0012;
 
+      // A trial the agent arranged is a warm introduction: the club already
+      // wants to like the athlete, so approval is far likelier than in an
+      // open trial where hundreds of kids show up.
+      const referred = invited.has(club.id);
       const successChance = Math.max(
         0.02,
-        Math.min(0.72, raw * DIFFICULTY_FACTOR[difficulty] + (international ? -0.04 : 0)),
+        Math.min(
+          referred ? 0.88 : 0.72,
+          raw * DIFFICULTY_FACTOR[difficulty] * (referred ? 1.75 : 1) +
+            (referred ? 0.12 : 0) +
+            (international ? -0.04 : 0),
+        ),
       );
 
       return {

@@ -153,7 +153,14 @@ export const POSITION_WEIGHTS: Record<PositionCode, AttributeWeights> = {
   },
 };
 
-/** Overall (1-100) for the given attributes evaluated at a given position. */
+/**
+ * Overall (1-100) for the given attributes evaluated at a given position.
+ *
+ * Never a flat average: the position's key attributes are compressed through a
+ * power mean, so a specialist (great at what the shirt asks, poor elsewhere)
+ * beats a perfectly balanced player of the same raw average. Two athletes with
+ * near identical attributes can therefore sit several points apart.
+ */
 export function calculateOverall(
   attributes: PlayerAttributes,
   position: PositionCode,
@@ -161,16 +168,50 @@ export function calculateOverall(
   const flat = flattenAttributes(attributes);
   const weights = POSITION_WEIGHTS[position];
 
-  let weighted = 0;
-  let total = 0;
+  let coreWeighted = 0;
+  let coreTotal = 0;
+  let restWeighted = 0;
+  let restTotal = 0;
 
   for (const key of Object.keys(flat) as AttributeKey[]) {
-    const weight = weights[key] ?? BASELINE_WEIGHT;
-    weighted += flat[key] * weight;
-    total += weight;
+    const weight = weights[key];
+    if (weight === undefined) {
+      restWeighted += flat[key] * BASELINE_WEIGHT;
+      restTotal += BASELINE_WEIGHT;
+    } else {
+      // Squared emphasis: excellence in a key attribute pays off more than
+      // mediocrity in it costs, which rewards distinctive profiles.
+      coreWeighted += Math.pow(flat[key], 1.35) * weight;
+      coreTotal += weight;
+    }
   }
 
-  return clampAttribute(weighted / total);
+  const core = coreTotal ? Math.pow(coreWeighted / coreTotal, 1 / 1.35) : 0;
+  const rest = restTotal ? restWeighted / restTotal : core;
+
+  return clampAttribute(core * 0.86 + rest * 0.14);
+}
+
+/**
+ * Overall the football world actually perceives: raw quality shaped by the
+ * career phase. Teenagers are rated slightly below their attributes (rawness),
+ * players in their prime get the full value, veterans lose the edge even
+ * before their attributes drop.
+ */
+export function overallForAge(
+  attributes: PlayerAttributes,
+  position: PositionCode,
+  age: number,
+): number {
+  const raw = calculateOverall(attributes, position);
+  let modifier = 0;
+  if (age <= 15) modifier = -3;
+  else if (age <= 18) modifier = -1.5;
+  else if (age <= 22) modifier = -0.5;
+  else if (age <= 31) modifier = 0;
+  else if (age <= 34) modifier = -1;
+  else modifier = -1 - (age - 34) * 0.8;
+  return clampAttribute(raw + modifier);
 }
 
 /** Best alternative position for the player, useful for future scouting. */

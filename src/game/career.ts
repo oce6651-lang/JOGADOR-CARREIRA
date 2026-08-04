@@ -284,7 +284,11 @@ export function attendCareerTrial(
 }
 
 export function hireCareerAgent(career: Career, template: AgentTemplate): Career {
-  const agent = hireAgent(template, career.timeline.current.seasonYear);
+  const club = career.ai.club ? CLUBS.find((item) => item.id === career.ai.club?.clubId) : undefined;
+  const agent = hireAgent(template, career.timeline.current.seasonYear, {
+    country: club?.country ?? career.player.nationality,
+    state: club?.state,
+  });
   return withEvents(
     { ...career, ai: { ...career.ai, agent } },
     [

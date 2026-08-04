@@ -6,17 +6,18 @@ import type { CategoryCode, CategoryDefinition } from "./types";
  * wages and competitions all read from this table.
  */
 export const CATEGORIES: CategoryDefinition[] = [
-  { code: "U7", label: "Sub-7", maxAge: 7, minAge: 5, order: 0 },
-  { code: "U8", label: "Sub-8", maxAge: 8, minAge: 6, order: 1 },
-  { code: "U9", label: "Sub-9", maxAge: 9, minAge: 7, order: 2 },
-  { code: "U11", label: "Sub-11", maxAge: 11, minAge: 9, order: 3 },
-  { code: "U13", label: "Sub-13", maxAge: 13, minAge: 11, order: 4 },
-  { code: "U15", label: "Sub-15", maxAge: 15, minAge: 13, order: 5 },
-  { code: "U17", label: "Sub-17", maxAge: 17, minAge: 15, order: 6 },
-  { code: "U20", label: "Sub-20", maxAge: 20, minAge: 17, order: 7 },
-  { code: "U23", label: "Sub-23", maxAge: 23, minAge: 19, order: 8 },
-  { code: "PRO", label: "Profissional", minAge: 16, order: 9 },
-
+  { code: "U5", label: "Sub-5", maxAge: 5, minAge: 4, order: 0 },
+  { code: "U6", label: "Sub-6", maxAge: 6, minAge: 5, order: 1 },
+  { code: "U7", label: "Sub-7", maxAge: 7, minAge: 6, order: 2 },
+  { code: "U8", label: "Sub-8", maxAge: 8, minAge: 7, order: 3 },
+  { code: "U9", label: "Sub-9", maxAge: 9, minAge: 8, order: 4 },
+  { code: "U11", label: "Sub-11", maxAge: 11, minAge: 10, order: 5 },
+  { code: "U13", label: "Sub-13", maxAge: 13, minAge: 12, order: 6 },
+  { code: "U15", label: "Sub-15", maxAge: 15, minAge: 14, order: 7 },
+  { code: "U17", label: "Sub-17", maxAge: 17, minAge: 15, order: 8 },
+  { code: "U20", label: "Sub-20", maxAge: 20, minAge: 16, order: 9 },
+  { code: "U23", label: "Sub-23", maxAge: 23, minAge: 19, order: 10 },
+  { code: "PRO", label: "Profissional", minAge: 16, order: 11 },
 ];
 
 
@@ -26,6 +27,8 @@ const BY_CODE = new Map<CategoryCode, CategoryDefinition>(
 
 /** Categories that are still football school: no professional contract. */
 export const FORMATION_CATEGORIES: CategoryCode[] = [
+  "U5",
+  "U6",
   "U7",
   "U8",
   "U9",
@@ -122,17 +125,20 @@ export function nextCategory(code: CategoryCode): CategoryCode | undefined {
 export const MIN_PROMOTION_AGE = 11;
 
 /** How many rungs the athlete may skip at once (1 = one step ahead only). */
-export const MAX_CATEGORY_JUMP = 2;
+export const MAX_CATEGORY_JUMP = 1;
 
 /**
  * Strict football rules for moving UP the ladder. A promotion is only legal
  * when the athlete is old enough for the destination, at least 11 years old,
- * never a professional before 16 and never more than two rungs ahead.
+ * never a professional before 16 and never more than one rung ahead of the
+ * category his age naturally belongs to.
  */
 export function canAdvanceTo(from: CategoryCode, to: CategoryCode, age: number) {
   const distance = categoryOrder(to) - categoryOrder(from);
   if (distance <= 0 || distance > MAX_CATEGORY_JUMP) return false;
   if (age < MIN_PROMOTION_AGE) return false;
   if (to === "PRO" && age < PROFESSIONAL_AGE) return false;
+  const natural = categoryForAge(age);
+  if (categoryOrder(to) - categoryOrder(natural) > 1) return false;
   return isAgeEligible(to, age);
 }

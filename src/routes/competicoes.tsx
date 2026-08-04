@@ -11,6 +11,7 @@ import {
   SCOPE_LABELS,
   countryLabel,
   rollOfHonour,
+  type CompetitionAward,
   titleCount,
 } from "@/game/world";
 
@@ -155,13 +156,17 @@ function CompetitionsHistoryPage() {
                 </div>
               ) : null}
 
-              <div className="panel overflow-hidden">
+              <div className="panel overflow-x-auto">
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr className="border-b border-border text-xs uppercase tracking-[0.16em] text-muted-foreground">
                       <th className="px-4 py-3 text-left">Temporada</th>
                       <th className="px-4 py-3 text-left">Campeão</th>
                       <th className="px-4 py-3 text-left">Vice</th>
+                      <th className="px-4 py-3 text-left">Artilheiro</th>
+                      <th className="px-4 py-3 text-left">Assistências</th>
+                      <th className="px-4 py-3 text-left">Melhor jogador</th>
+                      <th className="px-4 py-3 text-left">Melhor goleiro</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -172,15 +177,21 @@ function CompetitionsHistoryPage() {
                           className="border-b border-border/50 last:border-0"
                         >
                           <td className="px-4 py-2.5 font-semibold">{edition.seasonYear}</td>
-                          <td className="px-4 py-2.5">{edition.championClubName}</td>
-                          <td className="px-4 py-2.5 text-muted-foreground">
+                          <td className="whitespace-nowrap px-4 py-2.5">
+                            {edition.championClubName}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-2.5 text-muted-foreground">
                             {edition.runnerUpClubName ?? "—"}
                           </td>
+                          <AwardCell award={edition.topScorer} suffix="gols" />
+                          <AwardCell award={edition.topAssists} suffix="assist." />
+                          <AwardCell award={edition.bestPlayer} />
+                          <AwardCell award={edition.bestGoalkeeper} />
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td className="px-4 py-4 text-muted-foreground" colSpan={3}>
+                        <td className="px-4 py-4 text-muted-foreground" colSpan={7}>
                           Sem edições disputadas neste período.
                         </td>
                       </tr>
@@ -193,5 +204,22 @@ function CompetitionsHistoryPage() {
         </section>
       </div>
     </GameShell>
+  );
+}
+
+/** One award column: winner, his club and the statistic when it exists. */
+function AwardCell({ award, suffix }: { award?: CompetitionAward; suffix?: string }) {
+  if (!award) return <td className="px-4 py-2.5 text-muted-foreground">—</td>;
+  return (
+    <td className="whitespace-nowrap px-4 py-2.5">
+      <span className="font-medium">{award.name}</span>
+      {award.value !== undefined ? (
+        <span className="ml-1.5 text-xs text-primary">
+          {award.value}
+          {suffix ? ` ${suffix}` : ""}
+        </span>
+      ) : null}
+      <span className="block text-[11px] text-muted-foreground">{award.clubName}</span>
+    </td>
   );
 }
