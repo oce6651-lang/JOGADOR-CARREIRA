@@ -1,3 +1,4 @@
+import { enforceAgeCap } from "../player/ageCap";
 import { clampAttribute, flattenAttributes } from "../player/attributes";
 import { calculateOverall, keyAttributes } from "../player/overall";
 import type { Random } from "../rng";
