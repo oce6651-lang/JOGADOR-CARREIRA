@@ -7,7 +7,9 @@ import { SeasonTimeline } from "@/components/game/history/SeasonTimeline";
 import { StatCard } from "@/components/game/Stats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGame } from "@/game/GameProvider";
+import { ClubCrest } from "@/components/game/world/ClubCrest";
 import { formatFee, formatMoney, formatRating } from "@/game/format";
+import { categoryLabel, getClubBySlug } from "@/game/world";
 
 const TRANSFER_TYPE_LABEL: Record<string, string> = {
   youth: "Categoria de base",
