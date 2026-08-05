@@ -80,6 +80,29 @@ function DeveloperPage() {
       },
     }));
 
+  /** Bulk edit: moves every attribute by the same amount. */
+  const shiftAllAttributes = (delta: number) => {
+    updateCareer((current) => ({
+      ...current,
+      player: {
+        ...current.player,
+        attributes: Object.fromEntries(
+          Object.entries(current.player.attributes).map(([group, values]) => [
+            group,
+            Object.fromEntries(
+              Object.entries(values as Record<string, number>).map(([key, value]) => [
+                key,
+                clampAttribute(value + delta),
+              ]),
+            ),
+          ]),
+        ) as typeof current.player.attributes,
+      },
+    }));
+    toast.success(`Atributos ajustados em ${delta > 0 ? "+" : ""}${delta}.`);
+  };
+
+
   return (
     <GameShell>
       <Link
