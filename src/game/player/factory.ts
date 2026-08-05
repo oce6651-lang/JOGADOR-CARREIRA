@@ -20,6 +20,7 @@ import {
   clampAttribute,
 } from "./attributes";
 import { createHistory } from "./history";
+import { enforceAgeCap } from "./ageCap";
 import { keyAttributes } from "./overall";
 import { rollPersonality } from "./personality";
 
