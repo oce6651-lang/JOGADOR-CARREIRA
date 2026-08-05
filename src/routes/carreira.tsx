@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { PromotionCard } from "@/components/game/career/PromotionCard";
+import { AdminButton } from "@/components/game/dev/AdminButton";
 import { EventList } from "@/components/game/events/EventList";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { SeasonSummaryDialog } from "@/components/game/simulation/SeasonSummaryDialog";
