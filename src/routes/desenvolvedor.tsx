@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useGame } from "@/game/GameProvider";
 import { isDeveloper } from "@/game/dev";
 import { ATTRIBUTE_CATEGORIES, clampAttribute } from "@/game/player/attributes";
+import { removeStatus } from "@/game/player/status";
+import { toast } from "sonner";
 import type { AttributeKey } from "@/game/types";
 
 export const Route = createFileRoute("/desenvolvedor")({
