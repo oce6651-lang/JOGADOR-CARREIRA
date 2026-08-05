@@ -96,7 +96,7 @@ function DeveloperPage() {
               ]),
             ),
           ]),
-        ) as typeof current.player.attributes,
+        ) as unknown as typeof current.player.attributes,
       },
     }));
     toast.success(`Atributos ajustados em ${delta > 0 ? "+" : ""}${delta}.`);
