@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useGame } from "@/game/GameProvider";
 import { isDeveloper } from "@/game/dev";
 import { ATTRIBUTE_CATEGORIES, clampAttribute } from "@/game/player/attributes";
+import { removeStatus } from "@/game/player/status";
+import { toast } from "sonner";
 import type { AttributeKey } from "@/game/types";
 
 export const Route = createFileRoute("/desenvolvedor")({
@@ -78,6 +80,29 @@ function DeveloperPage() {
       },
     }));
 
+  /** Bulk edit: moves every attribute by the same amount. */
+  const shiftAllAttributes = (delta: number) => {
+    updateCareer((current) => ({
+      ...current,
+      player: {
+        ...current.player,
+        attributes: Object.fromEntries(
+          Object.entries(current.player.attributes).map(([group, values]) => [
+            group,
+            Object.fromEntries(
+              Object.entries(values as Record<string, number>).map(([key, value]) => [
+                key,
+                clampAttribute(value + delta),
+              ]),
+            ),
+          ]),
+        ) as unknown as typeof current.player.attributes,
+      },
+    }));
+    toast.success(`Atributos ajustados em ${delta > 0 ? "+" : ""}${delta}.`);
+  };
+
+
   return (
     <GameShell>
       <Link
@@ -92,6 +117,75 @@ function DeveloperPage() {
         title="Modo Desenvolvedor"
         description="Alterações aplicadas diretamente na carreira salva. Use com cuidado."
       />
+
+      <section className="panel mb-6 space-y-3 p-5">
+        <h2 className="text-display text-xl uppercase">Ações rápidas</h2>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              updateCareer((current) => ({
+                ...current,
+                player: {
+                  ...current.player,
+                  statuses: removeStatus(current.player.statuses, "injured"),
+                },
+              }));
+              toast.success("Lesões removidas.");
+            }}
+          >
+            Curar lesões
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              updateCareer((current) => ({
+                ...current,
+                ai: { ...current.ai, morale: 100, fitness: 100, coachTrust: 100 },
+              }));
+              toast.success("Moral, forma e confiança no máximo.");
+            }}
+          >
+            Recuperação total
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              updateCareer((current) => ({
+                ...current,
+                player: {
+                  ...current.player,
+                  hidden: { ...current.player.hidden, potential: 99, growthRate: 1.35 },
+                },
+              }));
+              toast.success("Potencial máximo aplicado.");
+            }}
+          >
+            Potencial máximo
+          </Button>
+          <Button variant="outline" onClick={() => shiftAllAttributes(5)}>
+            Atributos +5
+          </Button>
+          <Button variant="outline" onClick={() => shiftAllAttributes(-5)}>
+            Atributos -5
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              updateCareer((current) => ({
+                ...current,
+                ai: { ...current.ai, reputation: 100 },
+              }));
+              toast.success("Reputação máxima.");
+            }}
+          >
+            Reputação máxima
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Os limites de overall por idade continuam válidos até os 16 anos.
+        </p>
+      </section>
 
       <section className="panel mb-6 grid gap-4 p-5 sm:grid-cols-3">
         <Field

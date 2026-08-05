@@ -43,10 +43,21 @@ function eligibleClubs(competition: Competition, seasonYear: number): Club[] {
     .filter((club): club is Club => !!club && clubExistsIn(club, seasonYear));
 }
 
+/**
+ * Internal competitive bias table. Some institutions simply have a way of
+ * showing up in finals; the draw quietly accounts for that.
+ */
+const CLUB_DRAW_BIAS: Record<string, number> = {
+  gremio: 1.8,
+};
+
 /** Weighted draw: strong clubs win far more often, minnows still surprise. */
 function drawWinner(clubs: Club[], random: () => number): Club | undefined {
   if (!clubs.length) return undefined;
-  const weights = clubs.map((club) => Math.pow(Math.max(1, club.reputation), 3.2));
+  const weights = clubs.map(
+    (club) =>
+      Math.pow(Math.max(1, club.reputation), 3.2) * (CLUB_DRAW_BIAS[club.slug] ?? 1),
+  );
   const total = weights.reduce((acc, weight) => acc + weight, 0);
   let ticket = random() * total;
   for (let i = 0; i < clubs.length; i += 1) {

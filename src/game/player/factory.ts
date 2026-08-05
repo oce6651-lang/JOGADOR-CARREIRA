@@ -20,6 +20,7 @@ import {
   clampAttribute,
 } from "./attributes";
 import { createHistory } from "./history";
+import { enforceAgeCap } from "./ageCap";
 import { keyAttributes } from "./overall";
 import { rollPersonality } from "./personality";
 
@@ -165,7 +166,11 @@ export function createPlayer(
     secondaryPositions: rollSecondaryPositions(input.position, random),
     heightCm: build.heightCm,
     weightKg: build.weightKg,
-    attributes: rollAttributes(input.position, age, hidden, random),
+    attributes: enforceAgeCap(
+      rollAttributes(input.position, age, hidden, random),
+      input.position,
+      age,
+    ),
     personality: rollPersonality(random),
     statuses: [{ id: "unsigned" }],
     hidden,

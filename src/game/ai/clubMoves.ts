@@ -113,6 +113,12 @@ export function joinClub(
           date,
           fromClub: parent?.clubName,
           toClub: club.name,
+          toClubSlug: club.slug,
+          category,
+          overall,
+          age: seasonAge(player.birthDate, date.seasonYear),
+          weeklyWage: wage,
+          contractSeasons: situation.contractUntilSeason - date.seasonYear,
           fee,
           type:
             type === "youth"

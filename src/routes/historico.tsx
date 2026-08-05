@@ -7,7 +7,9 @@ import { SeasonTimeline } from "@/components/game/history/SeasonTimeline";
 import { StatCard } from "@/components/game/Stats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGame } from "@/game/GameProvider";
+import { ClubCrest } from "@/components/game/world/ClubCrest";
 import { formatFee, formatMoney, formatRating } from "@/game/format";
+import { categoryLabel, getClubBySlug } from "@/game/world";
 
 const TRANSFER_TYPE_LABEL: Record<string, string> = {
   youth: "Categoria de base",
@@ -303,27 +305,48 @@ function HistoryPage() {
           {history.transfers.length ? (
             [...history.transfers]
               .sort((a, b) => b.date.seasonYear - a.date.seasonYear)
-              .map((transfer) => (
-                <div
-                  key={transfer.id}
-                  className="panel flex flex-wrap items-center justify-between gap-3 p-4"
-                >
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                      {transfer.date.seasonYear}
-                    </p>
-                    <p className="text-display text-lg uppercase leading-tight">
-                      {transfer.fromClub ?? "Sem clube"} → {transfer.toClub}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {TRANSFER_TYPE_LABEL[transfer.type]}
-                    </p>
+              .map((transfer) => {
+                const club = transfer.toClubSlug
+                  ? getClubBySlug(transfer.toClubSlug)
+                  : undefined;
+                return (
+                  <div
+                    key={transfer.id}
+                    className="panel flex flex-wrap items-center justify-between gap-3 p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      {club ? <ClubCrest club={club} size="md" /> : null}
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                          {transfer.date.seasonYear}
+                          {transfer.age ? ` · ${transfer.age} anos` : ""}
+                          {transfer.overall ? ` · OVR ${transfer.overall}` : ""}
+                        </p>
+                        <p className="text-display text-lg uppercase leading-tight">
+                          {transfer.fromClub ?? "Sem clube"} → {transfer.toClub}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {TRANSFER_TYPE_LABEL[transfer.type]}
+                          {transfer.category ? ` · ${categoryLabel(transfer.category)}` : ""}
+                          {transfer.contractSeasons
+                            ? ` · ${transfer.contractSeasons} temporada(s)`
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-display text-xl uppercase text-primary">
+                        {formatFee(transfer.fee)}
+                      </p>
+                      {transfer.weeklyWage ? (
+                        <p className="text-xs text-muted-foreground">
+                          {formatMoney(transfer.weeklyWage)}/semana
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
-                  <p className="text-display text-xl uppercase text-primary">
-                    {formatFee(transfer.fee)}
-                  </p>
-                </div>
-              ))
+                );
+              })
           ) : (
             <Empty label="Nenhuma transferência registrada." />
           )}
