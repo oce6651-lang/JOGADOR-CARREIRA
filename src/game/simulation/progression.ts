@@ -115,7 +115,11 @@ export function progressAttributes(
     }
   }
 
-  return { attributes: next, changes: diffAttributes(before, flattenAttributes(next)) };
+  // Youth ceilings: no matter how well a child trains, his overall stays
+  // inside the limit of his age bracket until he turns 16.
+  const capped = enforceAgeCap(next, context.position, context.age);
+
+  return { attributes: capped, changes: diffAttributes(before, flattenAttributes(capped)) };
 }
 
 export function diffAttributes(
