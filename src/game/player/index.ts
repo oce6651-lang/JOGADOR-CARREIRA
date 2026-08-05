@@ -1,3 +1,4 @@
+export * from "./ageCap";
 export * from "./attributes";
 export * from "./development";
 export * from "./factory";
