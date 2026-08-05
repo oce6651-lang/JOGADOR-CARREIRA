@@ -320,6 +320,18 @@ export interface TransferRecord {
   date: GameDate;
   fromClub?: string;
   toClub: string;
+  /** Destination club slug — lets the UI render the crest. */
+  toClubSlug?: string;
+  /** Category the athlete joined (base ladder or PRO). */
+  category?: CategoryCode;
+  /** Overall at the moment of the move. */
+  overall?: number;
+  /** Age at the moment of the move. */
+  age?: number;
+  /** Weekly wage agreed in the move. */
+  weeklyWage?: number;
+  /** Seasons of contract signed. */
+  contractSeasons?: number;
   fee: number;
   type: "youth" | "free" | "permanent" | "loan";
 }
