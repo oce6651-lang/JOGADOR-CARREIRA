@@ -8,7 +8,7 @@ import { StatCard } from "@/components/game/Stats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGame } from "@/game/GameProvider";
 import { ClubCrest } from "@/components/game/world/ClubCrest";
-import { formatFee, formatMoney, formatRating } from "@/game/format";
+import { formatFee, formatMoney, formatPosition, formatRating, transferRoute } from "@/game/format";
 import { categoryLabel, getClubBySlug } from "@/game/world";
 
 const TRANSFER_TYPE_LABEL: Record<string, string> = {
@@ -16,6 +16,7 @@ const TRANSFER_TYPE_LABEL: Record<string, string> = {
   free: "Transferência livre",
   permanent: "Transferência definitiva",
   loan: "Empréstimo",
+  release: "Dispensa",
 };
 
 export const Route = createFileRoute("/historico")({
@@ -59,29 +60,40 @@ function HistoryPage() {
     const { seasons } = career.player.history;
     return seasons
       .flatMap((season) => {
-        const names = season.competitions?.length
-          ? season.competitions
-          : season.competitionName
-            ? [season.competitionName]
-            : [];
-        return names.map((competition) => ({
-          key: `${season.id}-${competition}`,
+        const rows = season.competitionStats?.length
+          ? season.competitionStats
+          : (season.competitions?.length
+              ? season.competitions
+              : season.competitionName
+                ? [season.competitionName]
+                : []
+            ).map((competitionName) => ({
+              competitionId: undefined,
+              competitionName,
+              clubName: season.clubName,
+              category: season.category,
+              stats: season.stats,
+              position: undefined,
+              champion: (season.titles ?? []).some(
+                (title) => title.competition === competitionName,
+              ),
+            }));
+
+        return rows.map((row, index) => ({
+          key: `${season.id}-${row.competitionName}-${index}`,
           seasonYear: season.seasonYear,
-          competition,
-          clubName: season.clubName ?? "Sem clube",
-          category: season.category ?? "—",
-          appearances: season.stats.appearances,
-          goals: season.stats.goals,
-          assists: season.stats.assists,
-          rating: formatRating(season.stats.ratingSum, season.stats.appearances),
-          honours: [
-            ...(season.titles ?? [])
-              .filter((title) => title.competition === competition)
-              .map((title) => `Campeão`),
-            ...(season.awards ?? [])
-              .filter((award) => award.name.includes(competition))
-              .map((award) => award.name),
-          ],
+          competition: row.competitionName,
+          clubName: row.clubName ?? season.clubName ?? "Sem clube",
+          category: row.category ?? season.category ?? "—",
+          appearances: row.stats.appearances,
+          goals: row.stats.goals,
+          assists: row.stats.assists,
+          minutes: row.stats.minutes,
+          position: row.position,
+          champion:
+            row.champion ??
+            (season.titles ?? []).some((title) => title.competition === row.competitionName),
+          rating: formatRating(row.stats.ratingSum, row.stats.appearances),
         }));
       })
       .sort((a, b) => b.seasonYear - a.seasonYear);
@@ -176,9 +188,7 @@ function HistoryPage() {
           {history.transfers.length ? (
             history.transfers.map((transfer) => (
               <div key={transfer.id} className="panel flex items-center justify-between gap-4 p-4">
-                <p className="text-sm">
-                  {transfer.fromClub ?? "Sem clube"} → <strong>{transfer.toClub}</strong>
-                </p>
+                <p className="text-sm">{transferRoute(transfer)}</p>
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">
                   {transfer.date.seasonYear} · {formatFee(transfer.fee)}
                 </p>
@@ -238,10 +248,12 @@ function HistoryPage() {
                     <th className="px-3 py-3 text-left">Clube</th>
                     <th className="px-3 py-3 text-left">Categoria</th>
                     <th className="px-3 py-3 text-right">J</th>
+                    <th className="px-3 py-3 text-right">Min</th>
                     <th className="px-3 py-3 text-right">G</th>
                     <th className="px-3 py-3 text-right">A</th>
                     <th className="px-3 py-3 text-right">Nota</th>
-                    <th className="px-3 py-3 text-left">Títulos e prêmios</th>
+                    <th className="px-3 py-3 text-right">Posição</th>
+                    <th className="px-3 py-3 text-left">Resultado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -254,11 +266,21 @@ function HistoryPage() {
                         {row.category}
                       </td>
                       <td className="px-3 py-2.5 text-right">{row.appearances}</td>
-                      <td className="px-3 py-2.5 text-right">{row.goals}</td>
+                      <td className="px-3 py-2.5 text-right text-muted-foreground">
+                        {row.minutes}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-semibold text-primary">
+                        {row.goals}
+                      </td>
                       <td className="px-3 py-2.5 text-right">{row.assists}</td>
                       <td className="px-3 py-2.5 text-right">{row.rating}</td>
+                      <td className="px-3 py-2.5 text-right">{formatPosition(row.position)}</td>
                       <td className="px-3 py-2.5 text-xs text-primary">
-                        {row.honours.length ? row.honours.join(" · ") : "—"}
+                        {row.champion
+                          ? "Campeão"
+                          : row.position === 2
+                            ? "Vice-campeão"
+                            : "—"}
                       </td>
                     </tr>
                   ))}
@@ -306,7 +328,7 @@ function HistoryPage() {
             [...history.transfers]
               .sort((a, b) => b.date.seasonYear - a.date.seasonYear)
               .map((transfer) => {
-                const club = transfer.toClubSlug
+                const club = transfer.type !== "release" && transfer.toClubSlug
                   ? getClubBySlug(transfer.toClubSlug)
                   : undefined;
                 return (
@@ -323,7 +345,7 @@ function HistoryPage() {
                           {transfer.overall ? ` · OVR ${transfer.overall}` : ""}
                         </p>
                         <p className="text-display text-lg uppercase leading-tight">
-                          {transfer.fromClub ?? "Sem clube"} → {transfer.toClub}
+                          {transferRoute(transfer)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {TRANSFER_TYPE_LABEL[transfer.type]}
@@ -336,7 +358,7 @@ function HistoryPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-display text-xl uppercase text-primary">
-                        {formatFee(transfer.fee)}
+                        {transfer.type === "release" ? "Dispensado" : formatFee(transfer.fee)}
                       </p>
                       {transfer.weeklyWage ? (
                         <p className="text-xs text-muted-foreground">

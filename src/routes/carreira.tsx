@@ -155,8 +155,8 @@ function CareerPage() {
         date={current}
         age={playerAge(career)}
         birthDate={career.player.birthDate}
-        canPlayMatch={hasClub(career.player)}
-        busy={simulating}
+        canPlayMatch={hasClub(career.player) && career.status !== "retired"}
+        busy={simulating || career.status === "retired"}
         onSimulate={simulate}
       />
 
