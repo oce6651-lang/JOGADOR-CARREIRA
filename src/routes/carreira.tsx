@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
+  Activity,
   CalendarDays,
   ChevronsRight,
   Briefcase,
@@ -14,6 +15,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { PromotionCard } from "@/components/game/career/PromotionCard";
+import { RetireButton } from "@/components/game/career/RetireButton";
 import { AdminButton } from "@/components/game/dev/AdminButton";
 import { EventList } from "@/components/game/events/EventList";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
@@ -29,7 +31,7 @@ import { EVENT_DEFINITIONS } from "@/game/events";
 import { useGame } from "@/game/GameProvider";
 import { STATUS_LABELS, primaryStatus } from "@/game/player";
 import { hasClub } from "@/game/simulation";
-import { reputationLabel, roleLabel } from "@/game/ai";
+import { formDescription, formLabel, currentForm, reputationLabel, roleLabel } from "@/game/ai";
 import { categoryLabel } from "@/game/world";
 
 import type { GameEventType } from "@/game/types";
@@ -85,6 +87,7 @@ function CareerPage() {
     abandonCareer,
     acceptPromotion,
     declinePromotion,
+    retire,
   } = useGame();
   const [filter, setFilter] = useState<"all" | GameEventType>("all");
 
@@ -125,6 +128,28 @@ function CareerPage() {
         title={playerFullName(career)}
         description={`${positionLabel(career.player.position)} · ${playerAge(career)} anos · ${STATUS_LABELS[status].label}`}
       />
+
+      {career.status === "retired" ? (
+        <section className="panel mb-4 flex flex-wrap items-center justify-between gap-3 border-primary/50 p-5">
+          <div>
+            <p className="text-display text-2xl uppercase">Carreira encerrada</p>
+            <p className="text-sm text-muted-foreground">
+              O atleta está aposentado. O histórico completo continua salvo em Histórico da
+              carreira.
+            </p>
+          </div>
+          <Link
+            to="/historico"
+            className="text-xs uppercase tracking-[0.25em] text-primary hover:underline"
+          >
+            Ver histórico
+          </Link>
+        </section>
+      ) : null}
+
+      <p className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        {formDescription(career.ai)}
+      </p>
 
       <TimePanel
         date={current}
@@ -216,6 +241,15 @@ function CareerPage() {
             label="Reputação"
             value={`${reputationLabel(career.ai.reputation)} (${Math.round(career.ai.reputation)}/100)`}
           />
+          <InfoRow
+            label="Forma atual"
+            value={
+              currentForm(career.ai)
+                ? `${formLabel(career.ai)} (${currentForm(career.ai).toFixed(2).replace(".", ",")})`
+                : "Sem jogos recentes"
+            }
+            icon={<Activity className="size-3.5" />}
+          />
           <InfoRow label="Moral" value={`${Math.round(career.ai.morale)}/100`} />
           <InfoRow label="Condição física" value={`${Math.round(career.ai.fitness)}/100`} />
           <InfoRow label="Posição" value={positionLabel(career.player.position)} />
@@ -274,6 +308,17 @@ function CareerPage() {
             </div>
             <AdminButton />
           </div>
+
+          {career.status === "retired" ? null : (
+            <RetireButton
+              playerName={playerFullName(career)}
+              age={playerAge(career)}
+              appearances={totals.appearances}
+              goals={totals.goals}
+              titles={career.player.history.titles.length}
+              onRetire={retire}
+            />
+          )}
 
           <Button
             variant="ghost"
