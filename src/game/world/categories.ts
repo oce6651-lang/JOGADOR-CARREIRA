@@ -109,6 +109,27 @@ export function isAgeEligible(code: CategoryCode, age: number) {
   return true;
 }
 
+/**
+ * Category the athlete may actually be registered in. A player is never
+ * allowed to play in a category built for younger athletes: when he outgrows
+ * the code, the ladder pushes him up to the one his age belongs to.
+ */
+export function legalCategoryForAge(code: CategoryCode, age: number): CategoryCode {
+  const category = BY_CODE.get(code);
+  if (!category) return categoryForAge(age);
+  if (category.maxAge !== undefined && age > category.maxAge) {
+    const natural = categoryForAge(age);
+    return categoryOrder(natural) > categoryOrder(code) ? natural : code;
+  }
+  return code;
+}
+
+/** True when the athlete is too old for that category. */
+export function isOverAge(code: CategoryCode, age: number) {
+  const category = BY_CODE.get(code);
+  return !!category && category.maxAge !== undefined && age > category.maxAge;
+}
+
 /** Every category the athlete could legally be registered in, at this age. */
 export function eligibleCategories(age: number): CategoryCode[] {
   return CATEGORIES.filter((category) => isAgeEligible(category.code, age)).map(
