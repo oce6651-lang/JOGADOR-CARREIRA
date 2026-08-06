@@ -28,3 +28,28 @@ export function formatDelta(value: number) {
   if (value > 0) return `+${value}`;
   return String(value);
 }
+
+/**
+ * Human readable route of a move, exactly as the career screen shows it:
+ * CLUBE -> SEM CLUBE, SEM CLUBE -> CLUBE, CLUBE 1 -> CLUBE 2 and
+ * CLUBE 1 - EMPRÉSTIMO -> CLUBE 2.
+ */
+export function transferRoute(transfer: {
+  fromClub?: string;
+  toClub: string;
+  loanFrom?: string;
+  type: "youth" | "free" | "permanent" | "loan" | "release";
+}) {
+  const from = transfer.fromClub ?? "Sem clube";
+  if (transfer.type === "release") return `${from} → Sem clube`;
+  if (transfer.type === "loan") {
+    return `${transfer.loanFrom ?? from} - Empréstimo → ${transfer.toClub}`;
+  }
+  return `${from} → ${transfer.toClub}`;
+}
+
+/** Final table position: 1º, 2º, ... */
+export function formatPosition(position?: number) {
+  if (!position) return "—";
+  return `${position}º`;
+}
