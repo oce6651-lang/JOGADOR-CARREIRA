@@ -11,6 +11,7 @@ import {
   assessApproach,
   assessPromotion,
   changeCategory,
+  closeSpell,
   releaseFromClub,
   offerPlayerToClub,
   requestPromotion,
@@ -26,6 +27,7 @@ import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
+import { addStatus, removeStatus } from "./player/status";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
 import type {
   Career,
