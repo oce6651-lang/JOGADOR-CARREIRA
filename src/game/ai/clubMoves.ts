@@ -13,7 +13,13 @@ import type {
   SquadRole,
 } from "../types";
 
-import { categoryLabel, seasonAge, type CategoryCode, type Club } from "../world";
+import {
+  categoryLabel,
+  legalCategoryForAge,
+  seasonAge,
+  type CategoryCode,
+  type Club,
+} from "../world";
 import { contractTypeFor } from "./contracts";
 import { requiredOverall } from "./evaluation";
 
@@ -59,8 +65,15 @@ export function joinClub(
     fee?: number;
   },
 ): { player: Player; ai: CareerAi; events: GameEvent[] } {
-  const { club, category, date, overall, type, parent, random, terms } = options;
+  const { club, date, overall, type, parent, random, terms } = options;
+  const moveAge = seasonAge(player.birthDate, date.seasonYear);
+  // A player is never registered in a category meant for younger athletes.
+  const wanted = legalCategoryForAge(options.category, moveAge);
+  const category = club.categories.includes(wanted)
+    ? wanted
+    : (options.category === wanted ? options.category : wanted);
   const fee = options.fee ?? 0;
+  const previousClubName = parent?.clubName ?? ai.club?.clubName;
   const spellId = createId("contract");
   const wage = terms?.weeklyWage ?? estimateWage(club, category, overall, random);
   const events: GameEvent[] = [];
@@ -88,14 +101,18 @@ export function joinClub(
     weeksInCategory: 0,
   };
 
+  // A permanent move closes the previous spell before opening the new one.
+  const base =
+    ai.club && type !== "loan" ? closeSpell(player, ai.club.spellId, date) : player;
+
   const nextPlayer: Player = {
-    ...player,
+    ...base,
     statuses: addStatus(
-      removeStatus(player.statuses, "unsigned"),
+      removeStatus(base.statuses, "unsigned"),
       type === "loan" ? { id: "onLoan", note: club.name } : { id: "contracted", note: club.name },
     ),
     history: {
-      ...player.history,
+      ...base.history,
       clubs: [
         {
           id: spellId,
@@ -105,18 +122,19 @@ export function joinClub(
           from: date,
           type: type === "permanent" ? "permanent" : type,
         },
-        ...player.history.clubs,
+        ...base.history.clubs,
       ],
       transfers: [
         {
           id: createId("transfer"),
           date,
-          fromClub: parent?.clubName,
+          fromClub: previousClubName,
+          loanFrom: type === "loan" ? (parent?.clubName ?? previousClubName) : undefined,
           toClub: club.name,
           toClubSlug: club.slug,
           category,
           overall,
-          age: seasonAge(player.birthDate, date.seasonYear),
+          age: moveAge,
           weeklyWage: wage,
           contractSeasons: situation.contractUntilSeason - date.seasonYear,
           fee,
@@ -129,11 +147,11 @@ export function joinClub(
                   ? "permanent"
                   : "free",
         },
-        ...player.history.transfers,
+        ...base.history.transfers,
       ],
       salaries: [
         { id: createId("contract"), date, clubName: club.name, amount: wage },
-        ...player.history.salaries,
+        ...base.history.salaries,
       ],
     },
   };
@@ -253,6 +271,22 @@ export function releaseFromClub(
     statuses: addStatus(removeStatus(removeStatus(closed.statuses, "contracted"), "onLoan"), {
       id: "unsigned",
     }),
+    history: {
+      ...closed.history,
+      transfers: [
+        {
+          id: createId("transfer"),
+          date,
+          fromClub: situation.clubName,
+          toClub: "Sem clube",
+          category: situation.category,
+          age: seasonAge(player.birthDate, date.seasonYear),
+          fee: 0,
+          type: "release" as const,
+        },
+        ...closed.history.transfers,
+      ],
+    },
   };
 
   return {

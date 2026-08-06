@@ -66,7 +66,9 @@ export interface OfferInput {
 }
 
 export function buildOffer(input: OfferInput): ClubOffer {
-  const { kind, club, category, overall, elapsedWeeks, ai, random } = input;
+  const { kind, club, overall, elapsedWeeks, ai, random } = input;
+  // Never propose a category built for athletes younger than he is.
+  const category = legalCategoryForAge(input.category, input.age);
   const role: SquadRole = input.role ?? (category === "PRO" ? "reserve" : "bench");
 
   const terms: ContractTerms = buildContractTerms({
