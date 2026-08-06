@@ -17,6 +17,8 @@ export * from "./offers";
 export * from "./trials";
 export * from "./representation";
 export * from "./nationalTeam";
+export * from "./form";
+export * from "./window";
 export * from "./decisions";
 export * from "./headlines";
 

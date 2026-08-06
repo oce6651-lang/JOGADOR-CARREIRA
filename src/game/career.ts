@@ -11,6 +11,7 @@ import {
   assessApproach,
   assessPromotion,
   changeCategory,
+  closeSpell,
   releaseFromClub,
   offerPlayerToClub,
   requestPromotion,
@@ -26,6 +27,7 @@ import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
+import { addStatus, removeStatus } from "./player/status";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
 import type {
   Career,
@@ -71,7 +73,6 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
   const player = createPlayer(input, timeline.current.date);
   const age = ageAt(player.birthDate, timeline.current.date);
 
-
   const events: GameEvent[] = [
     createEvent(
       "seasonStart",
@@ -101,7 +102,6 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
   };
 }
 
-
 export function playerFullName(career: Career) {
   return career.player.fullName;
 }
@@ -124,6 +124,42 @@ export function simulateCareer(
   scope: SimulationScope,
 ): { career: Career; report: SimulationReport } {
   return simulate(career, scope);
+}
+
+/**
+ * Retirement. The career stops being playable but the save is kept forever:
+ * every season, club, title and number stays available to look back on.
+ */
+export function retireCareer(career: Career): Career {
+  if (career.status === "retired") return career;
+
+  const date = career.timeline.current;
+  const age = playerAge(career);
+  const totals = career.player.history.totals;
+  const player = career.ai.club
+    ? closeSpell(career.player, career.ai.club.spellId, date)
+    : career.player;
+
+  const retired: Career = {
+    ...career,
+    status: "retired",
+    player: {
+      ...player,
+      statuses: addStatus(removeStatus(removeStatus(player.statuses, "contracted"), "onLoan"), {
+        id: "retired",
+        note: `Aposentado em ${date.seasonYear}`,
+      }),
+    },
+    ai: { ...career.ai, club: null, offers: [], pendingPromotion: undefined },
+    updatedAt: Date.now(),
+  };
+
+  return withEvents(retired, [
+    createEvent("retirement", date, "Fim da carreira", {
+      description: `${playerFullName(career)} pendurou as chuteiras aos ${age} anos com ${totals.appearances} jogos, ${totals.goals} gols, ${totals.assists} assistências e ${career.player.history.titles.length} título(s).`,
+      tone: "warning",
+    }),
+  ]);
 }
 
 export function acknowledgeSeasonSummary(career: Career, summaryId: string): Career {
@@ -169,7 +205,6 @@ export function toSummary(career: Career): CareerSummary {
   };
 }
 
-
 /* ------------------------------------------------------------------ */
 /* Negotiations, trials and agents                                     */
 /* ------------------------------------------------------------------ */
@@ -196,17 +231,16 @@ export function acceptCareerOffer(career: Career, offerId: string): Career {
     playerOverall(career),
     careerRandom(career, `accept:${offerId}`),
   );
-  const next = withEvents(
-    { ...career, player: result.player, ai: result.ai },
-    result.events,
-  );
+  const next = withEvents({ ...career, player: result.player, ai: result.ai }, result.events);
   return {
     ...next,
     status: result.ai.club ? "active" : next.status,
     currentSeason: {
       ...next.currentSeason,
       clubName: result.ai.club?.clubName ?? next.currentSeason.clubName,
-      category: result.ai.club ? categoryLabel(result.ai.club.category) : next.currentSeason.category,
+      category: result.ai.club
+        ? categoryLabel(result.ai.club.category)
+        : next.currentSeason.category,
     },
   };
 }
@@ -231,7 +265,12 @@ export function negotiateCareerOffer(
   );
   const event = createEvent("contract", career.timeline.current, "Negociação", {
     description: outcome.message,
-    tone: outcome.result === "improved" ? "positive" : outcome.result === "withdrawn" ? "danger" : "warning",
+    tone:
+      outcome.result === "improved"
+        ? "positive"
+        : outcome.result === "withdrawn"
+          ? "danger"
+          : "warning",
   });
   return {
     career: withEvents({ ...career, ai: outcome.ai }, [event]),
@@ -284,34 +323,35 @@ export function attendCareerTrial(
 }
 
 export function hireCareerAgent(career: Career, template: AgentTemplate): Career {
-  const club = career.ai.club ? CLUBS.find((item) => item.id === career.ai.club?.clubId) : undefined;
+  const club = career.ai.club
+    ? CLUBS.find((item) => item.id === career.ai.club?.clubId)
+    : undefined;
   const agent = hireAgent(template, career.timeline.current.seasonYear, {
     country: club?.country ?? career.player.nationality,
     state: club?.state,
   });
-  return withEvents(
-    { ...career, ai: { ...career.ai, agent } },
-    [
-      createEvent("contract", career.timeline.current, `Novo empresário: ${agent.name}`, {
-        description: `Comissão de ${agent.commission}% sobre o salário.`,
-        tone: "positive",
-      }),
-    ],
-  );
+  return withEvents({ ...career, ai: { ...career.ai, agent } }, [
+    createEvent("contract", career.timeline.current, `Novo empresário: ${agent.name}`, {
+      description: `Comissão de ${agent.commission}% sobre o salário.`,
+      tone: "positive",
+    }),
+  ]);
 }
 
 export function dismissCareerAgent(career: Career): Career {
   const agent = career.ai.agent;
   if (!agent) return career;
-  return withEvents(
-    { ...career, ai: { ...career.ai, agent: null } },
-    [
-      createEvent("contract", career.timeline.current, `${agent.name} deixou de representar o atleta`, {
+  return withEvents({ ...career, ai: { ...career.ai, agent: null } }, [
+    createEvent(
+      "contract",
+      career.timeline.current,
+      `${agent.name} deixou de representar o atleta`,
+      {
         description: "O atleta voltou a negociar por conta própria.",
         tone: "warning",
-      }),
-    ],
-  );
+      },
+    ),
+  ]);
 }
 
 /* ------------------------------------------------------------------ */
@@ -372,9 +412,11 @@ export function promotionAssessment(career: Career): PromotionRequest | undefine
   });
 }
 
-export function requestCareerPromotion(
-  career: Career,
-): { career: Career; granted: boolean; message: string } {
+export function requestCareerPromotion(career: Career): {
+  career: Career;
+  granted: boolean;
+  message: string;
+} {
   if (!canApproachClub(career)) {
     return { career, granted: false, message: "O empresário já trabalhou esta semana." };
   }
@@ -388,10 +430,7 @@ export function requestCareerPromotion(
     seasonStats: career.currentSeason.stats,
     random: careerRandom(career, "promotion"),
   });
-  const next = withEvents(
-    { ...career, player: result.player, ai: result.ai },
-    result.events,
-  );
+  const next = withEvents({ ...career, player: result.player, ai: result.ai }, result.events);
   return {
     career: {
       ...next,
@@ -430,10 +469,7 @@ export function acceptCareerPromotion(career: Career): Career {
     true,
   );
 
-  const next = withEvents(
-    { ...career, player: moved.player, ai: moved.ai },
-    moved.events,
-  );
+  const next = withEvents({ ...career, player: moved.player, ai: moved.ai }, moved.events);
   return {
     ...next,
     currentSeason: {
@@ -476,9 +512,6 @@ export function declineCareerPromotion(career: Career): Career {
     career.timeline.current,
     `O atleta recusou a subida ao ${invite.categoryLabel} e deixou o ${invite.clubName}.`,
   );
-  const next = withEvents(
-    { ...career, player: released.player, ai: released.ai },
-    released.events,
-  );
+  const next = withEvents({ ...career, player: released.player, ai: released.ai }, released.events);
   return { ...next, status: "unsigned" };
 }

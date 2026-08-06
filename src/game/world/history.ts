@@ -55,8 +55,7 @@ const CLUB_DRAW_BIAS: Record<string, number> = {
 function drawWinner(clubs: Club[], random: () => number): Club | undefined {
   if (!clubs.length) return undefined;
   const weights = clubs.map(
-    (club) =>
-      Math.pow(Math.max(1, club.reputation), 3.2) * (CLUB_DRAW_BIAS[club.slug] ?? 1),
+    (club) => Math.pow(Math.max(1, club.reputation), 3.2) * (CLUB_DRAW_BIAS[club.slug] ?? 1),
   );
   const total = weights.reduce((acc, weight) => acc + weight, 0);
   let ticket = random() * total;
@@ -94,9 +93,7 @@ export function competitionEdition(
     range?: [number, number],
   ): CompetitionAward | undefined => {
     const club = drawWinner(pool, random) ?? champion;
-    const value = range
-      ? Math.round(range[0] + random() * (range[1] - range[0]))
-      : undefined;
+    const value = range ? Math.round(range[0] + random() * (range[1] - range[0])) : undefined;
     return {
       name: generateName(`${competition.slug}:${seasonYear}:${label}`),
       clubId: club.id,
@@ -127,6 +124,50 @@ export function competitionEdition(
     bestPlayer: award("mvp", [champion, ...clubs]),
     bestGoalkeeper: award("keeper", [champion, ...clubs]),
   };
+}
+
+/**
+ * Final table of an edition. Champion first, runner-up second, everyone else
+ * drawn by the same reputation-weighted logic — deterministic, so the position
+ * a club finished in never changes between two reads.
+ */
+export function editionTable(
+  competitionId: string,
+  seasonYear: number,
+): { clubId: string; clubName: string; position: number }[] {
+  const edition = competitionEdition(competitionId, seasonYear);
+  const competition = getCompetition(competitionId);
+  if (!edition || !competition) return [];
+
+  const clubs = eligibleClubs(competition, seasonYear);
+  const random = createRandom(`${competition.slug}:${seasonYear}:table`);
+  const ordered: Club[] = [];
+  const champion = clubs.find((club) => club.id === edition.championClubId);
+  const runnerUp = clubs.find((club) => club.id === edition.runnerUpClubId);
+  if (champion) ordered.push(champion);
+  if (runnerUp && runnerUp.id !== champion?.id) ordered.push(runnerUp);
+
+  let pool = clubs.filter((club) => !ordered.some((item) => item.id === club.id));
+  while (pool.length) {
+    const next = drawWinner(pool, random) ?? pool[0];
+    ordered.push(next);
+    pool = pool.filter((club) => club.id !== next.id);
+  }
+
+  return ordered.map((club, index) => ({
+    clubId: club.id,
+    clubName: club.name,
+    position: index + 1,
+  }));
+}
+
+/** Where a club finished in a given edition (1 = champion). */
+export function clubFinalPosition(
+  competitionId: string,
+  seasonYear: number,
+  clubId: string,
+): number | undefined {
+  return editionTable(competitionId, seasonYear).find((row) => row.clubId === clubId)?.position;
 }
 
 /** Roll of honour, most recent first. */
@@ -166,7 +207,9 @@ export function titleCount(
 export function clubTitlesInSeason(clubId: string, seasonYear: number): CompetitionEdition[] {
   return COMPETITIONS.filter((competition) => competition.clubIds.includes(clubId))
     .map((competition) => competitionEdition(competition.id, seasonYear))
-    .filter((edition): edition is CompetitionEdition => !!edition && edition.championClubId === clubId);
+    .filter(
+      (edition): edition is CompetitionEdition => !!edition && edition.championClubId === clubId,
+    );
 }
 
 /** Full trophy cabinet of a club up to a season. */

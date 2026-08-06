@@ -27,17 +27,7 @@ export type EntityKind =
 
 export type Foot = "left" | "right" | "both";
 
-export type PositionCode =
-  | "GK"
-  | "CB"
-  | "LB"
-  | "RB"
-  | "DM"
-  | "CM"
-  | "AM"
-  | "LW"
-  | "RW"
-  | "ST";
+export type PositionCode = "GK" | "CB" | "LB" | "RB" | "DM" | "CM" | "AM" | "LW" | "RW" | "ST";
 
 export type PositionGroup = "goalkeeper" | "defender" | "midfielder" | "forward";
 
@@ -84,7 +74,6 @@ export interface CareerTimeline {
   calendarCountry: string;
 }
 
-
 /* ------------------------------------------------------------------ */
 /* Attributes                                                          */
 /* ------------------------------------------------------------------ */
@@ -125,10 +114,7 @@ export type PhysicalAttributeKey =
   | "stamina"
   | "naturalFitness";
 
-export type AttributeKey =
-  | TechnicalAttributeKey
-  | MentalAttributeKey
-  | PhysicalAttributeKey;
+export type AttributeKey = TechnicalAttributeKey | MentalAttributeKey | PhysicalAttributeKey;
 
 export interface AttributeDefinition<K extends AttributeKey = AttributeKey> {
   key: K;
@@ -247,6 +233,18 @@ export interface PendingPromotion {
   mandatory: boolean;
 }
 
+/** Per-competition breakdown of a season — one row per tournament. */
+export interface CompetitionStatLine {
+  competitionId?: EntityId;
+  competitionName: string;
+  clubName?: string;
+  category?: string;
+  stats: MatchStatLine;
+  /** Where the club finished (1 = champion). */
+  position?: number;
+  champion?: boolean;
+}
+
 export interface SeasonRecord {
   id: EntityId;
   seasonYear: number;
@@ -265,16 +263,19 @@ export interface SeasonRecord {
   titles?: TitleRecord[];
   awards?: AwardRecord[];
   stats: MatchStatLine;
+  /** Games, goals and finishing position competition by competition. */
+  competitionStats?: CompetitionStatLine[];
   overallStart: number;
   overallEnd: number;
   attributes: PlayerAttributes;
 }
 
-
 export interface MatchRecord {
   id: EntityId;
   date: GameDate;
   competition: string;
+  /** Real competition id, when the fixture belongs to one. */
+  competitionId?: EntityId;
   opponent: string;
   scoreFor: number;
   scoreAgainst: number;
@@ -333,7 +334,9 @@ export interface TransferRecord {
   /** Seasons of contract signed. */
   contractSeasons?: number;
   fee: number;
-  type: "youth" | "free" | "permanent" | "loan";
+  type: "youth" | "free" | "permanent" | "loan" | "release";
+  /** Club the loan belongs to (owner) — used by the CLUBE - EMPRÉSTIMO -> CLUBE label. */
+  loanFrom?: string;
 }
 
 export interface SalaryRecord {
@@ -457,13 +460,7 @@ export interface AttributeChange {
 /* ------------------------------------------------------------------ */
 
 /** How the coaching staff currently sees the player inside the squad. */
-export type SquadRole =
-  | "star"
-  | "starter"
-  | "rotation"
-  | "bench"
-  | "reserve"
-  | "outOfSquad";
+export type SquadRole = "star" | "starter" | "rotation" | "bench" | "reserve" | "outOfSquad";
 
 /** Where the athlete plays right now, decided entirely by the career AI. */
 /**
@@ -544,12 +541,7 @@ export interface ContractTerms {
 }
 
 /** Unpredictable development phase the athlete is going through. */
-export type DevelopmentPhaseId =
-  | "breakthrough"
-  | "steady"
-  | "plateau"
-  | "setback"
-  | "lateBloom";
+export type DevelopmentPhaseId = "breakthrough" | "steady" | "plateau" | "setback" | "lateBloom";
 
 export interface DevelopmentState {
   phase: DevelopmentPhaseId;
@@ -640,7 +632,6 @@ export interface CareerAi {
   development?: DevelopmentState;
 }
 
-
 /** Result of simulating one or more weeks. Shown to the player, not persisted. */
 export interface SimulationReport {
   id: EntityId;
@@ -723,8 +714,6 @@ export interface CompetitionSeasonRecord {
   playerChampion: boolean;
 }
 
-
-
 /** Live accumulator for the ongoing season. Finalised into a SeasonSummary. */
 export interface SeasonProgress {
   seasonYear: number;
@@ -734,13 +723,14 @@ export interface SeasonProgress {
   clubName?: string;
   category?: string;
   stats: MatchStatLine;
+  /** Live per-competition accumulator for the ongoing season. */
+  competitionStats: CompetitionStatLine[];
   trainings: number;
   injuries: InjuryRecord[];
   titles: TitleRecord[];
   awards: AwardRecord[];
   callUps: CallUpRecord[];
 }
-
 
 export interface CareerSummary {
   id: EntityId;
@@ -756,7 +746,6 @@ export interface CareerSummary {
   status?: CareerStatus;
   createdAt?: number;
 }
-
 
 export interface GameSettings {
   soundEnabled: boolean;
