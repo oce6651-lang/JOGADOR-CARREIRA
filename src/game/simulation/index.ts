@@ -19,8 +19,16 @@ import {
   selectionProfile,
   shouldReview,
   estimateMarketValue,
+  runTransferWindow,
 } from "../ai";
-import { categoryLabel, competitionEdition, competitionsForClub } from "../world";
+import {
+  categoryLabel,
+  clubFinalPosition,
+  competitionEdition,
+  competitionsForClub,
+  isAgeEligible,
+  legalCategoryForAge,
+} from "../world";
 import type {
   AttributeChange,
   CareerAi,
@@ -43,7 +51,13 @@ import {
   developmentPhaseDescription,
   developmentPhaseHeadline,
 } from "../player/development";
-import { addSeasonStats, createSeasonProgress, finalizeSeason } from "./season";
+import {
+  addCompetitionStats,
+  addSeasonStats,
+  createSeasonProgress,
+  finalizeSeason,
+} from "./season";
+import type { Competition } from "../world";
 
 export * from "./injury";
 export * from "./match";
@@ -106,7 +120,14 @@ export function simulate(
   const overallBefore = calculateOverall(career.player.attributes, career.player.position);
   const ageBefore = ageAt(career.player.birthDate, from.date);
 
-  const maxWeeks = scope === "match" ? MAX_MATCH_SEARCH_WEEKS : SCOPE_WEEKS[scope];
+  const maxWeeks =
+    scope === "match"
+      ? MAX_MATCH_SEARCH_WEEKS
+      : scope === "year"
+        ? // "Simular ano" always stops exactly at the start of the next season,
+          // no matter which week the athlete is currently in.
+          Math.max(1, WEEKS_PER_SEASON - from.week + 1)
+        : SCOPE_WEEKS[scope];
 
   let state = career;
   const events: GameEvent[] = [];
@@ -248,6 +269,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
 
   if (fixtureWeek && situation) {
     const profile = selectionProfile(situation.role);
+    const fixture = pickFixtureCompetition(situation.clubId, situation.category, date, random);
     const called = chance(profile.playChance, random);
 
     if (called) {
@@ -257,7 +279,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         player,
         {
           date,
-          competition: `${categoryLabel(situation.category)} · ${situation.clubName}`,
+          competition: fixture.name,
           opponent: randomOpponent(random),
           starter,
           benchMinutes: profile.benchMinutes,
@@ -270,13 +292,24 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       );
       playedMatch = true;
       minutesPlayed = match.minutes;
-      stats = mergeStatLines(stats, matchToStatLine(player, match));
+      const matchStats = matchToStatLine(player, match);
+      stats = mergeStatLines(stats, matchStats);
+      season = addCompetitionStats(season, {
+        competitionId: fixture.id,
+        competitionName: fixture.name,
+        clubName: situation.clubName,
+        category: categoryLabel(situation.category),
+        stats: matchStats,
+      });
       ai = applyMatchFeedback(ai, match, situation.clubReputation);
       player = {
         ...player,
         history: {
           ...player.history,
-          matches: [match, ...player.history.matches].slice(0, 400),
+          matches: [
+            { ...match, competitionId: fixture.id },
+            ...player.history.matches,
+          ].slice(0, 400),
         },
       };
       events.push(
@@ -476,6 +509,21 @@ function simulateSingleWeek(career: Career): WeekOutcome {
   ai = expired.ai;
   events.push(...expired.events);
 
+  /* --- transfer window ------------------------------------------------- */
+  if (!isRetired(player)) {
+    const window = runTransferWindow({
+      player,
+      ai,
+      date: nextDate,
+      elapsedWeeks: timeline.elapsedWeeks,
+      age: newAge,
+      overall: calculateOverall(player.attributes, player.position),
+      random,
+    });
+    ai = window.ai;
+    events.push(...window.events);
+  }
+
   /* --- career AI ------------------------------------------------------ */
   let categoryChange: string | undefined;
   if (!isRetired(player) && shouldReview(ai, { elapsedWeeks: timeline.elapsedWeeks, seasonEnd })) {
@@ -565,7 +613,22 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       ai.club?.category ?? "U17",
     );
 
+    const competitionStats = (season.competitionStats ?? []).map((row) => {
+      const edition = row.competitionId
+        ? editions.find((item) => item.competitionId === row.competitionId)
+        : undefined;
+      return {
+        ...row,
+        position:
+          row.competitionId && clubId
+            ? clubFinalPosition(row.competitionId, finishedYear, clubId)
+            : undefined,
+        champion: !!edition && !!clubId && edition.championClubId === clubId,
+      };
+    });
+
     const { summary, record } = finalizeSeason(season, player, newAge, {
+      competitionStats,
       clubId,
       competitionName: disputed[0]?.name,
       competitions: disputed.map((competition) => competition.name),
@@ -601,6 +664,16 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         description: "Nova temporada, novos objetivos.",
       }),
     );
+    if (ai.club && !isAgeEligible(ai.club.category, newAge)) {
+      const target = legalCategoryForAge(ai.club.category, newAge);
+      if (target !== ai.club.category) {
+        const moved = changeCategory(player, ai, target, nextDate, true);
+        player = moved.player;
+        ai = moved.ai;
+        events.push(...moved.events);
+      }
+    }
+
     nextSeason = createSeasonProgress(
       player,
       nextDate.seasonYear,
