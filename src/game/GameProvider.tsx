@@ -21,6 +21,7 @@ import {
   negotiateCareerOffer,
   offerCareerToClub,
   requestCareerPromotion,
+  retireCareer,
   simulateCareer,
   type NegotiationFeedback,
   type NewCareerInput,
@@ -57,6 +58,8 @@ interface GameContextValue {
   dismissReport: () => void;
   dismissSeasonSummary: (summaryId: string) => void;
   abandonCareer: () => void;
+  /** Ends the playing career — the save stays forever as an archive. */
+  retire: () => void;
   /** Negotiations — every proposal is resolved by the player. */
   acceptOffer: (offerId: string) => void;
   negotiateOffer: (offerId: string, topic: NegotiationTopic) => NegotiationFeedback | null;
@@ -217,6 +220,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [updateCareer],
   );
 
+  const retire = useCallback(() => updateCareer((prev) => retireCareer(prev)), [updateCareer]);
+
   const dismissReport = useCallback(() => setLastReport(null), []);
 
   const dismissSeasonSummary = useCallback(
@@ -257,6 +262,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissReport,
       dismissSeasonSummary,
       abandonCareer,
+      retire,
       updateSettings,
       acceptOffer,
       negotiateOffer,
@@ -284,6 +290,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       dismissReport,
       dismissSeasonSummary,
       abandonCareer,
+      retire,
       updateSettings,
       acceptOffer,
       negotiateOffer,
