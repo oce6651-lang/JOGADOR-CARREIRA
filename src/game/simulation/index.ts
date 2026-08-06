@@ -58,7 +58,7 @@ import {
   createSeasonProgress,
   finalizeSeason,
 } from "./season";
-import type { Competition } from "../world";
+import type { CategoryCode, Competition } from "../world";
 
 export * from "./injury";
 export * from "./match";
@@ -721,7 +721,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
  */
 function pickFixtureCompetition(
   clubId: string,
-  category: string,
+  category: CategoryCode,
   date: { seasonYear: number; week: number },
   random: () => number,
 ): { id?: string; name: string } {
@@ -731,7 +731,7 @@ function pickFixtureCompetition(
   });
 
   if (!disputed.length) {
-    return { name: `Amistosos · ${categoryLabel(category as never)}` };
+    return { name: `Amistosos · ${categoryLabel(category)}` };
   }
 
   // Leagues carry most of the calendar; cups appear far less often.

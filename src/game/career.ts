@@ -126,6 +126,42 @@ export function simulateCareer(
   return simulate(career, scope);
 }
 
+/**
+ * Retirement. The career stops being playable but the save is kept forever:
+ * every season, club, title and number stays available to look back on.
+ */
+export function retireCareer(career: Career): Career {
+  if (career.status === "retired") return career;
+
+  const date = career.timeline.current;
+  const age = playerAge(career);
+  const totals = career.player.history.totals;
+  const player = career.ai.club
+    ? closeSpell(career.player, career.ai.club.spellId, date)
+    : career.player;
+
+  const retired: Career = {
+    ...career,
+    status: "retired",
+    player: {
+      ...player,
+      statuses: addStatus(
+        removeStatus(removeStatus(player.statuses, "contracted"), "onLoan"),
+        { id: "retired", note: `Aposentado em ${date.seasonYear}` },
+      ),
+    },
+    ai: { ...career.ai, club: null, offers: [], pendingPromotion: undefined },
+    updatedAt: Date.now(),
+  };
+
+  return withEvents(retired, [
+    createEvent("retirement", date, "Fim da carreira", {
+      description: `${playerFullName(career)} pendurou as chuteiras aos ${age} anos com ${totals.appearances} jogos, ${totals.goals} gols, ${totals.assists} assistências e ${career.player.history.titles.length} título(s).`,
+      tone: "warning",
+    }),
+  ]);
+}
+
 export function acknowledgeSeasonSummary(career: Career, summaryId: string): Career {
   return {
     ...career,
