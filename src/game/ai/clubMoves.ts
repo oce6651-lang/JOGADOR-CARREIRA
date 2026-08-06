@@ -71,7 +71,9 @@ export function joinClub(
   const wanted = legalCategoryForAge(options.category, moveAge);
   const category = club.categories.includes(wanted)
     ? wanted
-    : (options.category === wanted ? options.category : wanted);
+    : options.category === wanted
+      ? options.category
+      : wanted;
   const fee = options.fee ?? 0;
   const previousClubName = parent?.clubName ?? ai.club?.clubName;
   const spellId = createId("contract");
@@ -102,8 +104,7 @@ export function joinClub(
   };
 
   // A permanent move closes the previous spell before opening the new one.
-  const base =
-    ai.club && type !== "loan" ? closeSpell(player, ai.club.spellId, date) : player;
+  const base = ai.club && type !== "loan" ? closeSpell(player, ai.club.spellId, date) : player;
 
   const nextPlayer: Player = {
     ...base,
@@ -139,13 +140,7 @@ export function joinClub(
           contractSeasons: situation.contractUntilSeason - date.seasonYear,
           fee,
           type:
-            type === "youth"
-              ? "youth"
-              : type === "loan"
-                ? "loan"
-                : fee > 0
-                  ? "permanent"
-                  : "free",
+            type === "youth" ? "youth" : type === "loan" ? "loan" : fee > 0 ? "permanent" : "free",
         },
         ...base.history.transfers,
       ],

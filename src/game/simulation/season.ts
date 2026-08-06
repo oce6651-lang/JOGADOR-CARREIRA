@@ -36,10 +36,7 @@ export function createSeasonProgress(
   };
 }
 
-export function addSeasonStats(
-  progress: SeasonProgress,
-  stats: MatchStatLine,
-): SeasonProgress {
+export function addSeasonStats(progress: SeasonProgress, stats: MatchStatLine): SeasonProgress {
   return { ...progress, stats: mergeStatLines(progress.stats, stats) };
 }
 
@@ -82,9 +79,7 @@ export function addCompetitionStats(
   }
 
   const merged = current.map((row, position) =>
-    position === index
-      ? { ...row, stats: mergeStatLines(row.stats, entry.stats) }
-      : row,
+    position === index ? { ...row, stats: mergeStatLines(row.stats, entry.stats) } : row,
   );
   return { ...progress, competitionStats: merged };
 }
@@ -153,7 +148,6 @@ export function finalizeSeason(
   return { summary, record };
 }
 
-
 function buildHighlights(progress: SeasonProgress, overallDelta: number): string[] {
   const highlights: string[] = [];
   const { stats } = progress;
@@ -170,16 +164,13 @@ function buildHighlights(progress: SeasonProgress, overallDelta: number): string
   highlights.push(`${progress.trainings} treinos realizados.`);
 
   if (overallDelta > 0) highlights.push(`Overall subiu ${overallDelta} ponto(s).`);
-  else if (overallDelta < 0)
-    highlights.push(`Overall caiu ${Math.abs(overallDelta)} ponto(s).`);
+  else if (overallDelta < 0) highlights.push(`Overall caiu ${Math.abs(overallDelta)} ponto(s).`);
   else highlights.push("Overall permaneceu igual.");
 
-  if (progress.injuries.length)
-    highlights.push(`${progress.injuries.length} lesão(ões) sofridas.`);
+  if (progress.injuries.length) highlights.push(`${progress.injuries.length} lesão(ões) sofridas.`);
   if (progress.titles.length) highlights.push(`${progress.titles.length} título(s).`);
   if (progress.awards.length) highlights.push(`${progress.awards.length} prêmio(s).`);
-  if (progress.callUps.length)
-    highlights.push(`${progress.callUps.length} convocação(ões).`);
+  if (progress.callUps.length) highlights.push(`${progress.callUps.length} convocação(ões).`);
 
   return highlights;
 }

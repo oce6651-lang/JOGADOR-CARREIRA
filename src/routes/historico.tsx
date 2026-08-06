@@ -276,11 +276,7 @@ function HistoryPage() {
                       <td className="px-3 py-2.5 text-right">{row.rating}</td>
                       <td className="px-3 py-2.5 text-right">{formatPosition(row.position)}</td>
                       <td className="px-3 py-2.5 text-xs text-primary">
-                        {row.champion
-                          ? "Campeão"
-                          : row.position === 2
-                            ? "Vice-campeão"
-                            : "—"}
+                        {row.champion ? "Campeão" : row.position === 2 ? "Vice-campeão" : "—"}
                       </td>
                     </tr>
                   ))}
@@ -328,9 +324,10 @@ function HistoryPage() {
             [...history.transfers]
               .sort((a, b) => b.date.seasonYear - a.date.seasonYear)
               .map((transfer) => {
-                const club = transfer.type !== "release" && transfer.toClubSlug
-                  ? getClubBySlug(transfer.toClubSlug)
-                  : undefined;
+                const club =
+                  transfer.type !== "release" && transfer.toClubSlug
+                    ? getClubBySlug(transfer.toClubSlug)
+                    : undefined;
                 return (
                   <div
                     key={transfer.id}

@@ -307,10 +307,10 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         ...player,
         history: {
           ...player.history,
-          matches: [
-            { ...match, competitionId: fixture.id },
-            ...player.history.matches,
-          ].slice(0, 400),
+          matches: [{ ...match, competitionId: fixture.id }, ...player.history.matches].slice(
+            0,
+            400,
+          ),
         },
       };
       events.push(
@@ -643,10 +643,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       history: {
         ...player.history,
         seasons: [record, ...player.history.seasons],
-        marketValues: [
-          { date: nextDate, value: marketValue },
-          ...player.history.marketValues,
-        ],
+        marketValues: [{ date: nextDate, value: marketValue }, ...player.history.marketValues],
         overallBySeason: [
           { seasonYear: record.seasonYear, overall: record.overallEnd, age: newAge },
           ...player.history.overallBySeason,
@@ -707,7 +704,6 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     playedMatch,
   };
 }
-
 
 /* ------------------------------------------------------------------ */
 /* Fixtures                                                            */

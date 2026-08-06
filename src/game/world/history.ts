@@ -55,8 +55,7 @@ const CLUB_DRAW_BIAS: Record<string, number> = {
 function drawWinner(clubs: Club[], random: () => number): Club | undefined {
   if (!clubs.length) return undefined;
   const weights = clubs.map(
-    (club) =>
-      Math.pow(Math.max(1, club.reputation), 3.2) * (CLUB_DRAW_BIAS[club.slug] ?? 1),
+    (club) => Math.pow(Math.max(1, club.reputation), 3.2) * (CLUB_DRAW_BIAS[club.slug] ?? 1),
   );
   const total = weights.reduce((acc, weight) => acc + weight, 0);
   let ticket = random() * total;
@@ -94,9 +93,7 @@ export function competitionEdition(
     range?: [number, number],
   ): CompetitionAward | undefined => {
     const club = drawWinner(pool, random) ?? champion;
-    const value = range
-      ? Math.round(range[0] + random() * (range[1] - range[0]))
-      : undefined;
+    const value = range ? Math.round(range[0] + random() * (range[1] - range[0])) : undefined;
     return {
       name: generateName(`${competition.slug}:${seasonYear}:${label}`),
       clubId: club.id,
@@ -210,7 +207,9 @@ export function titleCount(
 export function clubTitlesInSeason(clubId: string, seasonYear: number): CompetitionEdition[] {
   return COMPETITIONS.filter((competition) => competition.clubIds.includes(clubId))
     .map((competition) => competitionEdition(competition.id, seasonYear))
-    .filter((edition): edition is CompetitionEdition => !!edition && edition.championClubId === clubId);
+    .filter(
+      (edition): edition is CompetitionEdition => !!edition && edition.championClubId === clubId,
+    );
 }
 
 /** Full trophy cabinet of a club up to a season. */

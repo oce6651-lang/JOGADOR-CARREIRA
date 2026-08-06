@@ -48,8 +48,8 @@ export function RetireButton({
             <AlertDialogTitle>Pendurar as chuteiras?</AlertDialogTitle>
             <AlertDialogDescription>
               {playerName} se aposenta aos {age} anos com {appearances} jogos, {goals} gols e{" "}
-              {titles} título(s). A carreira deixa de ser simulada, mas todo o histórico fica
-              salvo para sempre — você poderá revê-lo quando quiser.
+              {titles} título(s). A carreira deixa de ser simulada, mas todo o histórico fica salvo
+              para sempre — você poderá revê-lo quando quiser.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

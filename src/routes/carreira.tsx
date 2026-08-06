@@ -64,7 +64,6 @@ const SHORTCUTS = [
   { to: "/competicoes" as const, label: "Competições", icon: Trophy },
 ];
 
-
 const FILTERS: { id: "all" | GameEventType; label: string }[] = [
   { id: "all", label: "Tudo" },
   { id: "match", label: "Partidas" },
@@ -220,7 +219,6 @@ function CareerPage() {
         <ChevronsRight className="size-6 text-primary" />
       </Link>
 
-
       <section className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="panel space-y-3 p-6">
           <h2 className="text-display text-2xl uppercase">Perfil</h2>
@@ -361,7 +359,6 @@ function CareerPage() {
         />
       </section>
 
-
       <SeasonSummaryDialog
         summary={pendingSummary}
         open={Boolean(pendingSummary)}
@@ -376,15 +373,7 @@ function CareerPage() {
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
+function InfoRow({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between border-b border-border pb-2 text-sm last:border-0 last:pb-0">
       <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.18em] text-muted-foreground">

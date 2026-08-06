@@ -27,17 +27,7 @@ export type EntityKind =
 
 export type Foot = "left" | "right" | "both";
 
-export type PositionCode =
-  | "GK"
-  | "CB"
-  | "LB"
-  | "RB"
-  | "DM"
-  | "CM"
-  | "AM"
-  | "LW"
-  | "RW"
-  | "ST";
+export type PositionCode = "GK" | "CB" | "LB" | "RB" | "DM" | "CM" | "AM" | "LW" | "RW" | "ST";
 
 export type PositionGroup = "goalkeeper" | "defender" | "midfielder" | "forward";
 
@@ -84,7 +74,6 @@ export interface CareerTimeline {
   calendarCountry: string;
 }
 
-
 /* ------------------------------------------------------------------ */
 /* Attributes                                                          */
 /* ------------------------------------------------------------------ */
@@ -125,10 +114,7 @@ export type PhysicalAttributeKey =
   | "stamina"
   | "naturalFitness";
 
-export type AttributeKey =
-  | TechnicalAttributeKey
-  | MentalAttributeKey
-  | PhysicalAttributeKey;
+export type AttributeKey = TechnicalAttributeKey | MentalAttributeKey | PhysicalAttributeKey;
 
 export interface AttributeDefinition<K extends AttributeKey = AttributeKey> {
   key: K;
@@ -283,7 +269,6 @@ export interface SeasonRecord {
   overallEnd: number;
   attributes: PlayerAttributes;
 }
-
 
 export interface MatchRecord {
   id: EntityId;
@@ -475,13 +460,7 @@ export interface AttributeChange {
 /* ------------------------------------------------------------------ */
 
 /** How the coaching staff currently sees the player inside the squad. */
-export type SquadRole =
-  | "star"
-  | "starter"
-  | "rotation"
-  | "bench"
-  | "reserve"
-  | "outOfSquad";
+export type SquadRole = "star" | "starter" | "rotation" | "bench" | "reserve" | "outOfSquad";
 
 /** Where the athlete plays right now, decided entirely by the career AI. */
 /**
@@ -562,12 +541,7 @@ export interface ContractTerms {
 }
 
 /** Unpredictable development phase the athlete is going through. */
-export type DevelopmentPhaseId =
-  | "breakthrough"
-  | "steady"
-  | "plateau"
-  | "setback"
-  | "lateBloom";
+export type DevelopmentPhaseId = "breakthrough" | "steady" | "plateau" | "setback" | "lateBloom";
 
 export interface DevelopmentState {
   phase: DevelopmentPhaseId;
@@ -658,7 +632,6 @@ export interface CareerAi {
   development?: DevelopmentState;
 }
 
-
 /** Result of simulating one or more weeks. Shown to the player, not persisted. */
 export interface SimulationReport {
   id: EntityId;
@@ -741,8 +714,6 @@ export interface CompetitionSeasonRecord {
   playerChampion: boolean;
 }
 
-
-
 /** Live accumulator for the ongoing season. Finalised into a SeasonSummary. */
 export interface SeasonProgress {
   seasonYear: number;
@@ -761,7 +732,6 @@ export interface SeasonProgress {
   callUps: CallUpRecord[];
 }
 
-
 export interface CareerSummary {
   id: EntityId;
   playerName: string;
@@ -776,7 +746,6 @@ export interface CareerSummary {
   status?: CareerStatus;
   createdAt?: number;
 }
-
 
 export interface GameSettings {
   soundEnabled: boolean;

@@ -20,7 +20,6 @@ export const CATEGORIES: CategoryDefinition[] = [
   { code: "PRO", label: "Profissional", minAge: 16, order: 11 },
 ];
 
-
 const BY_CODE = new Map<CategoryCode, CategoryDefinition>(
   CATEGORIES.map((category) => [category.code, category]),
 );
@@ -98,7 +97,6 @@ export function isYouthCategory(code: CategoryCode) {
 export function isDevelopmentCategory(code: CategoryCode) {
   return code === "U23";
 }
-
 
 /** Can an athlete of this age legally play in that category? */
 export function isAgeEligible(code: CategoryCode, age: number) {

@@ -43,8 +43,7 @@ export function marketAppeal(ctx: WindowContext): number {
   const clubBonus = ai.club ? ai.club.clubReputation * 0.18 : -6;
   const youth = ctx.age <= 21 ? 6 : ctx.age >= 32 ? -12 : 0;
   const potential = Math.max(0, ctx.player.hidden.potential - overall) * 0.35;
-  const raw =
-    overall * 0.42 + ai.reputation * 0.4 + formBonus + clubBonus + youth + potential;
+  const raw = overall * 0.42 + ai.reputation * 0.4 + formBonus + clubBonus + youth + potential;
   return Math.max(0, Math.min(100, raw));
 }
 
@@ -80,24 +79,15 @@ export function runTransferWindow(ctx: WindowContext): { ai: CareerAi; events: G
   const freeAgent = !ai.club;
   if (!chance(approachChance(appeal, freeAgent), random)) return { ai, events: [] };
 
-  const natural = legalCategoryForAge(
-    ai.club?.category ?? categoryForAge(ctx.age),
-    ctx.age,
-  );
+  const natural = legalCategoryForAge(ai.club?.category ?? categoryForAge(ctx.age), ctx.age);
   const suitors = suitorsFor(ctx, natural).filter(
     (club) => !ai.offers.some((offer) => offer.clubId === club.id),
   );
   if (!suitors.length) return { ai, events: [] };
 
   const club = pick(suitors, random);
-  const projected =
-    ctx.overall + Math.max(0, ctx.player.hidden.potential - ctx.overall) * 0.35;
-  const planned = plannedEntryCategory(
-    club,
-    entryCategoryFor(club, natural),
-    projected,
-    ctx.age,
-  );
+  const projected = ctx.overall + Math.max(0, ctx.player.hidden.potential - ctx.overall) * 0.35;
+  const planned = plannedEntryCategory(club, entryCategoryFor(club, natural), projected, ctx.age);
   const category = legalCategoryForAge(planned, ctx.age);
 
   // A first team player with little football gets loan calls instead of bids.
