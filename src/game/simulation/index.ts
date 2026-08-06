@@ -19,6 +19,7 @@ import {
   selectionProfile,
   shouldReview,
   estimateMarketValue,
+  changeCategory,
   runTransferWindow,
 } from "../ai";
 import {
@@ -705,4 +706,44 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     seasonSummaries,
     playedMatch,
   };
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Fixtures                                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Which competition the athlete plays in this week. Clubs juggle a league, a
+ * cup and (sometimes) a continental tournament at the same time, so each
+ * fixture is drawn from the calendar of the club's own category — that is what
+ * makes the per-competition history meaningful.
+ */
+function pickFixtureCompetition(
+  clubId: string,
+  category: string,
+  date: { seasonYear: number; week: number },
+  random: () => number,
+): { id?: string; name: string } {
+  const disputed: Competition[] = competitionsForClub(clubId).filter((competition) => {
+    if (competition.category && competition.category !== category) return false;
+    return !!competitionEdition(competition.id, date.seasonYear);
+  });
+
+  if (!disputed.length) {
+    return { name: `Amistosos · ${categoryLabel(category as never)}` };
+  }
+
+  // Leagues carry most of the calendar; cups appear far less often.
+  const weights = disputed.map((competition) => (competition.format === "league" ? 6 : 2));
+  const total = weights.reduce((acc, weight) => acc + weight, 0);
+  let ticket = random() * total;
+  for (let index = 0; index < disputed.length; index += 1) {
+    ticket -= weights[index];
+    if (ticket <= 0) {
+      return { id: disputed[index].id, name: disputed[index].name };
+    }
+  }
+  const last = disputed[disputed.length - 1];
+  return { id: last.id, name: last.name };
 }
