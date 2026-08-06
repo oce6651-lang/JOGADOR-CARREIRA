@@ -247,6 +247,18 @@ export interface PendingPromotion {
   mandatory: boolean;
 }
 
+/** Per-competition breakdown of a season — one row per tournament. */
+export interface CompetitionStatLine {
+  competitionId?: EntityId;
+  competitionName: string;
+  clubName?: string;
+  category?: string;
+  stats: MatchStatLine;
+  /** Where the club finished (1 = champion). */
+  position?: number;
+  champion?: boolean;
+}
+
 export interface SeasonRecord {
   id: EntityId;
   seasonYear: number;
@@ -265,6 +277,8 @@ export interface SeasonRecord {
   titles?: TitleRecord[];
   awards?: AwardRecord[];
   stats: MatchStatLine;
+  /** Games, goals and finishing position competition by competition. */
+  competitionStats?: CompetitionStatLine[];
   overallStart: number;
   overallEnd: number;
   attributes: PlayerAttributes;
@@ -275,6 +289,8 @@ export interface MatchRecord {
   id: EntityId;
   date: GameDate;
   competition: string;
+  /** Real competition id, when the fixture belongs to one. */
+  competitionId?: EntityId;
   opponent: string;
   scoreFor: number;
   scoreAgainst: number;
@@ -333,7 +349,9 @@ export interface TransferRecord {
   /** Seasons of contract signed. */
   contractSeasons?: number;
   fee: number;
-  type: "youth" | "free" | "permanent" | "loan";
+  type: "youth" | "free" | "permanent" | "loan" | "release";
+  /** Club the loan belongs to (owner) — used by the CLUBE - EMPRÉSTIMO -> CLUBE label. */
+  loanFrom?: string;
 }
 
 export interface SalaryRecord {
@@ -734,6 +752,8 @@ export interface SeasonProgress {
   clubName?: string;
   category?: string;
   stats: MatchStatLine;
+  /** Live per-competition accumulator for the ongoing season. */
+  competitionStats: CompetitionStatLine[];
   trainings: number;
   injuries: InjuryRecord[];
   titles: TitleRecord[];

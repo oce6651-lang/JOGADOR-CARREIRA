@@ -129,6 +129,50 @@ export function competitionEdition(
   };
 }
 
+/**
+ * Final table of an edition. Champion first, runner-up second, everyone else
+ * drawn by the same reputation-weighted logic — deterministic, so the position
+ * a club finished in never changes between two reads.
+ */
+export function editionTable(
+  competitionId: string,
+  seasonYear: number,
+): { clubId: string; clubName: string; position: number }[] {
+  const edition = competitionEdition(competitionId, seasonYear);
+  const competition = getCompetition(competitionId);
+  if (!edition || !competition) return [];
+
+  const clubs = eligibleClubs(competition, seasonYear);
+  const random = createRandom(`${competition.slug}:${seasonYear}:table`);
+  const ordered: Club[] = [];
+  const champion = clubs.find((club) => club.id === edition.championClubId);
+  const runnerUp = clubs.find((club) => club.id === edition.runnerUpClubId);
+  if (champion) ordered.push(champion);
+  if (runnerUp && runnerUp.id !== champion?.id) ordered.push(runnerUp);
+
+  let pool = clubs.filter((club) => !ordered.some((item) => item.id === club.id));
+  while (pool.length) {
+    const next = drawWinner(pool, random) ?? pool[0];
+    ordered.push(next);
+    pool = pool.filter((club) => club.id !== next.id);
+  }
+
+  return ordered.map((club, index) => ({
+    clubId: club.id,
+    clubName: club.name,
+    position: index + 1,
+  }));
+}
+
+/** Where a club finished in a given edition (1 = champion). */
+export function clubFinalPosition(
+  competitionId: string,
+  seasonYear: number,
+  clubId: string,
+): number | undefined {
+  return editionTable(competitionId, seasonYear).find((row) => row.clubId === clubId)?.position;
+}
+
 /** Roll of honour, most recent first. */
 export function rollOfHonour(
   competitionId: string,
