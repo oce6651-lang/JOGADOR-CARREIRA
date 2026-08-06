@@ -13,7 +13,13 @@ import type {
   Player,
   SquadRole,
 } from "../types";
-import { categoryLabel, getClub, type CategoryCode, type Club } from "../world";
+import {
+  categoryLabel,
+  getClub,
+  legalCategoryForAge,
+  type CategoryCode,
+  type Club,
+} from "../world";
 import { joinClub } from "./clubMoves";
 import { buildContractTerms } from "./contracts";
 import { negotiationLeverage } from "./reputation";
