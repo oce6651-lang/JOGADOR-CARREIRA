@@ -487,6 +487,12 @@ export interface ClubSituation {
   onLoan: boolean;
   parentClubId?: EntityId;
   parentClubName?: string;
+  /** Snapshot of the owning contract, used to give the athlete back. */
+  parentClubSlug?: string;
+  parentClubReputation?: number;
+  parentCategory?: CategoryCode;
+  parentWeeklyWage?: number;
+  parentContractUntilSeason?: number;
   /** Weeks spent in the current category — feeds promotion decisions. */
   weeksInCategory: number;
   /** Nature of the deal: formation stipend or professional contract. */
