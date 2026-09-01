@@ -385,6 +385,7 @@ export function releaseFromClub(
           toClub: "Sem clube",
           category: situation.category,
           age: seasonAge(player.birthDate, date.seasonYear),
+          weeklyWage: situation.weeklyWage,
           fee: 0,
           type: "release" as const,
         },
