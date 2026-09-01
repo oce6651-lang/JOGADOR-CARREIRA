@@ -23,7 +23,7 @@ import {
   type CategoryCode,
   type Club,
 } from "../world";
-import { changeCategory, releaseFromClub } from "./clubMoves";
+import { changeCategory, releaseFromClub, returnFromLoan } from "./clubMoves";
 import { evaluate, levelGap, type Evaluation } from "./evaluation";
 import { entryCategoryFor, homeCountryFor, plannedEntryCategory, reachableClubs } from "./market";
 import { evaluateCallUp } from "./nationalTeam";
@@ -180,6 +180,12 @@ function reviewContractedPlayer(ctx: AiContext): AiOutcome {
   let ai = ctx.ai;
   const situation = ai.club!;
   const events: GameEvent[] = [];
+
+  /* --- loan ending --------------------------------------------------- */
+  if (situation.onLoan && situation.contractUntilSeason < date.seasonYear) {
+    const back = returnFromLoan(player, ai, date);
+    if (back) return finish(back.player, back.ai, [...events, ...back.events]);
+  }
 
   /* --- contract expiry --------------------------------------------- */
   if (situation.contractUntilSeason < date.seasonYear) {
