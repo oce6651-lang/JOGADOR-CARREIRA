@@ -100,16 +100,30 @@ export function joinClub(
     goalBonus: terms?.goalBonus ?? 0,
     parentClubId: parent?.clubId,
     parentClubName: parent?.clubName,
+    // Snapshot of the owning contract so the athlete can be given back at the
+    // end of the loan instead of being dumped on the free market.
+    parentClubSlug: parent?.clubSlug,
+    parentClubReputation: parent?.clubReputation,
+    parentCategory: parent?.category,
+    parentWeeklyWage: parent?.weeklyWage,
+    parentContractUntilSeason: parent?.contractUntilSeason,
     weeksInCategory: 0,
   };
 
   // A permanent move closes the previous spell before opening the new one.
   const base = ai.club && type !== "loan" ? closeSpell(player, ai.club.spellId, date) : player;
 
+  // Only one club status can be active at a time — a loan replaces the
+  // "contracted" flag and a permanent move clears any stale loan flag.
+  const cleanStatuses = removeStatus(
+    removeStatus(removeStatus(base.statuses, "unsigned"), "contracted"),
+    "onLoan",
+  );
+
   const nextPlayer: Player = {
     ...base,
     statuses: addStatus(
-      removeStatus(base.statuses, "unsigned"),
+      cleanStatuses,
       type === "loan" ? { id: "onLoan", note: club.name } : { id: "contracted", note: club.name },
     ),
     history: {
@@ -168,6 +182,101 @@ export function joinClub(
     player: nextPlayer,
     ai: { ...ai, club: situation, coachTrust: 45, morale: Math.max(ai.morale, 68) },
     events,
+  };
+}
+
+/**
+ * End of a loan spell: the athlete goes back to the club that owns him, in the
+ * category his age allows. He only becomes a free agent if the owning contract
+ * has also expired in the meantime.
+ */
+export function returnFromLoan(
+  player: Player,
+  ai: CareerAi,
+  date: GameDate,
+): { player: Player; ai: CareerAi; events: GameEvent[] } | null {
+  const loan = ai.club;
+  if (!loan || !loan.onLoan || !loan.parentClubId || !loan.parentClubName) return null;
+
+  const until = loan.parentContractUntilSeason ?? date.seasonYear;
+  if (until < date.seasonYear) return null;
+
+  const age = seasonAge(player.birthDate, date.seasonYear);
+  const category = legalCategoryForAge(loan.parentCategory ?? loan.category, age);
+  const spellId = createId("contract");
+
+  const closed = closeSpell(player, loan.spellId, date);
+  const nextPlayer: Player = {
+    ...closed,
+    statuses: addStatus(removeStatus(closed.statuses, "onLoan"), {
+      id: "contracted",
+      note: loan.parentClubName,
+    }),
+    history: {
+      ...closed.history,
+      clubs: [
+        {
+          id: spellId,
+          clubId: loan.parentClubId,
+          clubName: loan.parentClubName,
+          category,
+          from: date,
+          type: category === "PRO" ? "permanent" : "youth",
+        },
+        ...closed.history.clubs,
+      ],
+      transfers: [
+        {
+          id: createId("transfer"),
+          date,
+          fromClub: loan.clubName,
+          toClub: loan.parentClubName,
+          toClubSlug: loan.parentClubSlug,
+          category,
+          age,
+          weeklyWage: loan.parentWeeklyWage,
+          fee: 0,
+          type: "loan" as const,
+          loanFrom: loan.parentClubName,
+        },
+        ...closed.history.transfers,
+      ],
+    },
+  };
+
+  const situation: ClubSituation = {
+    ...loan,
+    spellId,
+    clubId: loan.parentClubId,
+    clubSlug: loan.parentClubSlug ?? loan.clubSlug,
+    clubName: loan.parentClubName,
+    clubReputation: loan.parentClubReputation ?? loan.clubReputation,
+    category,
+    role: category === "PRO" ? "reserve" : "bench",
+    joinedSeason: date.seasonYear,
+    contractUntilSeason: until,
+    weeklyWage: loan.parentWeeklyWage ?? loan.weeklyWage,
+    onLoan: false,
+    weeksInCategory: 0,
+    parentClubId: undefined,
+    parentClubName: undefined,
+    parentClubSlug: undefined,
+    parentClubReputation: undefined,
+    parentCategory: undefined,
+    parentWeeklyWage: undefined,
+    parentContractUntilSeason: undefined,
+  };
+
+  return {
+    player: nextPlayer,
+    ai: { ...ai, club: situation, coachTrust: 45 },
+    events: [
+      createEvent("transfer", date, `Fim do empréstimo no ${loan.clubName}`, {
+        description: `O atleta voltou ao ${loan.parentClubName} (${categoryLabel(category)}).`,
+        tone: "info",
+        data: { clubSlug: situation.clubSlug, category },
+      }),
+    ],
   };
 }
 
@@ -276,6 +385,7 @@ export function releaseFromClub(
           toClub: "Sem clube",
           category: situation.category,
           age: seasonAge(player.birthDate, date.seasonYear),
+          weeklyWage: situation.weeklyWage,
           fee: 0,
           type: "release" as const,
         },
