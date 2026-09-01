@@ -100,16 +100,30 @@ export function joinClub(
     goalBonus: terms?.goalBonus ?? 0,
     parentClubId: parent?.clubId,
     parentClubName: parent?.clubName,
+    // Snapshot of the owning contract so the athlete can be given back at the
+    // end of the loan instead of being dumped on the free market.
+    parentClubSlug: parent?.clubSlug,
+    parentClubReputation: parent?.clubReputation,
+    parentCategory: parent?.category,
+    parentWeeklyWage: parent?.weeklyWage,
+    parentContractUntilSeason: parent?.contractUntilSeason,
     weeksInCategory: 0,
   };
 
   // A permanent move closes the previous spell before opening the new one.
   const base = ai.club && type !== "loan" ? closeSpell(player, ai.club.spellId, date) : player;
 
+  // Only one club status can be active at a time — a loan replaces the
+  // "contracted" flag and a permanent move clears any stale loan flag.
+  const cleanStatuses = removeStatus(
+    removeStatus(removeStatus(base.statuses, "unsigned"), "contracted"),
+    "onLoan",
+  );
+
   const nextPlayer: Player = {
     ...base,
     statuses: addStatus(
-      removeStatus(base.statuses, "unsigned"),
+      cleanStatuses,
       type === "loan" ? { id: "onLoan", note: club.name } : { id: "contracted", note: club.name },
     ),
     history: {
