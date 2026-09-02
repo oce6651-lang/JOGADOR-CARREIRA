@@ -195,6 +195,39 @@ export function simulate(
   return { career: { ...state, updatedAt: Date.now() }, report };
 }
 
+/** Report used when nothing can happen anymore (retired careers). */
+function emptyReport(
+  career: Career,
+  scope: SimulationScope,
+  overall: number,
+  age: number,
+): SimulationReport {
+  const date = career.timeline.current;
+  return {
+    id: createId("event"),
+    from: date,
+    to: date,
+    weeks: 0,
+    scope,
+    events: [],
+    stats: createStatLine(),
+    trainings: 0,
+    overallBefore: overall,
+    overallAfter: overall,
+    ageBefore: age,
+    ageAfter: age,
+    attributeChanges: [],
+    injuries: [],
+    seasonSummaries: [],
+    headlines: ["Carreira encerrada — o tempo não avança mais."],
+    clubName: undefined,
+    categoryLabel: undefined,
+    roleLabel: undefined,
+    morale: career.ai.morale,
+    fitness: career.ai.fitness,
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /* One week                                                            */
 /* ------------------------------------------------------------------ */
