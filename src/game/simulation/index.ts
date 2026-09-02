@@ -1,4 +1,4 @@
-import { advanceWeek, ageAt } from "../calendar";
+import { advanceWeek, ageAt, switchCalendar } from "../calendar";
 import { WEEKS_PER_SEASON } from "../constants";
 import { appendEvents, createEvent } from "../events";
 import { annualGrowth, growthNote } from "../player/growth";
@@ -27,6 +27,7 @@ import {
   clubFinalPosition,
   competitionEdition,
   competitionsForClub,
+  getClub,
   isAgeEligible,
   legalCategoryForAge,
 } from "../world";
