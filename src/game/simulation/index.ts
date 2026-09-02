@@ -121,6 +121,11 @@ export function simulate(
   const overallBefore = calculateOverall(career.player.attributes, career.player.position);
   const ageBefore = ageAt(career.player.birthDate, from.date);
 
+  // A retired career is a permanent archive: the clock never moves again.
+  if (isRetired(career.player) || career.status === "retired") {
+    return { career, report: emptyReport(career, scope, overallBefore, ageBefore) };
+  }
+
   const maxWeeks =
     scope === "match"
       ? MAX_MATCH_SEARCH_WEEKS
