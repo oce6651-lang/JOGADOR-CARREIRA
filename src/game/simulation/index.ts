@@ -719,12 +719,19 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     );
   }
 
+  // Moving abroad moves the calendar too: Brazil runs Jan-Dec, Europe Jul-May.
+  const clubCountry = ai.club ? getClub(ai.club.clubId)?.country : undefined;
+  const finalTimeline =
+    clubCountry && clubCountry !== timeline.calendarCountry
+      ? switchCalendar(timeline, clubCountry)
+      : timeline;
+
   const nextCareer: Career = {
     ...career,
     player,
     ai,
     status: hasClub(player) ? "active" : career.status === "retired" ? "retired" : "unsigned",
-    timeline,
+    timeline: finalTimeline,
     currentSeason: nextSeason,
     events: appendEvents(career.events, events),
     pendingSeasonSummaries: [...career.pendingSeasonSummaries, ...seasonSummaries],
