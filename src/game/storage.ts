@@ -1,11 +1,12 @@
 import { SAVE_VERSION } from "./constants";
-import { ageAt } from "./calendar";
+import { ageAt, switchCalendar } from "./calendar";
 import { createCareerAi } from "./ai";
 
 import { createPlayer } from "./player";
 import { calculateOverall } from "./player/overall";
 import { createSeasonProgress } from "./simulation";
-import { categoryLabel } from "./world";
+import { addStatus, hasStatus, removeStatus } from "./player/status";
+import { categoryLabel, getClub } from "./world";
 import type { Career, CareerSummary, GameEvent, GameSettings } from "./types";
 
 /** Legacy single-slot key — migrated into the slot index on first load. */
@@ -177,10 +178,6 @@ interface LegacyLogEntry {
 /** Forward-compatible save migration hook. */
 function migrateCareer(career: Career): Career | null {
   if (!career || typeof career !== "object" || !career.player) return null;
-  if (career.version === SAVE_VERSION) {
-    return career.competitionHistory ? career : { ...career, competitionHistory: [] };
-  }
-
   let next = career;
 
   // v1 -> v2: identity-only players gain attributes, personality and history.
@@ -296,6 +293,66 @@ function migrateCareer(career: Career): Career | null {
     next = { ...next, competitionHistory: [] };
   }
 
+  // v7 -> v8: mandatory sanity pass on every load.
+
   // Future migrations chain here.
-  return { ...next, version: SAVE_VERSION };
+  return repairCareer({ ...next, version: SAVE_VERSION });
+}
+
+/**
+ * Sanity pass that runs on every load, even for up-to-date saves. It fixes
+ * inconsistencies created by older builds instead of letting them rot:
+ * duplicated club statuses, missing arrays and a calendar out of sync with
+ * the club's country.
+ */
+function repairCareer(career: Career): Career {
+  let next: Career = {
+    ...career,
+    events: Array.isArray(career.events) ? career.events : [],
+    pendingSeasonSummaries: Array.isArray(career.pendingSeasonSummaries)
+      ? career.pendingSeasonSummaries
+      : [],
+    competitionHistory: Array.isArray(career.competitionHistory)
+      ? career.competitionHistory
+      : [],
+  };
+
+  const club = next.ai?.club;
+  const retired = hasStatus(next.player.statuses, "retired") || next.status === "retired";
+
+  // Only one club status may be active at a time.
+  let statuses = next.player.statuses ?? [];
+  if (!retired) {
+    if (club) {
+      statuses = removeStatus(statuses, "unsigned");
+      statuses = club.onLoan
+        ? addStatus(removeStatus(statuses, "contracted"), {
+            id: "onLoan",
+            note: club.clubName,
+          })
+        : addStatus(removeStatus(statuses, "onLoan"), {
+            id: "contracted",
+            note: club.clubName,
+          });
+    } else {
+      statuses = removeStatus(removeStatus(statuses, "contracted"), "onLoan");
+      statuses = addStatus(statuses, { id: "unsigned" });
+    }
+  }
+  if (statuses !== next.player.statuses) {
+    next = { ...next, player: { ...next.player, statuses } };
+  }
+
+  // The calendar must follow the club's country.
+  const country = club ? getClub(club.clubId)?.country : undefined;
+  if (country && country !== next.timeline.calendarCountry) {
+    next = { ...next, timeline: switchCalendar(next.timeline, country) };
+  }
+
+  // A retired career never reports itself as active.
+  if (retired && next.status !== "retired") {
+    next = { ...next, status: "retired" };
+  }
+
+  return next;
 }

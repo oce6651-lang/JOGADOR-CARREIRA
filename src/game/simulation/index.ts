@@ -1,4 +1,4 @@
-import { advanceWeek, ageAt } from "../calendar";
+import { advanceWeek, ageAt, switchCalendar } from "../calendar";
 import { WEEKS_PER_SEASON } from "../constants";
 import { appendEvents, createEvent } from "../events";
 import { annualGrowth, growthNote } from "../player/growth";
@@ -27,6 +27,7 @@ import {
   clubFinalPosition,
   competitionEdition,
   competitionsForClub,
+  getClub,
   isAgeEligible,
   legalCategoryForAge,
 } from "../world";
@@ -121,6 +122,11 @@ export function simulate(
   const overallBefore = calculateOverall(career.player.attributes, career.player.position);
   const ageBefore = ageAt(career.player.birthDate, from.date);
 
+  // A retired career is a permanent archive: the clock never moves again.
+  if (isRetired(career.player) || career.status === "retired") {
+    return { career, report: emptyReport(career, scope, overallBefore, ageBefore) };
+  }
+
   const maxWeeks =
     scope === "match"
       ? MAX_MATCH_SEARCH_WEEKS
@@ -188,6 +194,39 @@ export function simulate(
   };
 
   return { career: { ...state, updatedAt: Date.now() }, report };
+}
+
+/** Report used when nothing can happen anymore (retired careers). */
+function emptyReport(
+  career: Career,
+  scope: SimulationScope,
+  overall: number,
+  age: number,
+): SimulationReport {
+  const date = career.timeline.current;
+  return {
+    id: createId("event"),
+    from: date,
+    to: date,
+    weeks: 0,
+    scope,
+    events: [],
+    stats: createStatLine(),
+    trainings: 0,
+    overallBefore: overall,
+    overallAfter: overall,
+    ageBefore: age,
+    ageAfter: age,
+    attributeChanges: [],
+    injuries: [],
+    seasonSummaries: [],
+    headlines: ["Carreira encerrada — o tempo não avança mais."],
+    clubName: undefined,
+    categoryLabel: undefined,
+    roleLabel: undefined,
+    morale: career.ai.morale,
+    fitness: career.ai.fitness,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -681,12 +720,19 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     );
   }
 
+  // Moving abroad moves the calendar too: Brazil runs Jan-Dec, Europe Jul-May.
+  const clubCountry = ai.club ? getClub(ai.club.clubId)?.country : undefined;
+  const finalTimeline =
+    clubCountry && clubCountry !== timeline.calendarCountry
+      ? switchCalendar(timeline, clubCountry)
+      : timeline;
+
   const nextCareer: Career = {
     ...career,
     player,
     ai,
     status: hasClub(player) ? "active" : career.status === "retired" ? "retired" : "unsigned",
-    timeline,
+    timeline: finalTimeline,
     currentSeason: nextSeason,
     events: appendEvents(career.events, events),
     pendingSeasonSummaries: [...career.pendingSeasonSummaries, ...seasonSummaries],
