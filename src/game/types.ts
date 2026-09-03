@@ -27,12 +27,32 @@ export type EntityKind =
 
 export type Foot = "left" | "right" | "both";
 
-export type PositionCode = "GK" | "CB" | "LB" | "RB" | "DM" | "CM" | "AM" | "LW" | "RW" | "ST";
+/** Modality of the career. Football and futsal never mix. */
+export type Sport = "football" | "futsal";
+
+export type FootballPositionCode =
+  | "GK"
+  | "CB"
+  | "LB"
+  | "RB"
+  | "DM"
+  | "CM"
+  | "AM"
+  | "LW"
+  | "RW"
+  | "ST";
+
+/** Futsal specific positions. The goalkeeper code is shared with football. */
+export type FutsalPositionCode = "GK" | "FIX" | "AD" | "AE" | "PIV";
+
+export type PositionCode = FootballPositionCode | FutsalPositionCode;
 
 export type PositionGroup = "goalkeeper" | "defender" | "midfielder" | "forward";
 
 export interface PositionDefinition {
   code: PositionCode;
+  /** Modality the position belongs to. */
+  sport?: Sport;
   /** Human readable label (pt-BR). */
   label: string;
   /** Broad group used for grouping in UI and future tactical logic. */
@@ -392,6 +412,8 @@ export interface Player {
   /** Country of birth code — may differ from nationality later. */
   country: string;
   foot: Foot;
+  /** Modality this athlete plays. Legacy saves default to football. */
+  sport: Sport;
   position: PositionCode;
   secondaryPositions: PositionCode[];
   heightCm: number;
@@ -593,6 +615,10 @@ export interface Agent {
   /** Minimum reputation required to be hired. */
   minReputation: number;
   hiredSeason?: number;
+  /** Real world date the representation contract was signed. */
+  hiredDate?: IsoDate;
+  /** Length of the representation contract, in years. */
+  contractYears?: number;
   description: string;
   /** Country where the agent has his strongest contacts. */
   homeCountry?: string;
@@ -684,6 +710,40 @@ export interface SeasonSummary {
   highlights: string[];
 }
 
+/* ------------------------------------------------------------------ */
+/* Finances                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Where the money came from (or went to). */
+export type FinanceCategory =
+  | "wage"
+  | "bonus"
+  | "prize"
+  | "sponsorship"
+  | "signing"
+  | "commission"
+  | "penalty"
+  | "other";
+
+export interface FinanceTransaction {
+  id: EntityId;
+  date: GameDate;
+  /** Positive = income, negative = expense. Always in BRL. */
+  amount: number;
+  category: FinanceCategory;
+  label: string;
+  clubName?: string;
+}
+
+/** Personal money of the athlete — earned and spent through the career. */
+export interface PlayerFinances {
+  balance: number;
+  totalEarned: number;
+  totalSpent: number;
+  /** Most recent first, capped for save size. */
+  transactions: FinanceTransaction[];
+}
+
 /** A full save file. Future systems add their own top-level slices here. */
 export interface Career {
   id: EntityId;
@@ -703,6 +763,10 @@ export interface Career {
   ai: CareerAi;
   /** Permanent competition history lived through this career. */
   competitionHistory: CompetitionSeasonRecord[];
+  /** Modality of the career: football or futsal. */
+  sport: Sport;
+  /** Personal money of the athlete. */
+  finances: PlayerFinances;
 }
 
 /** A competition edition finished while this career was being played. */
@@ -741,6 +805,7 @@ export interface SeasonProgress {
 export interface CareerSummary {
   id: EntityId;
   playerName: string;
+  sport?: Sport;
   position: PositionCode;
   age: number;
   seasonYear: number;
