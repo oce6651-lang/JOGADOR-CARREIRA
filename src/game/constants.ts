@@ -1,4 +1,4 @@
-import type { Foot, Nationality, PositionDefinition } from "./types";
+import type { Foot, Nationality, PositionDefinition, Sport } from "./types";
 
 export const GAME_NAME = "Project Football Career";
 export const SAVE_VERSION = 8;
@@ -18,8 +18,26 @@ export function maxStartYear(now = new Date()) {
 }
 
 
+/** Modalities the game supports. Each one is a fully separated career. */
+export const SPORTS: { value: Sport; label: string; description: string }[] = [
+  {
+    value: "football",
+    label: "Futebol",
+    description: "Carreira tradicional de campo: clubes, base e competições de futebol.",
+  },
+  {
+    value: "futsal",
+    label: "Futsal",
+    description: "Carreira de quadra: clubes, posições e competições exclusivas do futsal.",
+  },
+];
+
+export function sportLabel(sport: Sport) {
+  return SPORTS.find((item) => item.value === sport)?.label ?? "Futebol";
+}
+
 export const POSITIONS: PositionDefinition[] = [
-  { code: "GK", label: "Goleiro", group: "goalkeeper" },
+  { code: "GK", label: "Goleiro", group: "goalkeeper", sport: "football" },
   { code: "CB", label: "Zagueiro", group: "defender" },
   { code: "LB", label: "Lateral esquerdo", group: "defender" },
   { code: "RB", label: "Lateral direito", group: "defender" },
@@ -30,6 +48,20 @@ export const POSITIONS: PositionDefinition[] = [
   { code: "RW", label: "Ponta direita", group: "forward" },
   { code: "ST", label: "Centroavante", group: "forward" },
 ];
+
+/** Futsal uses a completely different set of positions. */
+export const FUTSAL_POSITIONS: PositionDefinition[] = [
+  { code: "GK", label: "Goleiro", group: "goalkeeper", sport: "futsal" },
+  { code: "FIX", label: "Fixo", group: "defender", sport: "futsal" },
+  { code: "AD", label: "Ala direito", group: "midfielder", sport: "futsal" },
+  { code: "AE", label: "Ala esquerdo", group: "midfielder", sport: "futsal" },
+  { code: "PIV", label: "Pivô", group: "forward", sport: "futsal" },
+];
+
+/** Positions available when creating (or showing) a career of this modality. */
+export function positionsForSport(sport: Sport = "football"): PositionDefinition[] {
+  return sport === "futsal" ? FUTSAL_POSITIONS : POSITIONS;
+}
 
 export const FEET: { value: Foot; label: string }[] = [
   { value: "right", label: "Destro" },
@@ -53,7 +85,11 @@ export const NATIONALITIES: Nationality[] = [
 ];
 
 export function positionLabel(code: string) {
-  return POSITIONS.find((p) => p.code === code)?.label ?? code;
+  return (
+    POSITIONS.find((p) => p.code === code)?.label ??
+    FUTSAL_POSITIONS.find((p) => p.code === code)?.label ??
+    code
+  );
 }
 
 export function nationalityLabel(code: string) {
