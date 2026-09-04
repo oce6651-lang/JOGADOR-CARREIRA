@@ -151,6 +151,57 @@ export const POSITION_WEIGHTS: Record<PositionCode, AttributeWeights> = {
     strength: 1.8,
     penalties: 1.2,
   },
+
+  /* ---------------------------------------------------------------- */
+  /* Futsal — the court demands technique, agility and quick decisions */
+  /* ---------------------------------------------------------------- */
+  FIX: {
+    ...CORE,
+    marking: 2.8,
+    tackling: 2.6,
+    positioning: 3,
+    passing: 2.6,
+    firstTouch: 2.4,
+    vision: 2,
+    technique: 2,
+    balance: 1.8,
+    agility: 1.8,
+  },
+  AD: {
+    ...CORE,
+    dribbling: 3,
+    technique: 2.8,
+    firstTouch: 2.6,
+    acceleration: 2.6,
+    agility: 2.6,
+    finishing: 2.4,
+    passing: 2.2,
+    stamina: 2.2,
+    balance: 1.8,
+  },
+  AE: {
+    ...CORE,
+    dribbling: 3,
+    technique: 2.8,
+    firstTouch: 2.6,
+    acceleration: 2.6,
+    agility: 2.6,
+    finishing: 2.4,
+    passing: 2.2,
+    stamina: 2.2,
+    balance: 1.8,
+  },
+  PIV: {
+    ...CORE,
+    finishing: 3.2,
+    firstTouch: 3,
+    strength: 2.6,
+    balance: 2.4,
+    technique: 2.4,
+    positioning: 2.2,
+    dribbling: 2,
+    aggression: 1.6,
+  },
 };
 
 /**
