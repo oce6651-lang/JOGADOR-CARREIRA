@@ -46,7 +46,7 @@ export function registerTransaction(
   if (!amount) return base;
 
   const transaction: FinanceTransaction = {
-    id: createId("fin"),
+    id: createId("finance"),
     date: entry.date,
     amount,
     category: entry.category,
