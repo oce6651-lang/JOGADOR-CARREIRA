@@ -1,5 +1,13 @@
-import { CLUBS, clubsByState, clubsByTier, sortByReputation, statesWithClubs } from "./clubs";
+import {
+  clubsBySport,
+  clubsByCountry,
+  clubsByState,
+  clubsByTier,
+  sortByReputation,
+  statesWithClubs,
+} from "./clubs";
 import { stateLabel } from "./countries";
+import type { Sport } from "../types";
 import type { CategoryCode, ClubColors, Competition, CompetitionFormat, CompetitionScope } from "./types";
 
 const c = (primary: string, secondary: string, detail: string): ClubColors => ({
@@ -9,6 +17,7 @@ const c = (primary: string, secondary: string, detail: string): ClubColors => ({
 });
 
 interface CompetitionSeed {
+  sport?: Sport;
   slug: string;
   name: string;
   shortName: string;
@@ -33,9 +42,11 @@ function nationalLeague(
   tier: number,
   foundedYear: number,
   colors: ClubColors,
+  sport: Sport = "football",
 ): CompetitionSeed {
-  const clubs = sortByReputation(clubsByTier(country, tier));
+  const clubs = sortByReputation(clubsByTier(country, tier, sport));
   return {
+    sport,
     slug,
     name,
     shortName,
@@ -59,8 +70,10 @@ function nationalCup(
   shortName: string,
   foundedYear: number,
   colors: ClubColors,
+  sport: Sport = "football",
 ): CompetitionSeed {
   return {
+    sport,
     slug,
     name,
     shortName,
@@ -72,20 +85,22 @@ function nationalCup(
     foundedYear,
     status: "active",
     colors,
-    clubIds: sortByReputation(CLUBS.filter((club) => club.country === country))
+    clubIds: sortByReputation(clubsByCountry(country, sport))
       .slice(0, 64)
       .map((club) => club.id),
   };
 }
 
 /** One state championship per state that has clubs in the dataset. */
-function stateChampionships(country: string): CompetitionSeed[] {
-  return statesWithClubs(country)
+function stateChampionships(country: string, sport: Sport = "football"): CompetitionSeed[] {
+  return statesWithClubs(country, sport)
     .map((state) => {
-      const clubs = sortByReputation(clubsByState(country, state));
+      const clubs = sortByReputation(clubsByState(country, state, sport));
+      const suffix = sport === "futsal" ? " de Futsal" : "";
       return {
-        slug: `estadual-${country.toLowerCase()}-${state.toLowerCase()}`,
-        name: `Campeonato ${stateLabel(country, state)}`,
+        sport,
+        slug: `estadual-${sport === "futsal" ? "futsal-" : ""}${country.toLowerCase()}-${state.toLowerCase()}`,
+        name: `Campeonato ${stateLabel(country, state)}${suffix}`,
         shortName: `Estadual ${state}`,
         country,
         state,
@@ -114,16 +129,16 @@ function youthCompetition(
   format: CompetitionFormat,
   foundedYear: number,
   colors: ClubColors,
+  sport: Sport = "football",
 ): CompetitionSeed {
   const clubs = sortByReputation(
-    CLUBS.filter(
+    clubsByCountry(country, sport).filter(
       (club) =>
-        club.country === country &&
-        club.categories.includes(category) &&
-        club.reputation >= reputationFloor,
+        club.categories.includes(category) && club.reputation >= reputationFloor,
     ),
   );
   return {
+    sport,
     slug,
     name,
     shortName,
@@ -139,6 +154,9 @@ function youthCompetition(
   };
 }
 
+const CLUBS_FOOTBALL = clubsBySport("football");
+const CLUBS_FUTSAL = clubsBySport("futsal");
+
 /** Continental and world competitions — visible across every country. */
 const CONTINENTAL: CompetitionSeed[] = (
   [
@@ -150,6 +168,7 @@ const CONTINENTAL: CompetitionSeed[] = (
     ["mundial-de-clubes", "Mundial de Clubes FIFA", "Mundial", "world", 2000, []],
   ] as const
 ).map(([slug, name, shortName, scope, foundedYear, countries]) => ({
+  sport: "football" as Sport,
   slug,
   name,
   shortName,
@@ -162,7 +181,7 @@ const CONTINENTAL: CompetitionSeed[] = (
   status: "active" as const,
   colors: c("#c8a24a", "#111111", "#ffffff"),
   clubIds: sortByReputation(
-    CLUBS.filter(
+    CLUBS_FOOTBALL.filter(
       (club) =>
         (countries.length === 0 || (countries as readonly string[]).includes(club.country)) &&
         club.reputation >= 75,
@@ -171,6 +190,69 @@ const CONTINENTAL: CompetitionSeed[] = (
     .slice(0, 32)
     .map((club) => club.id),
 }));
+
+
+/* ------------------------------------------------------------------ */
+/* Futsal — real leagues and cups only                                 */
+/* ------------------------------------------------------------------ */
+
+const FUTSAL_CONTINENTAL: CompetitionSeed[] = (
+  [
+    ["uefa-futsal-champions-league", "UEFA Futsal Champions League", "Futsal Champions", "continental", 2001, ["ESP", "POR", "ITA", "FRA", "NED"]],
+    ["copa-libertadores-futsal", "Copa Libertadores de Futsal", "Libertadores Futsal", "continental", 2012, ["BRA", "ARG"]],
+    ["copa-intercontinental-futsal", "Copa Intercontinental de Futsal", "Intercontinental", "world", 1997, []],
+  ] as const
+).map(([slug, name, shortName, scope, foundedYear, countries]) => ({
+  sport: "futsal" as Sport,
+  slug,
+  name,
+  shortName,
+  country: countries[0] ?? "BRA",
+  format: "groupsAndKnockout" as const,
+  scope: scope as CompetitionScope,
+  category: "PRO" as CategoryCode,
+  reputationFloor: 78,
+  foundedYear,
+  status: "active" as const,
+  colors: c("#c8a24a", "#111111", "#ffffff"),
+  clubIds: sortByReputation(
+    CLUBS_FUTSAL.filter(
+      (club) =>
+        (countries.length === 0 || (countries as readonly string[]).includes(club.country)) &&
+        club.reputation >= 78,
+    ),
+  )
+    .slice(0, 24)
+    .map((club) => club.id),
+}));
+
+const FUTSAL_SEEDS: CompetitionSeed[] = [
+  nationalLeague("BRA", "liga-nacional-futsal", "Liga Nacional de Futsal", "LNF", 1, 1996, c("#046b41", "#f5c518", "#ffffff"), "futsal"),
+  nationalLeague("BRA", "liga-nacional-futsal-2", "Liga Nacional de Futsal Série Ouro", "Série Ouro", 2, 2010, c("#f5c518", "#046b41", "#111111"), "futsal"),
+  nationalCup("BRA", "taca-brasil-futsal", "Taça Brasil de Futsal", "Taça Brasil", 1968, c("#0d8ecf", "#ffffff", "#111111"), "futsal"),
+  nationalCup("BRA", "copa-do-brasil-futsal", "Copa do Brasil de Futsal", "Copa do Brasil", 2002, c("#f5c518", "#046b41", "#111111"), "futsal"),
+  ...stateChampionships("BRA", "futsal"),
+  youthCompetition("BRA", "liga-nacional-futsal-sub-20", "Liga Nacional de Futsal Sub-20", "LNF Sub-20", "U20", 55, "league", 2004, c("#046b41", "#ffffff", "#f5c518"), "futsal"),
+  youthCompetition("BRA", "taca-brasil-futsal-sub-17", "Taça Brasil de Futsal Sub-17", "Taça Brasil Sub-17", "U17", 50, "cup", 1998, c("#0d8ecf", "#f5c518", "#ffffff"), "futsal"),
+  youthCompetition("BRA", "taca-brasil-futsal-sub-15", "Taça Brasil de Futsal Sub-15", "Taça Brasil Sub-15", "U15", 50, "cup", 1998, c("#c8102e", "#ffffff", "#111111"), "futsal"),
+
+  nationalLeague("ESP", "primera-division-futsal", "Primera División de Futsal (LNFS)", "Primera LNFS", 1, 1989, c("#e30613", "#febe10", "#ffffff"), "futsal"),
+  nationalCup("ESP", "copa-de-espana-futsal", "Copa de España de Futsal", "Copa de España", 1990, c("#febe10", "#e30613", "#ffffff"), "futsal"),
+
+  nationalLeague("POR", "liga-placard-futsal", "Liga Placard de Futsal", "Liga Placard", 1, 1990, c("#008057", "#e30613", "#ffffff"), "futsal"),
+  nationalCup("POR", "taca-de-portugal-futsal", "Taça de Portugal de Futsal", "Taça de Portugal", 1991, c("#008057", "#ffffff", "#e30613"), "futsal"),
+
+  nationalLeague("ITA", "serie-a-futsal", "Serie A di Calcio a 5", "Serie A Futsal", 1, 1983, c("#009246", "#ffffff", "#ce2b37"), "futsal"),
+  nationalCup("ITA", "coppa-italia-futsal", "Coppa Italia di Calcio a 5", "Coppa Italia", 1988, c("#ce2b37", "#ffffff", "#009246"), "futsal"),
+
+  nationalLeague("ARG", "primera-division-futsal-afa", "Primera División de Futsal AFA", "Primera AFA", 1, 1986, c("#7cb9e8", "#ffffff", "#111111"), "futsal"),
+  nationalCup("ARG", "copa-argentina-futsal", "Copa Argentina de Futsal", "Copa Argentina", 2011, c("#ffffff", "#7cb9e8", "#111111"), "futsal"),
+
+  nationalLeague("FRA", "championnat-de-france-futsal", "Championnat de France de Futsal D1", "D1 Futsal", 1, 2007, c("#0a2896", "#ffffff", "#e2001a"), "futsal"),
+  nationalLeague("NED", "eredivisie-futsal", "Eredivisie Zaalvoetbal", "Eredivisie Futsal", 1, 1969, c("#e30613", "#ffffff", "#0a51a1"), "futsal"),
+
+  ...FUTSAL_CONTINENTAL,
+];
 
 const SEEDS: CompetitionSeed[] = [
   /* Brasil */
@@ -243,12 +325,19 @@ const SEEDS: CompetitionSeed[] = [
   youthCompetition("MEX", "liga-mx-sub-20", "Liga MX Sub-20", "Sub-20 MEX", "U20", 55, "league", 2010, c("#00843d", "#ffe600", "#ffffff")),
 
   ...CONTINENTAL,
+  ...FUTSAL_SEEDS,
 ];
 
 export const COMPETITIONS: Competition[] = SEEDS.map((seed) => ({
   ...seed,
+  sport: seed.sport ?? "football",
   id: `competition_${seed.slug}`,
 }));
+
+/** Competitions of one modality only. */
+export function competitionsBySport(sport: Sport = "football") {
+  return COMPETITIONS.filter((competition) => competition.sport === sport);
+}
 
 const BY_ID = new Map(COMPETITIONS.map((competition) => [competition.id, competition]));
 const BY_SLUG = new Map(COMPETITIONS.map((competition) => [competition.slug, competition]));
@@ -261,22 +350,32 @@ export function getCompetitionBySlug(slug: string) {
   return BY_SLUG.get(slug);
 }
 
-export function competitionsByCountry(countryCode: string) {
-  return COMPETITIONS.filter((competition) => competition.country === countryCode);
+export function competitionsByCountry(countryCode: string, sport: Sport = "football") {
+  return competitionsBySport(sport).filter(
+    (competition) => competition.country === countryCode,
+  );
 }
 
 export function competitionsForClub(clubId: string) {
   return COMPETITIONS.filter((competition) => competition.clubIds.includes(clubId));
 }
 
-export function competitionsByScope(countryCode: string, scope: CompetitionScope) {
-  return competitionsByCountry(countryCode).filter(
+export function competitionsByScope(
+  countryCode: string,
+  scope: CompetitionScope,
+  sport: Sport = "football",
+) {
+  return competitionsByCountry(countryCode, sport).filter(
     (competition) => competition.scope === scope,
   );
 }
 
-export function competitionsByCategory(countryCode: string, category: CategoryCode) {
-  return competitionsByCountry(countryCode).filter(
+export function competitionsByCategory(
+  countryCode: string,
+  category: CategoryCode,
+  sport: Sport = "football",
+) {
+  return competitionsByCountry(countryCode, sport).filter(
     (competition) => competition.category === category,
   );
 }

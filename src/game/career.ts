@@ -26,6 +26,7 @@ import { CLUBS, categoryLabel, clampWorldYear, type Club } from "./world";
 import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
+import { createFinances } from "./finance";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
 import { addStatus, removeStatus } from "./player/status";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
@@ -34,6 +35,7 @@ import type {
   CareerSummary,
   Foot,
   GameEvent,
+  Sport,
   IsoDate,
   NegotiationTopic,
   PositionCode,
@@ -47,6 +49,8 @@ export interface NewCareerInput {
   nationality: string;
   position: PositionCode;
   foot: Foot;
+  /** Modality of the career. Defaults to football. */
+  sport?: Sport;
   /** Season the career starts in (1930 .. current year). */
   startYear?: number;
 }
@@ -70,7 +74,8 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     new Date(now),
   );
   const timeline = createTimeline(seasonYear, country);
-  const player = createPlayer(input, timeline.current.date);
+  const sport: Sport = input.sport ?? "football";
+  const player = createPlayer({ ...input, sport }, timeline.current.date);
   const age = ageAt(player.birthDate, timeline.current.date);
 
   const events: GameEvent[] = [
@@ -91,6 +96,8 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     createdAt: now,
     updatedAt: now,
     status: "unsigned",
+    sport,
+    finances: createFinances(),
     player,
     timeline,
     events,
