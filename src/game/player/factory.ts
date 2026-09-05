@@ -11,6 +11,7 @@ import type {
   PlayerAttributes,
   PlayerHiddenProfile,
   PositionCode,
+  Sport,
   TechnicalAttributeKey,
 } from "../types";
 import {
@@ -32,6 +33,8 @@ export interface CreatePlayerInput {
   country?: string;
   position: PositionCode;
   foot: Foot;
+  /** Modality of the career. Defaults to football. */
+  sport?: Sport;
 }
 
 /** Positions a player can naturally cover besides the main one. */
@@ -46,6 +49,10 @@ const RELATED_POSITIONS: Record<PositionCode, PositionCode[]> = {
   LW: ["RW", "AM", "ST"],
   RW: ["LW", "AM", "ST"],
   ST: ["AM", "LW", "RW"],
+  FIX: ["AD", "AE"],
+  AD: ["AE", "FIX", "PIV"],
+  AE: ["AD", "FIX", "PIV"],
+  PIV: ["AD", "AE"],
 };
 
 /** Typical adult build per position (cm / kg). */
@@ -60,6 +67,10 @@ const BUILD: Record<PositionCode, { height: number; weight: number }> = {
   LW: { height: 174, weight: 69 },
   RW: { height: 174, weight: 69 },
   ST: { height: 183, weight: 78 },
+  FIX: { height: 178, weight: 76 },
+  AD: { height: 175, weight: 72 },
+  AE: { height: 175, weight: 72 },
+  PIV: { height: 180, weight: 78 },
 };
 
 function randomBetween(min: number, max: number, random: () => number) {
@@ -162,6 +173,7 @@ export function createPlayer(
     nationality: input.nationality,
     country: input.country ?? input.nationality,
     foot: input.foot,
+    sport: input.sport ?? "football",
     position: input.position,
     secondaryPositions: rollSecondaryPositions(input.position, random),
     heightCm: build.heightCm,

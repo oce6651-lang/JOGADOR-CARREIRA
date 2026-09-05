@@ -38,6 +38,10 @@ const GOAL_RATE: Record<PositionCode, number> = {
   LW: 0.24,
   RW: 0.24,
   ST: 0.42,
+  FIX: 0.12,
+  AD: 0.28,
+  AE: 0.28,
+  PIV: 0.55,
 };
 
 const ASSIST_RATE: Record<PositionCode, number> = {
@@ -51,6 +55,10 @@ const ASSIST_RATE: Record<PositionCode, number> = {
   LW: 0.24,
   RW: 0.24,
   ST: 0.16,
+  FIX: 0.14,
+  AD: 0.3,
+  AE: 0.3,
+  PIV: 0.24,
 };
 
 export function simulateMatch(
