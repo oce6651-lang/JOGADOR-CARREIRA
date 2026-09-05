@@ -6,7 +6,7 @@
  * saves stay valid across hundreds of seasons.
  */
 
-import type { EntityId } from "../types";
+import type { EntityId, Sport } from "../types";
 
 /* ------------------------------------------------------------------ */
 /* Categories                                                          */
@@ -86,6 +86,8 @@ export interface Stadium {
 
 export interface Club {
   id: EntityId;
+  /** Modality the club plays. Football and futsal never mix. */
+  sport: Sport;
   /** Stable slug used in URLs and save files. */
   slug: string;
   name: string;
@@ -124,6 +126,8 @@ export type CompetitionStatus = "active" | "planned";
 
 export interface Competition {
   id: EntityId;
+  /** Modality the competition belongs to. */
+  sport: Sport;
   slug: string;
   name: string;
   shortName: string;

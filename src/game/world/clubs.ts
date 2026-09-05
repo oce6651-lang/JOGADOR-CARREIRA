@@ -1,5 +1,7 @@
 import { BRAZIL_CLUBS, type ClubRow } from "./data/brazil-clubs";
 import { INTERNATIONAL_CLUBS } from "./data/international-clubs";
+import { FUTSAL_CLUBS_BY_COUNTRY } from "./data/futsal-clubs";
+import type { Sport } from "../types";
 import type { CategoryCode, Club, FinanceLevel } from "./types";
 
 /**
@@ -32,7 +34,7 @@ function academyFor(reputation: number, foundedYear: number) {
   return Math.round(Math.max(10, Math.min(99, reputation * 0.85 + tradition)));
 }
 
-function buildClub(row: ClubRow, country: string): Club {
+function buildClub(row: ClubRow, country: string, sport: Sport = "football"): Club {
   const [
     slug,
     name,
@@ -50,7 +52,8 @@ function buildClub(row: ClubRow, country: string): Club {
   const categories = categoriesFor(reputation);
 
   return {
-    id: `club_${slug}`,
+    id: sport === "futsal" ? `club_futsal_${slug}` : `club_${slug}`,
+    sport,
     slug,
     name,
     shortName,
@@ -74,7 +77,15 @@ export const CLUBS: Club[] = [
   ...INTERNATIONAL_CLUBS.flatMap(({ country, rows }) =>
     rows.map((row) => buildClub(row, country)),
   ),
+  ...FUTSAL_CLUBS_BY_COUNTRY.flatMap(({ country, rows }) =>
+    rows.map((row) => buildClub(row, country, "futsal")),
+  ),
 ];
+
+/** Every club of one modality. Careers never see the other one. */
+export function clubsBySport(sport: Sport = "football") {
+  return CLUBS.filter((club) => club.sport === sport);
+}
 
 const BY_ID = new Map(CLUBS.map((club) => [club.id, club]));
 const BY_SLUG = new Map(CLUBS.map((club) => [club.slug, club]));
@@ -87,23 +98,25 @@ export function getClubBySlug(slug: string) {
   return BY_SLUG.get(slug);
 }
 
-export function clubsByCountry(countryCode: string) {
-  return CLUBS.filter((club) => club.country === countryCode);
+export function clubsByCountry(countryCode: string, sport: Sport = "football") {
+  return clubsBySport(sport).filter((club) => club.country === countryCode);
 }
 
-export function clubsByState(countryCode: string, stateCode: string) {
-  return CLUBS.filter(
-    (club) => club.country === countryCode && club.state === stateCode,
-  );
+export function clubsByState(
+  countryCode: string,
+  stateCode: string,
+  sport: Sport = "football",
+) {
+  return clubsByCountry(countryCode, sport).filter((club) => club.state === stateCode);
 }
 
-export function clubsByTier(countryCode: string, tier: number) {
-  return CLUBS.filter((club) => club.country === countryCode && club.tier === tier);
+export function clubsByTier(countryCode: string, tier: number, sport: Sport = "football") {
+  return clubsByCountry(countryCode, sport).filter((club) => club.tier === tier);
 }
 
 /** States that actually have clubs — used by the state championships. */
-export function statesWithClubs(countryCode: string) {
-  const set = new Set(clubsByCountry(countryCode).map((club) => club.state));
+export function statesWithClubs(countryCode: string, sport: Sport = "football") {
+  const set = new Set(clubsByCountry(countryCode, sport).map((club) => club.state));
   return [...set].sort();
 }
 
