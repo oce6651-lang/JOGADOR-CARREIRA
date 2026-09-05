@@ -23,6 +23,7 @@ export type EntityKind =
   | "award"
   | "title"
   | "transfer"
+  | "finance"
   | "event";
 
 export type Foot = "left" | "right" | "both";
