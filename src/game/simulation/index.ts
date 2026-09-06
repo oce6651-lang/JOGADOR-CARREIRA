@@ -44,6 +44,7 @@ import type {
   TitleRecord,
 } from "../types";
 import { createId } from "../ids";
+import { ensureFinances, registerTransaction } from "../finance";
 import { rollInjury } from "./injury";
 import { matchToStatLine, randomOpponent, simulateMatch } from "./match";
 import { mergeChanges, progressAttributes } from "./progression";
@@ -727,8 +728,45 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       ? switchCalendar(timeline, clubCountry)
       : timeline;
 
+  /* --- money --------------------------------------------------------- */
+  let finances = ensureFinances(career.finances);
+  if (ai.club && !isRetired(player)) {
+    const gross = Math.round(ai.club.weeklyWage);
+    if (gross > 0) {
+      finances = registerTransaction(finances, {
+        date: nextDate,
+        amount: gross,
+        category: "wage",
+        label: "Salário semanal",
+        clubName: ai.club.clubName,
+      });
+      if (ai.agent && ai.agent.commission > 0) {
+        finances = registerTransaction(finances, {
+          date: nextDate,
+          amount: -Math.round((gross * ai.agent.commission) / 100),
+          category: "commission",
+          label: `Comissão de ${ai.agent.name}`,
+        });
+      }
+    }
+
+    const matchBonus =
+      (ai.club.appearanceBonus ?? 0) * stats.appearances +
+      (ai.club.goalBonus ?? 0) * (stats.goals + (player.position === "GK" ? stats.cleanSheets : 0));
+    if (matchBonus > 0) {
+      finances = registerTransaction(finances, {
+        date: nextDate,
+        amount: Math.round(matchBonus),
+        category: "bonus",
+        label: "Bônus de desempenho",
+        clubName: ai.club.clubName,
+      });
+    }
+  }
+
   const nextCareer: Career = {
     ...career,
+    finances,
     player,
     ai,
     status: hasClub(player) ? "active" : career.status === "retired" ? "retired" : "unsigned",

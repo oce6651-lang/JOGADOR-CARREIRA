@@ -233,6 +233,7 @@ function withEvents(career: Career, events: GameEvent[]): Career {
 
 /** Signs a pending proposal exactly as negotiated by the player. */
 export function acceptCareerOffer(career: Career, offerId: string): Career {
+  const accepted = career.ai.offers.find((item) => item.id === offerId);
   const result = acceptOffer(
     career.player,
     career.ai,
@@ -241,7 +242,22 @@ export function acceptCareerOffer(career: Career, offerId: string): Career {
     playerOverall(career),
     careerRandom(career, `accept:${offerId}`),
   );
-  const next = withEvents({ ...career, player: result.player, ai: result.ai }, result.events);
+  // Signing-on fee (luvas) hits the athlete's account the moment he signs.
+  const signingBonus = accepted?.terms.signingBonus ?? 0;
+  const finances = signingBonus
+    ? registerTransaction(ensureFinances(career.finances), {
+        date: career.timeline.current,
+        amount: signingBonus,
+        category: "signing",
+        label: "Luvas na assinatura",
+        clubName: accepted?.clubName,
+      })
+    : ensureFinances(career.finances);
+
+  const next = withEvents(
+    { ...career, finances, player: result.player, ai: result.ai },
+    result.events,
+  );
   return {
     ...next,
     status: result.ai.club ? "active" : next.status,
@@ -507,7 +523,22 @@ export function requestCareerPromotion(career: Career): {
     seasonStats: career.currentSeason.stats,
     random: careerRandom(career, "promotion"),
   });
-  const next = withEvents({ ...career, player: result.player, ai: result.ai }, result.events);
+  // Signing-on fee (luvas) hits the athlete's account the moment he signs.
+  const signingBonus = accepted?.terms.signingBonus ?? 0;
+  const finances = signingBonus
+    ? registerTransaction(ensureFinances(career.finances), {
+        date: career.timeline.current,
+        amount: signingBonus,
+        category: "signing",
+        label: "Luvas na assinatura",
+        clubName: accepted?.clubName,
+      })
+    : ensureFinances(career.finances);
+
+  const next = withEvents(
+    { ...career, finances, player: result.player, ai: result.ai },
+    result.events,
+  );
   return {
     career: {
       ...next,
