@@ -523,22 +523,7 @@ export function requestCareerPromotion(career: Career): {
     seasonStats: career.currentSeason.stats,
     random: careerRandom(career, "promotion"),
   });
-  // Signing-on fee (luvas) hits the athlete's account the moment he signs.
-  const signingBonus = accepted?.terms.signingBonus ?? 0;
-  const finances = signingBonus
-    ? registerTransaction(ensureFinances(career.finances), {
-        date: career.timeline.current,
-        amount: signingBonus,
-        category: "signing",
-        label: "Luvas na assinatura",
-        clubName: accepted?.clubName,
-      })
-    : ensureFinances(career.finances);
-
-  const next = withEvents(
-    { ...career, finances, player: result.player, ai: result.ai },
-    result.events,
-  );
+  const next = withEvents({ ...career, player: result.player, ai: result.ai }, result.events);
   return {
     career: {
       ...next,
