@@ -1,5 +1,5 @@
 import { createId } from "../ids";
-import type { Agent, CareerAi, MatchStatLine, Player } from "../types";
+import type { Agent, CareerAi, IsoDate, MatchStatLine, Player } from "../types";
 
 /**
  * Career AI — agents.
@@ -187,19 +187,54 @@ export interface AgentHome {
   state?: string;
 }
 
+/** Representation contracts are locked for this many years. */
+export const AGENT_CONTRACT_YEARS = 3;
+
 export function hireAgent(
   template: AgentTemplate,
   seasonYear: number,
   home: AgentHome,
+  hiredDate?: IsoDate,
 ): Agent {
   const { requirements: _requirements, ...rest } = template;
   return {
     ...rest,
     id: createId("agent"),
     hiredSeason: seasonYear,
+    hiredDate,
+    contractYears: AGENT_CONTRACT_YEARS,
     homeCountry: home.country,
     homeState: home.state,
   };
+}
+
+/** Adds N years to an ISO date, keeping the same day. */
+function addYears(date: IsoDate, years: number): IsoDate {
+  const [y, m, d] = date.split("-");
+  return `${Number(y) + years}-${m}-${d}`;
+}
+
+/** The earliest date the athlete may walk away from his agent. */
+export function agentReleaseDate(agent: Agent): IsoDate | null {
+  if (!agent.hiredDate) return null;
+  return addYears(agent.hiredDate, agent.contractYears ?? AGENT_CONTRACT_YEARS);
+}
+
+export function canDismissAgent(agent: Agent, today: IsoDate) {
+  const release = agentReleaseDate(agent);
+  if (!release) return true;
+  return today >= release;
+}
+
+/**
+ * Breaking a representation contract costs money: a year of commission on the
+ * current wage, scaled by how good the agent is. Never below a token amount so
+ * unemployed athletes still feel it.
+ */
+export function agentDismissalFee(agent: Agent, weeklyWage: number) {
+  const commissionYear = weeklyWage * 52 * (agent.commission / 100);
+  const base = commissionYear * 0.75 + agent.quality * 220;
+  return Math.max(2500, Math.round(base / 100) * 100);
 }
 
 /** Net weekly wage after the agent's commission. */

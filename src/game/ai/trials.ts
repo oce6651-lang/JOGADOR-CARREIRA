@@ -96,7 +96,7 @@ export function trialOpportunities(
     ai.offers.filter((offer) => offer.kind === "trial").map((offer) => offer.clubId),
   );
 
-  const clubs = reachableClubs(overall, player.hidden.potential, wanted, ai.reputation);
+  const clubs = reachableClubs(overall, player.hidden.potential, wanted, ai.reputation, player.sport ?? "football");
 
   const opportunities = clubs
     .map((club) => {

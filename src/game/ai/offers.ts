@@ -323,7 +323,8 @@ export function acceptOffer(
   const offer = ai.offers.find((item) => item.id === offerId);
   if (!offer) return { player, ai, events: [] };
 
-  const remaining = ai.offers.filter((item) => item.id !== offerId);
+  // Signing closes the market: every other proposal on the table is dropped.
+  const remaining: ClubOffer[] = [];
   const club = getClub(offer.clubId);
   if (!club) return { player, ai: { ...ai, offers: remaining }, events: [] };
 

@@ -1,6 +1,7 @@
 import type { CareerAi, Player } from "../types";
 import type { CategoryCode, Club } from "../world";
 import { CLUBS, categoryOrder, sortCategories } from "../world";
+import type { Sport } from "../types";
 import { requiredOverall } from "./evaluation";
 
 /**
@@ -27,9 +28,11 @@ export function reachableClubs(
   potential: number,
   category: CategoryCode,
   reputation = 0,
+  sport: Sport = "football",
 ): Club[] {
   const projected = overall + Math.max(0, potential - overall) * 0.35 + reputation * 0.08;
   return CLUBS.filter((club) => {
+    if ((club.sport ?? "football") !== sport) return false;
     const target = entryCategoryFor(club, category);
     const required = requiredOverall(target, club.reputation);
     return projected >= required - 4 && projected <= required + 26;

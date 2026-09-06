@@ -88,7 +88,7 @@ function reviewFreeAgent(ctx: AiContext): AiOutcome {
   const home = homeCountryFor(player, ai);
   const projected =
     overall + Math.max(0, player.hidden.potential - overall) * 0.3 + ai.reputation * 0.06;
-  const all = reachableClubs(overall, player.hidden.potential, category, ai.reputation);
+  const all = reachableClubs(overall, player.hidden.potential, category, ai.reputation, player.sport ?? "football");
   // Invitations come from home unless the athlete is already a name abroad.
   const candidates = all.filter(
     (club) =>
@@ -492,6 +492,7 @@ function evaluateLoan(ai: CareerAi, evaluation: Evaluation, ctx: AiContext) {
   if (!ctx.seasonEnd && !chance(0.35, ctx.random)) return undefined;
 
   const targets = CLUBS.filter((club) => {
+    if ((club.sport ?? "football") !== (ctx.player.sport ?? "football")) return false;
     if (club.id === situation.clubId) return false;
     if (!club.categories.includes("PRO")) return false;
     const gap = levelGap(ctx.overall, "PRO", club.reputation);
@@ -527,6 +528,7 @@ function updateScouting(
   if (attractsAttention && scouting.length < 4) {
     const observers = CLUBS.filter(
       (club) =>
+        (club.sport ?? "football") === (ctx.player.sport ?? "football") &&
         club.id !== situation.clubId &&
         club.reputation > situation.clubReputation + 4 &&
         club.reputation <= situation.clubReputation + 20 + Math.max(0, evaluation.score - 18) &&
