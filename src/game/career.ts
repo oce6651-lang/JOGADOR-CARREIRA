@@ -17,6 +17,9 @@ import {
   requestPromotion,
   type ApproachAssessment,
   type PromotionRequest,
+  agentDismissalFee,
+  agentReleaseDate,
+  canDismissAgent,
   type AgentTemplate,
   type NegotiationResult,
   type TrialOpportunity,
@@ -26,7 +29,7 @@ import { CLUBS, categoryLabel, clampWorldYear, type Club } from "./world";
 import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
-import { createFinances } from "./finance";
+import { canAfford, createFinances, ensureFinances, registerTransaction } from "./finance";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
 import { addStatus, removeStatus } from "./player/status";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
@@ -330,35 +333,102 @@ export function attendCareerTrial(
 }
 
 export function hireCareerAgent(career: Career, template: AgentTemplate): Career {
+  if (career.ai.agent) return career;
   const club = career.ai.club
     ? CLUBS.find((item) => item.id === career.ai.club?.clubId)
     : undefined;
-  const agent = hireAgent(template, career.timeline.current.seasonYear, {
-    country: club?.country ?? career.player.nationality,
-    state: club?.state,
-  });
+  const agent = hireAgent(
+    template,
+    career.timeline.current.seasonYear,
+    {
+      country: club?.country ?? career.player.nationality,
+      state: club?.state,
+    },
+    career.timeline.current.date,
+  );
   return withEvents({ ...career, ai: { ...career.ai, agent } }, [
     createEvent("contract", career.timeline.current, `Novo empresário: ${agent.name}`, {
-      description: `Comissão de ${agent.commission}% sobre o salário.`,
+      description: `Comissão de ${agent.commission}% sobre o salário. Contrato de ${agent.contractYears ?? 3} anos.`,
       tone: "positive",
     }),
   ]);
 }
 
-export function dismissCareerAgent(career: Career): Career {
+export interface AgentDismissal {
+  career: Career;
+  done: boolean;
+  message: string;
+}
+
+/** What it takes to fire the current agent right now. */
+export function agentDismissalStatus(career: Career) {
   const agent = career.ai.agent;
-  if (!agent) return career;
-  return withEvents({ ...career, ai: { ...career.ai, agent: null } }, [
+  if (!agent) return null;
+  const today = career.timeline.current.date;
+  const allowed = canDismissAgent(agent, today);
+  const fee = agentDismissalFee(agent, career.ai.club?.weeklyWage ?? 0);
+  return {
+    agent,
+    allowed,
+    releaseDate: agentReleaseDate(agent),
+    fee,
+    affordable: canAfford(ensureFinances(career.finances), fee),
+  };
+}
+
+/** Ends the representation contract — only after 3 years and paying the fee. */
+export function dismissCareerAgent(career: Career): AgentDismissal {
+  const status = agentDismissalStatus(career);
+  if (!status) return { career, done: false, message: "Você não tem empresário." };
+
+  if (!status.allowed) {
+    return {
+      career,
+      done: false,
+      message: `Você precisa permanecer com ${status.agent.name} por pelo menos ${
+        status.agent.contractYears ?? 3
+      } anos. Liberado em ${formatIsoDate(status.releaseDate)}.`,
+    };
+  }
+
+  if (!status.affordable) {
+    return {
+      career,
+      done: false,
+      message: `Saldo insuficiente: a multa é de R$ ${status.fee.toLocaleString("pt-BR")}.`,
+    };
+  }
+
+  const finances = registerTransaction(ensureFinances(career.finances), {
+    date: career.timeline.current,
+    amount: -status.fee,
+    category: "penalty",
+    label: `Multa por demitir ${status.agent.name}`,
+  });
+
+  const next = withEvents({ ...career, finances, ai: { ...career.ai, agent: null } }, [
     createEvent(
       "contract",
       career.timeline.current,
-      `${agent.name} deixou de representar o atleta`,
+      `${status.agent.name} deixou de representar o atleta`,
       {
-        description: "O atleta voltou a negociar por conta própria.",
+        description: `Multa de R$ ${status.fee.toLocaleString("pt-BR")} paga. O atleta voltou a negociar por conta própria.`,
         tone: "warning",
       },
     ),
   ]);
+
+  return {
+    career: next,
+    done: true,
+    message: `Contrato encerrado. Multa de R$ ${status.fee.toLocaleString("pt-BR")} paga.`,
+  };
+}
+
+function formatIsoDate(date: string | null) {
+  if (!date) return "—";
+  const [y, m, d] = date.split("-");
+  return `${d}/${m}/${y}`;
 }
 
 /* ------------------------------------------------------------------ */
