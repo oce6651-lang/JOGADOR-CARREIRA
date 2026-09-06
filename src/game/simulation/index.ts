@@ -590,6 +590,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     };
   }
 
+  let titlePrize = 0;
   let nextSeason = season;
   let competitionHistory = career.competitionHistory ?? [];
   if (seasonEnd) {
@@ -616,6 +617,11 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       }));
 
     if (wonTitles.length) {
+      // Championship bonuses paid by the club, scaled by its stature.
+      titlePrize = wonTitles.reduce(
+        (acc) => acc + Math.round((ai.club?.clubReputation ?? 30) * 900),
+        0,
+      );
       season = { ...season, titles: [...season.titles, ...wonTitles] };
       player = {
         ...player,
@@ -748,6 +754,26 @@ function simulateSingleWeek(career: Career): WeekOutcome {
           label: `Comissão de ${ai.agent.name}`,
         });
       }
+    }
+
+    if (titlePrize > 0) {
+      finances = registerTransaction(finances, {
+        date: nextDate,
+        amount: titlePrize,
+        category: "prize",
+        label: "Premiação por título",
+        clubName: ai.club.clubName,
+      });
+    }
+
+    // Boot deals and local sponsors appear once the athlete has a name.
+    if (ai.reputation >= 55) {
+      finances = registerTransaction(finances, {
+        date: nextDate,
+        amount: Math.round((ai.reputation - 50) * 140),
+        category: "sponsorship",
+        label: "Patrocínios e publicidade",
+      });
     }
 
     const matchBonus =
