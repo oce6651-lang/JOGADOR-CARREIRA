@@ -72,7 +72,8 @@ interface GameContextValue {
   requestPromotion: () => { granted: boolean; message: string };
   acceptPromotion: () => void;
   declinePromotion: () => void;
-  dismissAgent: () => void;
+  /** Only allowed after 3 years and paying the release fee. */
+  dismissAgent: () => { done: boolean; message: string };
   updateSettings: (patch: Partial<GameSettings>) => void;
   /** Every save slot stored on this device. */
   saves: CareerSummary[];
@@ -215,10 +216,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [updateCareer],
   );
 
-  const dismissAgent = useCallback(
-    () => updateCareer((prev) => dismissCareerAgent(prev)),
-    [updateCareer],
-  );
+  const dismissAgent = useCallback(() => {
+    if (!career) return { done: false, message: "Carreira não carregada." };
+    const result = dismissCareerAgent(career);
+    if (result.done) persist(result.career);
+    return { done: result.done, message: result.message };
+  }, [career, persist]);
 
   const retire = useCallback(() => updateCareer((prev) => retireCareer(prev)), [updateCareer]);
 
