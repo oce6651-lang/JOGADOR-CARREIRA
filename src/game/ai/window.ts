@@ -55,7 +55,7 @@ function approachChance(appeal: number, freeAgent: boolean) {
 
 function suitorsFor(ctx: WindowContext, category: CategoryCode): Club[] {
   const { ai, overall, player } = ctx;
-  const pool = reachableClubs(overall, player.hidden.potential, category, ai.reputation);
+  const pool = reachableClubs(overall, player.hidden.potential, category, ai.reputation, player.sport ?? "football");
   if (!ai.club) return pool;
   return pool.filter((club) => {
     if (club.id === ai.club!.clubId) return false;
