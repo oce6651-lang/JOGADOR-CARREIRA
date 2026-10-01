@@ -85,7 +85,7 @@ function FinancePage() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{t.label}</p>
                 <p className="text-xs text-muted-foreground">
-                  {t.date.split("-").reverse().join("/")} · {FINANCE_CATEGORY_LABELS[t.category]}
+                  {t.date.date.split("-").reverse().join("/")} · {FINANCE_CATEGORY_LABELS[t.category]}
                   {t.clubName ? ` · ${t.clubName}` : ""}
                 </p>
               </div>
