@@ -219,6 +219,19 @@ function CareerPage() {
         <ChevronsRight className="size-6 text-primary" />
       </Link>
 
+      <Link
+        to="/financas"
+        className="panel mt-3 flex items-center justify-between gap-4 p-5 transition-colors hover:border-primary/60"
+      >
+        <div>
+          <p className="text-display text-2xl uppercase">Finanças</p>
+          <p className="text-sm text-muted-foreground">
+            Saldo atual, total recebido, gastos e extrato de transações.
+          </p>
+        </div>
+        <ChevronsRight className="size-6 text-primary" />
+      </Link>
+
       <section className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="panel space-y-3 p-6">
           <h2 className="text-display text-2xl uppercase">Perfil</h2>

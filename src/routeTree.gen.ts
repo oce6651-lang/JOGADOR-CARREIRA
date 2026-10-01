@@ -17,6 +17,7 @@ import { Route as NegociacoesRouteImport } from './routes/negociacoes'
 import { Route as MundoRouteImport } from './routes/mundo'
 import { Route as JogadorRouteImport } from './routes/jogador'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as FinancasRouteImport } from './routes/financas'
 import { Route as EmpresarioRouteImport } from './routes/empresario'
 import { Route as DesenvolvedorRouteImport } from './routes/desenvolvedor'
 import { Route as CreditosRouteImport } from './routes/creditos'
@@ -67,6 +68,11 @@ const JogadorRoute = JogadorRouteImport.update({
 const HistoricoRoute = HistoricoRouteImport.update({
   id: '/historico',
   path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinancasRoute = FinancasRouteImport.update({
+  id: '/financas',
+  path: '/financas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmpresarioRoute = EmpresarioRouteImport.update({
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/creditos': typeof CreditosRoute
   '/desenvolvedor': typeof DesenvolvedorRoute
   '/empresario': typeof EmpresarioRoute
+  '/financas': typeof FinancasRoute
   '/historico': typeof HistoricoRoute
   '/jogador': typeof JogadorRoute
   '/mundo': typeof MundoRouteWithChildren
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/creditos': typeof CreditosRoute
   '/desenvolvedor': typeof DesenvolvedorRoute
   '/empresario': typeof EmpresarioRoute
+  '/financas': typeof FinancasRoute
   '/historico': typeof HistoricoRoute
   '/jogador': typeof JogadorRoute
   '/negociacoes': typeof NegociacoesRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/creditos': typeof CreditosRoute
   '/desenvolvedor': typeof DesenvolvedorRoute
   '/empresario': typeof EmpresarioRoute
+  '/financas': typeof FinancasRoute
   '/historico': typeof HistoricoRoute
   '/jogador': typeof JogadorRoute
   '/mundo': typeof MundoRouteWithChildren
@@ -200,6 +209,7 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/desenvolvedor'
     | '/empresario'
+    | '/financas'
     | '/historico'
     | '/jogador'
     | '/mundo'
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/desenvolvedor'
     | '/empresario'
+    | '/financas'
     | '/historico'
     | '/jogador'
     | '/negociacoes'
@@ -241,6 +252,7 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/desenvolvedor'
     | '/empresario'
+    | '/financas'
     | '/historico'
     | '/jogador'
     | '/mundo'
@@ -263,6 +275,7 @@ export interface RootRouteChildren {
   CreditosRoute: typeof CreditosRoute
   DesenvolvedorRoute: typeof DesenvolvedorRoute
   EmpresarioRoute: typeof EmpresarioRoute
+  FinancasRoute: typeof FinancasRoute
   HistoricoRoute: typeof HistoricoRoute
   JogadorRoute: typeof JogadorRoute
   MundoRoute: typeof MundoRouteWithChildren
@@ -329,6 +342,13 @@ declare module '@tanstack/react-router' {
       path: '/historico'
       fullPath: '/historico'
       preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financas': {
+      id: '/financas'
+      path: '/financas'
+      fullPath: '/financas'
+      preLoaderRoute: typeof FinancasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/empresario': {
@@ -434,6 +454,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreditosRoute: CreditosRoute,
   DesenvolvedorRoute: DesenvolvedorRoute,
   EmpresarioRoute: EmpresarioRoute,
+  FinancasRoute: FinancasRoute,
   HistoricoRoute: HistoricoRoute,
   JogadorRoute: JogadorRoute,
   MundoRoute: MundoRouteWithChildren,

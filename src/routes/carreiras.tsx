@@ -44,7 +44,7 @@ function SavesPage() {
         title="Carreiras salvas"
         description="Cada carreira é guardada em um espaço próprio e mantém todo o histórico, mesmo após a aposentadoria."
         action={
-          <Button onClick={() => navigate({ to: "/novo-jogo" })} className="gap-2">
+          <Button onClick={() => navigate({ to: "/novo-jogo", search: { modo: undefined } })} className="gap-2">
             <Plus className="size-4" /> Nova carreira
           </Button>
         }

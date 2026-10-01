@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 
 interface MenuCardProps {
   to: LinkProps["to"];
+  search?: Record<string, unknown>;
   icon: LucideIcon;
   title: string;
   description: string;
@@ -18,6 +19,7 @@ interface MenuCardProps {
 /** Big touch-friendly main-menu entry. */
 export function MenuCard({
   to,
+  search,
   icon: Icon,
   title,
   description,
@@ -61,7 +63,7 @@ export function MenuCard({
   }
 
   return (
-    <Link to={to} style={{ animationDelay: `${delay}ms` }} className={base}>
+    <Link to={to} search={search as never} style={{ animationDelay: `${delay}ms` }} className={base}>
       {content}
     </Link>
   );

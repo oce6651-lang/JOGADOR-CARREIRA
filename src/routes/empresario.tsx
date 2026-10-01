@@ -1,11 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, BadgeCheck, UserRoundCheck } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { AgentDeskPanel } from "@/components/game/agent/AgentDeskPanel";
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { Button } from "@/components/ui/button";
 import { agentMarket, netWage, reputationLabel } from "@/game/ai";
+import {
+  agentDismissalFee,
+  agentReleaseDate,
+  canDismissAgent,
+} from "@/game/ai/agents";
+import { ensureFinances } from "@/game/finance";
+import { formatMoney } from "@/game/format";
 import { ageAt } from "@/game/calendar";
 import { calculateOverall } from "@/game/player";
 import { useGame } from "@/game/GameProvider";
@@ -32,6 +39,7 @@ export const Route = createFileRoute("/empresario")({
 function AgentPage() {
   const navigate = useNavigate();
   const { career, hydrated, hireAgent, dismissAgent } = useGame();
+  const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
     if (hydrated && !career) navigate({ to: "/" });
@@ -57,6 +65,12 @@ function AgentPage() {
   const options = market.filter((entry) => entry.interested).map((entry) => entry.template);
   const refused = market.filter((entry) => !entry.interested);
   const wage = career.ai.club?.weeklyWage ?? 0;
+  const today = career.timeline.current.date;
+  const release = current ? agentReleaseDate(current) : null;
+  const canDismiss = current ? canDismissAgent(current, today) : false;
+  const fee = current ? agentDismissalFee(current, wage) : 0;
+  const balance = ensureFinances(career.finances).balance;
+  const fmtDate = (d?: string) => (d ? d.split("-").reverse().join("/") : "—");
 
   return (
     <GameShell>
@@ -88,10 +102,30 @@ function AgentPage() {
               label="Salário líquido"
               value={wage ? `R$ ${netWage(wage, current).toLocaleString("pt-BR")}/sem` : "—"}
             />
+            <Info label="Contratado em" value={fmtDate(current.hiredDate)} />
+            <Info label="Demissão liberada em" value={fmtDate(release ?? undefined)} />
+            <Info label="Multa rescisória" value={formatMoney(fee)} />
           </div>
-          <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={dismissAgent}>
-            Dispensar empresário
+          <p className="text-xs text-muted-foreground">Saldo disponível: {formatMoney(balance)}</p>
+          <Button
+            variant="ghost"
+            className="text-destructive hover:text-destructive"
+            disabled={!canDismiss || balance < fee}
+            onClick={() => {
+              const result = dismissAgent();
+              setFeedback(result.message);
+            }}
+          >
+            Demitir empresário
           </Button>
+          {!canDismiss ? (
+            <p className="text-xs text-destructive">
+              Indisponível. Você precisa permanecer com este empresário por pelo menos 3 anos.
+            </p>
+          ) : balance < fee ? (
+            <p className="text-xs text-destructive">Saldo insuficiente para pagar a multa.</p>
+          ) : null}
+          {feedback ? <p className="text-xs text-muted-foreground">{feedback}</p> : null}
         </div>
       ) : null}
 
