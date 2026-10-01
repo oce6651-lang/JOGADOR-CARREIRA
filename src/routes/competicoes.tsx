@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { Button } from "@/components/ui/button";
+import { SportToggle } from "@/components/game/world/SportToggle";
 import { useGame } from "@/game/GameProvider";
+import type { Sport } from "@/game/types";
 import {
   COMPETITIONS,
   COUNTRIES,
@@ -44,14 +46,16 @@ function CompetitionsHistoryPage() {
   const countries = useMemo(() => COUNTRIES.filter((country) => country.playable), []);
   const [country, setCountry] = useState(countries[0]?.code ?? "BRA");
   const [selected, setSelected] = useState<string | null>(null);
+  const [sport, setSport] = useState<Sport>(career?.sport ?? "football");
 
   const list = useMemo(
     () =>
       COMPETITIONS.filter(
         (competition) =>
-          competition.country === country || competition.scope === "world",
+          (competition.sport ?? "football") === sport &&
+          (competition.country === country || competition.scope === "world"),
       ),
-    [country],
+    [country, sport],
   );
 
   const competition = selected
@@ -85,6 +89,14 @@ function CompetitionsHistoryPage() {
         eyebrow="Arquivo do futebol"
         title="Histórico das competições"
         description="Escolha um campeonato para ver todos os campeões e os maiores vencedores."
+      />
+
+      <SportToggle
+        value={sport}
+        onChange={(next) => {
+          setSport(next);
+          setSelected(null);
+        }}
       />
 
       <div className="mb-4 flex flex-wrap gap-2">

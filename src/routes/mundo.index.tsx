@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 
 import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { StatCard } from "@/components/game/Stats";
+import { SportToggle } from "@/components/game/world/SportToggle";
+import type { Sport } from "@/game/types";
 import { ClubCard } from "@/components/game/world/ClubCard";
 import { CompetitionCard } from "@/components/game/world/CompetitionCard";
 import {
@@ -38,10 +40,11 @@ type ViewMode = "competitions" | "clubs";
 
 function WorldPage() {
   const [countryCode, setCountryCode] = useState("BRA");
+  const [sport, setSport] = useState<Sport>("football");
   const [mode, setMode] = useState<ViewMode>("competitions");
 
-  const clubs = useMemo(() => sortByReputation(clubsByCountry(countryCode)), [countryCode]);
-  const competitions = useMemo(() => competitionsByCountry(countryCode), [countryCode]);
+  const clubs = useMemo(() => sortByReputation(clubsByCountry(countryCode, sport)), [countryCode, sport]);
+  const competitions = useMemo(() => competitionsByCountry(countryCode, sport), [countryCode, sport]);
   const activeCompetitions = competitions.filter((item) => item.status === "active");
   const grouped = useMemo(
     () => ({
@@ -69,6 +72,8 @@ function WorldPage() {
         title="O mundo"
         description="Países, competições e clubes que existem independentemente da sua carreira."
       />
+
+      <SportToggle value={sport} onChange={setSport} />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
         <StatCard icon={Globe2} label="Países" value={String(COUNTRIES.filter((c) => c.playable).length)} hint="Mais países em breve" />
