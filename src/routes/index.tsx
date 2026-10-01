@@ -58,6 +58,14 @@ function MainMenu() {
           delay={60}
         />
         <MenuCard
+          to="/novo-jogo"
+          search={{ modo: "futsal" }}
+          icon={Play}
+          title="Novo Jogo Futsal"
+          description="Carreira exclusiva nas quadras"
+          delay={90}
+        />
+        <MenuCard
           to="/carreira"
           icon={Trophy}
           title="Continuar"

@@ -21,7 +21,7 @@ import {
   MIN_START_AGE,
   MIN_START_YEAR,
   NATIONALITIES,
-  POSITIONS,
+  positionsForSport,
   maxStartYear,
 } from "@/game/constants";
 
@@ -44,6 +44,9 @@ export const Route = createFileRoute("/novo-jogo")({
       },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    modo: search.modo === "futsal" ? ("futsal" as const) : undefined,
+  }),
   component: NewGamePage,
 });
 
@@ -64,6 +67,9 @@ function generateBirthDate(startYear: number, age: number) {
 function NewGamePage() {
   const navigate = useNavigate();
   const { startNewCareer } = useGame();
+  const { modo } = Route.useSearch();
+  const sport = modo === "futsal" ? "futsal" : "football";
+  const positions = positionsForSport(sport);
 
   const years = useMemo(() => {
     const last = maxStartYear();
@@ -84,7 +90,7 @@ function NewGamePage() {
   const [startAge, setStartAge] = useState(15);
   const [birthDate, setBirthDate] = useState("");
   const [nationality, setNationality] = useState("BRA");
-  const [position, setPosition] = useState<PositionCode>("ST");
+  const [position, setPosition] = useState<PositionCode>(sport === "futsal" ? ("PIV" as PositionCode) : "ST");
   const [foot, setFoot] = useState<Foot>("right");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -135,6 +141,7 @@ function NewGamePage() {
       position,
       foot,
       startYear,
+      sport,
     });
     navigate({ to: "/carreira" });
   }
@@ -150,7 +157,7 @@ function NewGamePage() {
       </Link>
 
       <PageHeader
-        eyebrow="Novo jogo"
+        eyebrow={sport === "futsal" ? "Novo jogo · Futsal" : "Novo jogo · Futebol"}
         title="Crie seu jogador"
         description="Defina quem é o atleta. A carreira começa sem clube — o resto você conquista."
       />
@@ -258,7 +265,7 @@ function NewGamePage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {POSITIONS.map((p) => (
+                {positions.map((p) => (
                   <SelectItem key={p.code} value={p.code}>
                     {p.code} · {p.label}
                   </SelectItem>
