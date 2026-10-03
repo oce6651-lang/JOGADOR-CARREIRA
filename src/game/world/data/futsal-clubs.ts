@@ -48,6 +48,36 @@ export const BRAZIL_FUTSAL_CLUBS: ClubRow[] = [
   ["taubate-futsal", "Taubaté Futsal", "Taubaté", "Taubaté", "SP", 2008, "Ginásio Ary Barroso", 2000, 54, 2, c("#0d8ecf", "#ffffff", "#111111")],
   ["santo-andre-futsal", "Santo André Futsal", "Santo André", "Santo André", "SP", 2010, "Ginásio Noêmia Assumpção", 2000, 53, 2, c("#c8102e", "#ffffff", "#111111")],
   ["sao-paulo-futsal", "São Paulo Futsal", "São Paulo FS", "São Paulo", "SP", 2019, "Ginásio Antônio Leme Nunes Galvão", 2400, 52, 2, c("#c8102e", "#ffffff", "#111111")],
+  // --- Rio Grande do Sul ---
+  ["ulbra-canoas-futsal", "Ulbra Canoas Futsal", "Ulbra", "Canoas", "RS", 2004, "Complexo Esportivo Ulbra", 2500, 65, 2, c("#0a2896", "#ffffff", "#f5c518")],
+  ["afcs-porto-alegre", "AFCS Futsal", "AFCS", "Porto Alegre", "RS", 1998, "Ginásio Tesourinha", 3000, 62, 2, c("#046b41", "#ffffff", "#111111")],
+  ["estrela-futsal", "Estrela Futsal", "Estrela", "Estrela", "RS", 2009, "Ginásio Municipal de Estrela", 1500, 58, 2, c("#c8102e", "#ffffff", "#111111")],
+  ["horizontina-futsal", "Horizontina Futsal", "Horizontina", "Horizontina", "RS", 2012, "Ginásio Municipal Horizontina", 1200, 55, 3, c("#f5c518", "#111111", "#ffffff")],
+  ["lagoa-futsal", "Lagoa Futsal", "Lagoa", "Lagoa Vermelha", "RS", 2010, "Ginásio Municipal de Lagoa Vermelha", 1200, 54, 3, c("#0d8ecf", "#ffffff", "#111111")],
+  ["serc-santa-rosa", "SERC Santa Rosa", "SERC", "Santa Rosa", "RS", 2005, "Ginásio Municipal de Santa Rosa", 1400, 53, 3, c("#046b41", "#f5c518", "#ffffff")],
+  // --- Santa Catarina ---
+  ["chapeco-futsal", "Chapecó Futsal", "Chapecó", "Chapecó", "SC", 2013, "Arena Condá", 5000, 69, 2, c("#046b41", "#ffffff", "#f5c518")],
+  ["lages-futsal", "Lages Futsal", "Lages", "Lages", "SC", 2014, "Ginásio Jones Minosso", 2000, 57, 3, c("#0a2896", "#ffffff", "#c8102e")],
+  // --- Paraná ---
+  ["acel-chopinzinho", "ACEL Chopinzinho", "Chopinzinho", "Chopinzinho", "PR", 2007, "Ginásio Municipal de Chopinzinho", 1500, 67, 2, c("#c8102e", "#f5c518", "#111111")],
+  ["toledo-futsal", "Toledo Futsal", "Toledo", "Toledo", "PR", 2009, "Ginásio Alcides Pan", 2500, 61, 2, c("#0a2896", "#f5c518", "#ffffff")],
+  ["dois-vizinhos-futsal", "Dois Vizinhos Futsal", "Dois Vizinhos", "Dois Vizinhos", "PR", 2012, "Ginásio Municipal de Dois Vizinhos", 1400, 56, 3, c("#046b41", "#ffffff", "#111111")],
+  // --- São Paulo ---
+  ["sorocaba-futsal", "Sorocaba Futsal", "Sorocaba", "Sorocaba", "SP", 2014, "Arena Sorocaba", 5000, 66, 2, c("#111111", "#c8102e", "#ffffff")],
+  ["santos-futsal", "Santos Futsal", "Santos", "Santos", "SP", 2011, "Arena Santos", 5000, 64, 2, c("#ffffff", "#111111", "#8f8f8f")],
+  ["franca-futsal", "Franca Futsal", "Franca", "Franca", "SP", 2013, "Ginásio Pedrocão", 6000, 60, 2, c("#c8102e", "#ffffff", "#111111")],
+  ["ribeirao-preto-futsal", "Ribeirão Preto Futsal", "Ribeirão", "Ribeirão Preto", "SP", 2015, "Ginásio Cava do Bosque", 2500, 57, 3, c("#046b41", "#ffffff", "#f5c518")],
+  // --- Rio de Janeiro ---
+  ["flamengo-futsal", "Flamengo Futsal", "Flamengo", "Rio de Janeiro", "RJ", 2016, "Ginásio Hélio Maurício", 2000, 70, 2, c("#c8102e", "#111111", "#ffffff")],
+  ["vasco-futsal", "Vasco da Gama Futsal", "Vasco", "Rio de Janeiro", "RJ", 2014, "Ginásio São Januário", 2500, 68, 2, c("#111111", "#ffffff", "#c8102e")],
+  ["fluminense-futsal", "Fluminense Futsal", "Fluminense", "Rio de Janeiro", "RJ", 2015, "Ginásio das Laranjeiras", 1800, 66, 2, c("#7a1b3d", "#046b41", "#ffffff")],
+  ["sesc-rj-futsal", "Sesc Futsal", "Sesc RJ", "Rio de Janeiro", "RJ", 2009, "Ginásio do Sesc", 1200, 59, 3, c("#0d8ecf", "#f5c518", "#111111")],
+  // --- Minas Gerais ---
+  ["sao-lourenco-futsal", "São Lourenço Futsal", "São Lourenço", "São Lourenço", "MG", 2010, "Ginásio Poliesportivo de São Lourenço", 1500, 56, 3, c("#c8102e", "#ffffff", "#111111")],
+  // --- Nordeste e Centro-Oeste ---
+  ["abc-natal-futsal", "ABC Futsal", "ABC", "Natal", "RN", 2015, "Ginásio Nélio Dias", 3000, 58, 3, c("#111111", "#ffffff", "#c8102e")],
+  ["frango-futsal", "Frango Futsal", "Frango", "Dourados", "MS", 2011, "Ginásio Douradão", 2000, 55, 3, c("#f5c518", "#046b41", "#111111")],
+  ["cuiaba-futsal", "Cuiabá Futsal", "Cuiabá", "Cuiabá", "MT", 2016, "Ginásio Aecim Tocantins", 3000, 54, 3, c("#046b41", "#f5c518", "#ffffff")],
 ];
 
 export const SPAIN_FUTSAL_CLUBS: ClubRow[] = [
