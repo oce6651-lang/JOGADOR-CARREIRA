@@ -147,6 +147,12 @@ export const BRAZIL_FUTSAL_CLUBS: ClubRow[] = [
   ["paysandu-futsal", "Paysandu Futsal", "Paysandu", "Belém", "PA", 2016, "Ginásio Helder Maurity", 2000, 55, 3, c("#0d8ecf", "#ffffff", "#111111")],
   ["goias-futsal", "Goiás EC Futsal", "Goiás", "Goiânia", "GO", 2012, "Ginásio Goiânia Arena", 5000, 57, 3, c("#046b41", "#ffffff", "#111111")],
   ["vila-nova-futsal", "Vila Nova FC Futsal", "Vila Nova", "Goiânia", "GO", 2015, "Ginásio Professor Vega de Araújo", 1500, 52, 3, c("#c8102e", "#ffffff", "#111111")],
+  // --- Reforços Sul e Sudeste ---
+  ["concordia-futsal", "Concórdia Futsal", "Concórdia", "Concórdia", "SC", 2005, "Ginásio de Esportes de Concórdia", 2500, 61, 2, c("#c8102e", "#ffffff", "#111111")],
+  ["londrina-futsal", "Londrina Futsal", "Londrina", "Londrina", "PR", 2013, "Ginásio do Café", 4000, 58, 3, c("#0d8ecf", "#ffffff", "#111111")],
+  ["apucarana-futsal", "Apucarana Futsal", "Apucarana", "Apucarana", "PR", 2010, "Ginásio Osvaldo Casemiro", 2000, 55, 3, c("#f5c518", "#0a2896", "#ffffff")],
+  ["pinda-futsal", "Pinda Futsal", "Pinda", "Pindamonhangaba", "SP", 2009, "Ginásio Municipal de Pindamonhangaba", 1800, 56, 3, c("#046b41", "#ffffff", "#f5c518")],
+  ["audax-osasco-futsal", "Audax Osasco Futsal", "Audax Osasco", "Osasco", "SP", 2012, "Ginásio Geodésico de Osasco", 3000, 59, 3, c("#c8102e", "#ffffff", "#111111")],
 ];
 
 export const SPAIN_FUTSAL_CLUBS: ClubRow[] = [
@@ -166,6 +172,8 @@ export const SPAIN_FUTSAL_CLUBS: ClubRow[] = [
   ["osasuna-magna", "Osasuna Magna Xota", "Osasuna Magna", "Pamplona", "NAV", 1978, "Pabellón Anaitasuna", 3000, 76, 1, c("#c8102e", "#0a2896", "#ffffff")],
   ["burela-futsal", "CD Burela FS", "Burela", "Burela", "GAL", 2001, "Pavillón Vista Alegre de Burela", 1400, 74, 1, c("#f5c518", "#0a2896", "#ffffff")],
   ["o-parrulo-ferrol", "O Parrulo Ferrol FS", "O Parrulo", "Ferrol", "GAL", 1992, "Pavillón de A Malata", 5000, 71, 1, c("#0d8ecf", "#ffffff", "#111111")],
+  ["peniscola-futsal", "Peñíscola FS", "Peñíscola", "Peñíscola", "VAL", 2000, "Pabellón Municipal de Peñíscola", 1500, 73, 1, c("#0a2896", "#ffffff", "#f5c518")],
+  ["ribera-navarra", "Ribera Navarra FS", "Ribera Navarra", "Tudela", "NAV", 2001, "Pabellón Ciudad de Tudela", 1200, 72, 1, c("#046b41", "#ffffff", "#111111")],
 ];
 
 export const PORTUGAL_FUTSAL_CLUBS: ClubRow[] = [
@@ -178,6 +186,8 @@ export const PORTUGAL_FUTSAL_CLUBS: ClubRow[] = [
   ["fundao-futsal", "CB Fundão", "Fundão", "Fundão", "CBR", 1976, "Pavilhão Municipal do Fundão", 1000, 68, 1, c("#c8102e", "#111111", "#ffffff")],
   ["nun-alvares", "CR Nun'Álvares", "Nun'Álvares", "Gondomar", "POR", 1958, "Pavilhão de Gondomar", 1200, 69, 1, c("#0d8ecf", "#ffffff", "#111111")],
   ["vilafranquense-futsal", "UD Vilafranquense Futsal", "Vilafranquense", "Vila Franca de Xira", "LIS", 1957, "Pavilhão da Coudelaria", 800, 64, 1, c("#c8102e", "#ffffff", "#111111")],
+  ["viseu-2001", "Viseu 2001", "Viseu", "Viseu", "VIS", 2001, "Pavilhão Cidade de Viseu", 1500, 66, 1, c("#046b41", "#ffffff", "#c8102e")],
+  ["burinhosa", "CRC Burinhosa", "Burinhosa", "Pataias", "LRA", 1989, "Pavilhão Gimnodesportivo da Burinhosa", 800, 63, 1, c("#f5c518", "#046b41", "#111111")],
 ];
 
 export const ITALY_FUTSAL_CLUBS: ClubRow[] = [
@@ -189,6 +199,8 @@ export const ITALY_FUTSAL_CLUBS: ClubRow[] = [
   ["sandro-abate", "Sandro Abate Avellino", "Avellino", "Avellino", "CAM", 2013, "PalaDelMauro", 1800, 76, 1, c("#046b41", "#ffffff", "#111111")],
   ["petrarca-padova", "Petrarca Padova C5", "Petrarca", "Pádua", "VEN", 1975, "PalaSanLazzaro", 1200, 74, 1, c("#111111", "#ffffff", "#c8102e")],
   ["acqua-sapone-marina", "Acqua&Sapone Marina", "Marina", "Marina di Montemarciano", "MAR", 2003, "PalaBadiali", 900, 71, 1, c("#0d8ecf", "#ffffff", "#111111")],
+  ["olimpus-roma", "Olimpus Roma", "Olimpus", "Roma", "LAZ", 2003, "PalaOlgiata", 1000, 75, 1, c("#7a1b3d", "#f5c518", "#ffffff")],
+  ["came-dosson", "Came Dosson", "Dosson", "Dosson", "VEN", 2000, "PalaDosson", 900, 72, 1, c("#0a2896", "#ffffff", "#c8102e")],
 ];
 
 export const ARGENTINA_FUTSAL_CLUBS: ClubRow[] = [
@@ -202,6 +214,8 @@ export const ARGENTINA_FUTSAL_CLUBS: ClubRow[] = [
   ["independiente-futsal", "Independiente Futsal", "Independiente", "Avellaneda", "BA", 1989, "Gimnasio Bottaro", 1500, 76, 1, c("#c8102e", "#ffffff", "#111111")],
   ["17-de-agosto", "Club 17 de Agosto", "17 de Agosto", "Pilar", "BA", 1990, "Polideportivo de Pilar", 1000, 71, 1, c("#0a2896", "#f5c518", "#ffffff")],
   ["gimnasia-futsal", "Gimnasia LP Futsal", "Gimnasia", "La Plata", "BA", 1992, "Polideportivo Víctor Nethol", 2000, 73, 1, c("#ffffff", "#0a2896", "#111111")],
+  ["newells-futsal", "Newell's Old Boys Futsal", "Newell's", "Rosario", "SF", 1988, "Microestadio Newell's", 1500, 75, 1, c("#c8102e", "#111111", "#ffffff")],
+  ["pinocho-futsal", "Club Pinocho", "Pinocho", "Buenos Aires", "CABA", 1977, "Polideportivo Pinocho", 900, 70, 1, c("#046b41", "#ffffff", "#111111")],
 ];
 
 export const FRANCE_FUTSAL_CLUBS: ClubRow[] = [
@@ -211,6 +225,8 @@ export const FRANCE_FUTSAL_CLUBS: ClubRow[] = [
   ["nantes-futsal", "Nantes Métropole Futsal", "Nantes", "Nantes", "PDL", 2011, "Complexe Sportif Mangin Beaulieu", 2000, 74, 1, c("#f5c518", "#046b41", "#ffffff")],
   ["sporting-paris", "Sporting Club de Paris", "Sporting Paris", "Paris", "IDF", 2002, "Gymnase Charpy", 1500, 77, 1, c("#0a2896", "#ffffff", "#c8102e")],
   ["etoile-lavalloise", "Étoile Lavalloise MFC", "Laval", "Laval", "PDL", 1996, "Espace Mayenne", 4000, 79, 1, c("#f5c518", "#111111", "#ffffff")],
+  ["mouvaux-lille", "Mouvaux Lille Métropole", "Mouvaux", "Mouvaux", "HDF", 2012, "Complexe Sportif de Mouvaux", 1200, 75, 1, c("#0a2896", "#c8102e", "#ffffff")],
+  ["bethune-futsal", "Béthune Essars Futsal", "Béthune", "Béthune", "HDF", 2005, "Salle Léo Lagrange", 1000, 72, 1, c("#046b41", "#ffffff", "#f5c518")],
 ];
 
 export const NETHERLANDS_FUTSAL_CLUBS: ClubRow[] = [
@@ -219,6 +235,7 @@ export const NETHERLANDS_FUTSAL_CLUBS: ClubRow[] = [
   ["knooppunt", "ZVV 't Knooppunt", "Knooppunt", "Sittard", "LIM", 1998, "Sporthal Baandert", 1000, 70, 1, c("#0d8ecf", "#f5c518", "#ffffff")],
   ["tigers-roermond", "Tigers Roermond", "Tigers", "Roermond", "LIM", 1953, "Sporthal Donderberg", 1200, 72, 1, c("#f5c518", "#111111", "#ffffff")],
   ["fc-marlene", "FC Marlène Heerlen", "Marlène", "Heerlen", "LIM", 1989, "Sportpark De Thermen", 900, 69, 1, c("#046b41", "#ffffff", "#111111")],
+  ["os-lusitanos", "ZVV Os Lusitanos", "Os Lusitanos", "Amsterdã", "NH", 1985, "Sporthal De Pijp", 800, 68, 1, c("#c8102e", "#046b41", "#ffffff")],
 ];
 
 export const FUTSAL_CLUBS_BY_COUNTRY: { country: string; rows: ClubRow[] }[] = [
