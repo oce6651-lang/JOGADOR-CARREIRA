@@ -128,6 +128,25 @@ export const BRAZIL_FUTSAL_CLUBS: ClubRow[] = [
   ["abc-natal-futsal", "ABC Futsal", "ABC", "Natal", "RN", 2015, "Ginásio Nélio Dias", 3000, 58, 3, c("#111111", "#ffffff", "#c8102e")],
   ["frango-futsal", "Frango Futsal", "Frango", "Dourados", "MS", 2011, "Ginásio Douradão", 2000, 55, 3, c("#f5c518", "#046b41", "#111111")],
   ["cuiaba-futsal", "Cuiabá Futsal", "Cuiabá", "Cuiabá", "MT", 2016, "Ginásio Aecim Tocantins", 3000, 54, 3, c("#046b41", "#f5c518", "#ffffff")],
+  // --- Mais Santa Catarina e Paraná ---
+  ["sao-miguel-futsal", "São Miguel Futsal", "São Miguel", "São Miguel do Oeste", "SC", 2008, "Ginásio Municipal de São Miguel do Oeste", 1800, 62, 2, c("#046b41", "#ffffff", "#111111")],
+  ["maringa-futsal", "Maringá Futsal", "Maringá", "Maringá", "PR", 2014, "Ginásio Chico Neto", 4500, 60, 2, c("#111111", "#ffffff", "#c8102e")],
+  // --- Mais São Paulo e Rio de Janeiro ---
+  ["taubate-futsal", "Taubaté Futsal", "Taubaté", "Taubaté", "SP", 2010, "Ginásio Adib Moisés Dib", 3200, 63, 2, c("#0a2896", "#ffffff", "#c8102e")],
+  ["botafogo-futsal", "Botafogo Futsal", "Botafogo", "Rio de Janeiro", "RJ", 2017, "Ginásio General Severiano", 1500, 62, 2, c("#111111", "#ffffff", "#8f8f8f")],
+  // --- Minas Gerais ---
+  ["sada-cruzeiro-futsal", "Sada Cruzeiro Futsal", "Sada Cruzeiro", "Contagem", "MG", 2009, "Ginásio Poliesportivo Riacho", 2000, 67, 2, c("#0a2896", "#ffffff", "#111111")],
+  // --- Nordeste ---
+  ["ceara-futsal", "Ceará SC Futsal", "Ceará", "Fortaleza", "CE", 2012, "Ginásio Paulo Sarasate", 9000, 60, 3, c("#111111", "#ffffff", "#c8102e")],
+  ["fortaleza-futsal", "Fortaleza EC Futsal", "Fortaleza", "Fortaleza", "CE", 2018, "Centro de Formação Olímpica", 5000, 57, 3, c("#0a2896", "#c8102e", "#ffffff")],
+  ["sport-recife-futsal", "Sport Recife Futsal", "Sport", "Recife", "PE", 2013, "Ginásio de Esportes Geraldo Magalhães", 2500, 59, 3, c("#c8102e", "#111111", "#f5c518")],
+  ["santa-cruz-pe-futsal", "Santa Cruz Futsal", "Santa Cruz PE", "Recife", "PE", 2014, "Ginásio do Arruda", 1800, 55, 3, c("#ffffff", "#c8102e", "#111111")],
+  ["vitoria-futsal", "EC Vitória Futsal", "Vitória", "Salvador", "BA", 2015, "Ginásio Poliesportivo de Cajazeiras", 2200, 56, 3, c("#c8102e", "#111111", "#ffffff")],
+  ["bahia-futsal", "EC Bahia Futsal", "Bahia", "Salvador", "BA", 2017, "Ginásio de Esportes de Lauro de Freitas", 2000, 54, 3, c("#0a2896", "#c8102e", "#ffffff")],
+  // --- Norte e Centro-Oeste ---
+  ["paysandu-futsal", "Paysandu Futsal", "Paysandu", "Belém", "PA", 2016, "Ginásio Helder Maurity", 2000, 55, 3, c("#0d8ecf", "#ffffff", "#111111")],
+  ["goias-futsal", "Goiás EC Futsal", "Goiás", "Goiânia", "GO", 2012, "Ginásio Goiânia Arena", 5000, 57, 3, c("#046b41", "#ffffff", "#111111")],
+  ["vila-nova-futsal", "Vila Nova FC Futsal", "Vila Nova", "Goiânia", "GO", 2015, "Ginásio Professor Vega de Araújo", 1500, 52, 3, c("#c8102e", "#ffffff", "#111111")],
 ];
 
 export const SPAIN_FUTSAL_CLUBS: ClubRow[] = [
@@ -143,6 +162,10 @@ export const SPAIN_FUTSAL_CLUBS: ClubRow[] = [
   ["betis-futsal", "Real Betis Futsal", "Betis FS", "Sevilha", "AND", 2015, "Amate", 2000, 76, 1, c("#046b41", "#ffffff", "#f5c518")],
   ["noia-futsal", "Noia Portus Apostoli", "Noia", "Noia", "GAL", 2004, "Pavillón A Xunqueira", 1500, 72, 1, c("#0d8ecf", "#ffffff", "#111111")],
   ["manzanares-futsal", "Manzanares FS Quesos El Hidalgo", "Manzanares", "Manzanares", "CLM", 2001, "Pabellón Antonio Caba", 1200, 70, 1, c("#f5c518", "#0a2896", "#ffffff")],
+  ["santa-coloma-futsal", "Industrias Santa Coloma", "Santa Coloma", "Santa Coloma de Gramenet", "CAT", 1975, "Pavelló Nou", 2000, 78, 1, c("#c8102e", "#ffffff", "#111111")],
+  ["osasuna-magna", "Osasuna Magna Xota", "Osasuna Magna", "Pamplona", "NAV", 1978, "Pabellón Anaitasuna", 3000, 76, 1, c("#c8102e", "#0a2896", "#ffffff")],
+  ["burela-futsal", "CD Burela FS", "Burela", "Burela", "GAL", 2001, "Pavillón Vista Alegre de Burela", 1400, 74, 1, c("#f5c518", "#0a2896", "#ffffff")],
+  ["o-parrulo-ferrol", "O Parrulo Ferrol FS", "O Parrulo", "Ferrol", "GAL", 1992, "Pavillón de A Malata", 5000, 71, 1, c("#0d8ecf", "#ffffff", "#111111")],
 ];
 
 export const PORTUGAL_FUTSAL_CLUBS: ClubRow[] = [
@@ -153,6 +176,8 @@ export const PORTUGAL_FUTSAL_CLUBS: ClubRow[] = [
   ["modicus-sandim", "Modicus Sandim", "Modicus", "Vila Nova de Gaia", "POR", 1984, "Pavilhão de Sandim", 1000, 72, 1, c("#0a2896", "#ffffff", "#c8102e")],
   ["quinta-dos-lombos", "Quinta dos Lombos", "Lombos", "Carcavelos", "LIS", 1978, "Pavilhão da Quinta dos Lombos", 1200, 70, 1, c("#046b41", "#f5c518", "#ffffff")],
   ["fundao-futsal", "CB Fundão", "Fundão", "Fundão", "CBR", 1976, "Pavilhão Municipal do Fundão", 1000, 68, 1, c("#c8102e", "#111111", "#ffffff")],
+  ["nun-alvares", "CR Nun'Álvares", "Nun'Álvares", "Gondomar", "POR", 1958, "Pavilhão de Gondomar", 1200, 69, 1, c("#0d8ecf", "#ffffff", "#111111")],
+  ["vilafranquense-futsal", "UD Vilafranquense Futsal", "Vilafranquense", "Vila Franca de Xira", "LIS", 1957, "Pavilhão da Coudelaria", 800, 64, 1, c("#c8102e", "#ffffff", "#111111")],
 ];
 
 export const ITALY_FUTSAL_CLUBS: ClubRow[] = [
@@ -162,6 +187,8 @@ export const ITALY_FUTSAL_CLUBS: ClubRow[] = [
   ["came-treviso", "Came Treviso", "Treviso", "Treviso", "VEN", 2003, "PalaCame", 1200, 80, 1, c("#0a2896", "#ffffff", "#f5c518")],
   ["meta-catania", "Meta Catania", "Catania", "Catânia", "SIC", 2003, "PalaCatania", 2000, 82, 1, c("#c8102e", "#0d8ecf", "#ffffff")],
   ["sandro-abate", "Sandro Abate Avellino", "Avellino", "Avellino", "CAM", 2013, "PalaDelMauro", 1800, 76, 1, c("#046b41", "#ffffff", "#111111")],
+  ["petrarca-padova", "Petrarca Padova C5", "Petrarca", "Pádua", "VEN", 1975, "PalaSanLazzaro", 1200, 74, 1, c("#111111", "#ffffff", "#c8102e")],
+  ["acqua-sapone-marina", "Acqua&Sapone Marina", "Marina", "Marina di Montemarciano", "MAR", 2003, "PalaBadiali", 900, 71, 1, c("#0d8ecf", "#ffffff", "#111111")],
 ];
 
 export const ARGENTINA_FUTSAL_CLUBS: ClubRow[] = [
@@ -171,6 +198,10 @@ export const ARGENTINA_FUTSAL_CLUBS: ClubRow[] = [
   ["barracas-central-futsal", "Barracas Central Futsal", "Barracas", "Buenos Aires", "CABA", 1996, "Microestadio Barracas", 1200, 76, 1, c("#c8102e", "#ffffff", "#111111")],
   ["kimberley-futsal", "Kimberley de Mar del Plata", "Kimberley", "Mar del Plata", "BA", 1921, "Polideportivo Kimberley", 1500, 72, 1, c("#046b41", "#ffffff", "#111111")],
   ["ferro-futsal", "Ferro Carril Oeste Futsal", "Ferro", "Buenos Aires", "CABA", 1987, "Estadio Héctor Etchart", 1800, 74, 1, c("#046b41", "#ffffff", "#111111")],
+  ["racing-futsal", "Racing Club Futsal", "Racing", "Avellaneda", "BA", 1986, "Estadio Presidente Perón", 1200, 78, 1, c("#0d8ecf", "#ffffff", "#111111")],
+  ["independiente-futsal", "Independiente Futsal", "Independiente", "Avellaneda", "BA", 1989, "Gimnasio Bottaro", 1500, 76, 1, c("#c8102e", "#ffffff", "#111111")],
+  ["17-de-agosto", "Club 17 de Agosto", "17 de Agosto", "Pilar", "BA", 1990, "Polideportivo de Pilar", 1000, 71, 1, c("#0a2896", "#f5c518", "#ffffff")],
+  ["gimnasia-futsal", "Gimnasia LP Futsal", "Gimnasia", "La Plata", "BA", 1992, "Polideportivo Víctor Nethol", 2000, 73, 1, c("#ffffff", "#0a2896", "#111111")],
 ];
 
 export const FRANCE_FUTSAL_CLUBS: ClubRow[] = [
@@ -178,12 +209,16 @@ export const FRANCE_FUTSAL_CLUBS: ClubRow[] = [
   ["toulon-elite-futsal", "Toulon Élite Futsal", "Toulon", "Toulon", "PAC", 2013, "Palais des Sports de Toulon", 2500, 78, 1, c("#c8102e", "#111111", "#ffffff")],
   ["kremlin-bicetre", "Kremlin-Bicêtre United", "KB United", "Le Kremlin-Bicêtre", "IDF", 2007, "Gymnase Élisabeth Boselli", 1500, 76, 1, c("#046b41", "#ffffff", "#111111")],
   ["nantes-futsal", "Nantes Métropole Futsal", "Nantes", "Nantes", "PDL", 2011, "Complexe Sportif Mangin Beaulieu", 2000, 74, 1, c("#f5c518", "#046b41", "#ffffff")],
+  ["sporting-paris", "Sporting Club de Paris", "Sporting Paris", "Paris", "IDF", 2002, "Gymnase Charpy", 1500, 77, 1, c("#0a2896", "#ffffff", "#c8102e")],
+  ["etoile-lavalloise", "Étoile Lavalloise MFC", "Laval", "Laval", "PDL", 1996, "Espace Mayenne", 4000, 79, 1, c("#f5c518", "#111111", "#ffffff")],
 ];
 
 export const NETHERLANDS_FUTSAL_CLUBS: ClubRow[] = [
   ["hovocubo", "ZVV Hovocubo", "Hovocubo", "Hoorn", "NH", 1978, "De Opgang", 1500, 78, 1, c("#c8102e", "#111111", "#ffffff")],
   ["groene-ster", "Groene Ster Vlissingen", "Groene Ster", "Vlissingen", "ZEE", 1946, "Sporthal Baskensburg", 1200, 74, 1, c("#046b41", "#ffffff", "#111111")],
   ["knooppunt", "ZVV 't Knooppunt", "Knooppunt", "Sittard", "LIM", 1998, "Sporthal Baandert", 1000, 70, 1, c("#0d8ecf", "#f5c518", "#ffffff")],
+  ["tigers-roermond", "Tigers Roermond", "Tigers", "Roermond", "LIM", 1953, "Sporthal Donderberg", 1200, 72, 1, c("#f5c518", "#111111", "#ffffff")],
+  ["fc-marlene", "FC Marlène Heerlen", "Marlène", "Heerlen", "LIM", 1989, "Sportpark De Thermen", 900, 69, 1, c("#046b41", "#ffffff", "#111111")],
 ];
 
 export const FUTSAL_CLUBS_BY_COUNTRY: { country: string; rows: ClubRow[] }[] = [
