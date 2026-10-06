@@ -44,6 +44,7 @@ import type {
   TitleRecord,
 } from "../types";
 import { createId } from "../ids";
+import { runGala } from "../awards/gala";
 import { ensureFinances, registerTransaction } from "../finance";
 import { rollInjury } from "./injury";
 import { matchToStatLine, randomOpponent, simulateMatch } from "./match";
@@ -674,6 +675,38 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       };
     });
 
+    const mainEdition =
+      editions.find((edition) => getCompetition(edition.competitionId)?.format === "league") ??
+      editions[0];
+    const gala = runGala({
+      seasonYear: finishedYear,
+      stats: season.stats,
+      age: newAge,
+      overall: calculateOverall(player.attributes, player.position),
+      reputation: ai.reputation,
+      isProfessional: ai.club?.category === "PRO",
+      clubName: ai.club?.clubName,
+      categoryLabel: ai.club ? categoryLabel(ai.club.category) : undefined,
+      playerName: player.fullName,
+      mainEdition,
+    });
+    if (gala.won.length) {
+      titlePrize += gala.prize;
+      season = { ...season, awards: [...season.awards, ...gala.won] };
+      player = {
+        ...player,
+        history: { ...player.history, awards: [...gala.won, ...player.history.awards] },
+      };
+      for (const award of gala.won) {
+        events.push(
+          createEvent("award", nextDate, `Prêmio: ${award.name}`, {
+            description: `Reconhecido na gala de fim de temporada de ${finishedYear}.`,
+            tone: "positive",
+          }),
+        );
+      }
+    }
+
     const { summary, record } = finalizeSeason(season, player, newAge, {
       competitionStats,
       clubId,
@@ -682,7 +715,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       marketValue,
       weeklyWage: ai.club?.weeklyWage ?? 0,
     });
-    const withChange: SeasonSummary = { ...summary, categoryChange };
+    const withChange: SeasonSummary = { ...summary, categoryChange, gala: gala.ceremony };
     seasonSummaries.push(withChange);
     player = {
       ...player,
@@ -761,7 +794,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         date: nextDate,
         amount: titlePrize,
         category: "prize",
-        label: "Premiação por título",
+        label: "Premiações (títulos e gala)",
         clubName: ai.club.clubName,
       });
     }
