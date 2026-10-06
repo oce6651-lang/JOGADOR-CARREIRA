@@ -709,6 +709,20 @@ export interface SeasonSummary {
   awards: AwardRecord[];
   callUps: CallUpRecord[];
   highlights: string[];
+  /** Full end-of-season gala (winners, including rivals). */
+  gala?: GalaAward[];
+}
+
+/** One award announced at the end-of-season gala. */
+export interface GalaAward {
+  key: "bestPlayer" | "revelation" | "topScorer" | "topAssists" | "teamOfSeason" | "clubPlayer" | "worldBest";
+  label: string;
+  scope: AwardRecord["scope"];
+  winnerName: string;
+  clubName: string;
+  isPlayer: boolean;
+  value?: number;
+  prize: number;
 }
 
 /* ------------------------------------------------------------------ */

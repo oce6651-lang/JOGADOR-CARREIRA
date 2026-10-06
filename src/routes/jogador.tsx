@@ -26,6 +26,7 @@ import { GameShell, PageHeader } from "@/components/game/GameShell";
 import { AttributeGroup } from "@/components/game/player/AttributeGrid";
 import { EmptySection } from "@/components/game/player/EmptySection";
 import { StatCard } from "@/components/game/Stats";
+import { TrophyRoom } from "@/components/game/awards/TrophyRoom";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatGameDate, seasonLabel } from "@/game/calendar";
@@ -161,6 +162,7 @@ function PlayerPage() {
           <TabsTrigger value="career">Carreira</TabsTrigger>
           <TabsTrigger value="stats">Estatísticas</TabsTrigger>
           <TabsTrigger value="history">Histórico</TabsTrigger>
+          <TabsTrigger value="trophies">Sala de Troféus</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="grid gap-4 lg:grid-cols-2">
@@ -314,6 +316,10 @@ function PlayerPage() {
             title="Nenhuma partida disputada"
             description="As estatísticas serão acumuladas automaticamente a cada partida simulada da carreira."
           />
+        </TabsContent>
+
+        <TabsContent value="trophies">
+          <TrophyRoom history={player.history} />
         </TabsContent>
 
         <TabsContent value="history" className="grid gap-4 md:grid-cols-2">
