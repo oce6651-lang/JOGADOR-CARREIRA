@@ -9,100 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SelecoesRouteImport } from './routes/selecoes'
-import { Route as PeneirasRouteImport } from './routes/peneiras'
-import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
-import { Route as NegociacoesRouteImport } from './routes/negociacoes'
-import { Route as MundoRouteImport } from './routes/mundo'
-import { Route as JogadorRouteImport } from './routes/jogador'
-import { Route as HistoricoRouteImport } from './routes/historico'
-import { Route as FinancasRouteImport } from './routes/financas'
-import { Route as EmpresarioRouteImport } from './routes/empresario'
-import { Route as DesenvolvedorRouteImport } from './routes/desenvolvedor'
-import { Route as CreditosRouteImport } from './routes/creditos'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as CompeticoesRouteImport } from './routes/competicoes'
-import { Route as CarreirasRouteImport } from './routes/carreiras'
-import { Route as CarreiraRouteImport } from './routes/carreira'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CarreiraRouteImport } from './routes/carreira'
+import { Route as CarreirasRouteImport } from './routes/carreiras'
+import { Route as CompeticoesRouteImport } from './routes/competicoes'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as CreditosRouteImport } from './routes/creditos'
+import { Route as DesenvolvedorRouteImport } from './routes/desenvolvedor'
+import { Route as EmpresarioRouteImport } from './routes/empresario'
+import { Route as FinancasRouteImport } from './routes/financas'
+import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as JogadorRouteImport } from './routes/jogador'
+import { Route as MundoRouteImport } from './routes/mundo'
+import { Route as NegociacoesRouteImport } from './routes/negociacoes'
+import { Route as NovoJogoRouteImport } from './routes/novo-jogo'
+import { Route as PeneirasRouteImport } from './routes/peneiras'
+import { Route as SelecoesRouteImport } from './routes/selecoes'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as MundoIndexRouteImport } from './routes/mundo.index'
-import { Route as MundoCompeticaoCompetitionSlugRouteImport } from './routes/mundo.competicao.$competitionSlug'
 import { Route as MundoClubeClubSlugRouteImport } from './routes/mundo.clube.$clubSlug'
+import { Route as MundoCompeticaoCompetitionSlugRouteImport } from './routes/mundo.competicao.$competitionSlug'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SelecoesRoute = SelecoesRouteImport.update({
-  id: '/selecoes',
-  path: '/selecoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PeneirasRoute = PeneirasRouteImport.update({
-  id: '/peneiras',
-  path: '/peneiras',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NovoJogoRoute = NovoJogoRouteImport.update({
-  id: '/novo-jogo',
-  path: '/novo-jogo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NegociacoesRoute = NegociacoesRouteImport.update({
-  id: '/negociacoes',
-  path: '/negociacoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MundoRoute = MundoRouteImport.update({
-  id: '/mundo',
-  path: '/mundo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JogadorRoute = JogadorRouteImport.update({
-  id: '/jogador',
-  path: '/jogador',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HistoricoRoute = HistoricoRouteImport.update({
-  id: '/historico',
-  path: '/historico',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FinancasRoute = FinancasRouteImport.update({
-  id: '/financas',
-  path: '/financas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EmpresarioRoute = EmpresarioRouteImport.update({
-  id: '/empresario',
-  path: '/empresario',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesenvolvedorRoute = DesenvolvedorRouteImport.update({
-  id: '/desenvolvedor',
-  path: '/desenvolvedor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CreditosRoute = CreditosRouteImport.update({
-  id: '/creditos',
-  path: '/creditos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompeticoesRoute = CompeticoesRouteImport.update({
-  id: '/competicoes',
-  path: '/competicoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CarreirasRoute = CarreirasRouteImport.update({
-  id: '/carreiras',
-  path: '/carreiras',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarreiraRoute = CarreiraRouteImport.update({
@@ -110,14 +40,89 @@ const CarreiraRoute = CarreiraRouteImport.update({
   path: '/carreira',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CarreirasRoute = CarreirasRouteImport.update({
+  id: '/carreiras',
+  path: '/carreiras',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompeticoesRoute = CompeticoesRouteImport.update({
+  id: '/competicoes',
+  path: '/competicoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditosRoute = CreditosRouteImport.update({
+  id: '/creditos',
+  path: '/creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesenvolvedorRoute = DesenvolvedorRouteImport.update({
+  id: '/desenvolvedor',
+  path: '/desenvolvedor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpresarioRoute = EmpresarioRouteImport.update({
+  id: '/empresario',
+  path: '/empresario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinancasRoute = FinancasRouteImport.update({
+  id: '/financas',
+  path: '/financas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JogadorRoute = JogadorRouteImport.update({
+  id: '/jogador',
+  path: '/jogador',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MundoRoute = MundoRouteImport.update({
+  id: '/mundo',
+  path: '/mundo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NegociacoesRoute = NegociacoesRouteImport.update({
+  id: '/negociacoes',
+  path: '/negociacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NovoJogoRoute = NovoJogoRouteImport.update({
+  id: '/novo-jogo',
+  path: '/novo-jogo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeneirasRoute = PeneirasRouteImport.update({
+  id: '/peneiras',
+  path: '/peneiras',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SelecoesRoute = SelecoesRouteImport.update({
+  id: '/selecoes',
+  path: '/selecoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MundoIndexRoute = MundoIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => MundoRoute,
+} as any)
+const MundoClubeClubSlugRoute = MundoClubeClubSlugRouteImport.update({
+  id: '/clube/$clubSlug',
+  path: '/clube/$clubSlug',
   getParentRoute: () => MundoRoute,
 } as any)
 const MundoCompeticaoCompetitionSlugRoute =
@@ -126,11 +131,6 @@ const MundoCompeticaoCompetitionSlugRoute =
     path: '/competicao/$competitionSlug',
     getParentRoute: () => MundoRoute,
   } as any)
-const MundoClubeClubSlugRoute = MundoClubeClubSlugRouteImport.update({
-  id: '/clube/$clubSlug',
-  path: '/clube/$clubSlug',
-  getParentRoute: () => MundoRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -288,109 +288,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/selecoes': {
-      id: '/selecoes'
-      path: '/selecoes'
-      fullPath: '/selecoes'
-      preLoaderRoute: typeof SelecoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/peneiras': {
-      id: '/peneiras'
-      path: '/peneiras'
-      fullPath: '/peneiras'
-      preLoaderRoute: typeof PeneirasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/novo-jogo': {
-      id: '/novo-jogo'
-      path: '/novo-jogo'
-      fullPath: '/novo-jogo'
-      preLoaderRoute: typeof NovoJogoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/negociacoes': {
-      id: '/negociacoes'
-      path: '/negociacoes'
-      fullPath: '/negociacoes'
-      preLoaderRoute: typeof NegociacoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mundo': {
-      id: '/mundo'
-      path: '/mundo'
-      fullPath: '/mundo'
-      preLoaderRoute: typeof MundoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jogador': {
-      id: '/jogador'
-      path: '/jogador'
-      fullPath: '/jogador'
-      preLoaderRoute: typeof JogadorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/historico': {
-      id: '/historico'
-      path: '/historico'
-      fullPath: '/historico'
-      preLoaderRoute: typeof HistoricoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/financas': {
-      id: '/financas'
-      path: '/financas'
-      fullPath: '/financas'
-      preLoaderRoute: typeof FinancasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/empresario': {
-      id: '/empresario'
-      path: '/empresario'
-      fullPath: '/empresario'
-      preLoaderRoute: typeof EmpresarioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/desenvolvedor': {
-      id: '/desenvolvedor'
-      path: '/desenvolvedor'
-      fullPath: '/desenvolvedor'
-      preLoaderRoute: typeof DesenvolvedorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/creditos': {
-      id: '/creditos'
-      path: '/creditos'
-      fullPath: '/creditos'
-      preLoaderRoute: typeof CreditosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracoes': {
-      id: '/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof ConfiguracoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/competicoes': {
-      id: '/competicoes'
-      path: '/competicoes'
-      fullPath: '/competicoes'
-      preLoaderRoute: typeof CompeticoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/carreiras': {
-      id: '/carreiras'
-      path: '/carreiras'
-      fullPath: '/carreiras'
-      preLoaderRoute: typeof CarreirasRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carreira': {
@@ -400,11 +302,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarreiraRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/carreiras': {
+      id: '/carreiras'
+      path: '/carreiras'
+      fullPath: '/carreiras'
+      preLoaderRoute: typeof CarreirasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competicoes': {
+      id: '/competicoes'
+      path: '/competicoes'
+      fullPath: '/competicoes'
+      preLoaderRoute: typeof CompeticoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creditos': {
+      id: '/creditos'
+      path: '/creditos'
+      fullPath: '/creditos'
+      preLoaderRoute: typeof CreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desenvolvedor': {
+      id: '/desenvolvedor'
+      path: '/desenvolvedor'
+      fullPath: '/desenvolvedor'
+      preLoaderRoute: typeof DesenvolvedorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empresario': {
+      id: '/empresario'
+      path: '/empresario'
+      fullPath: '/empresario'
+      preLoaderRoute: typeof EmpresarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financas': {
+      id: '/financas'
+      path: '/financas'
+      fullPath: '/financas'
+      preLoaderRoute: typeof FinancasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jogador': {
+      id: '/jogador'
+      path: '/jogador'
+      fullPath: '/jogador'
+      preLoaderRoute: typeof JogadorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mundo': {
+      id: '/mundo'
+      path: '/mundo'
+      fullPath: '/mundo'
+      preLoaderRoute: typeof MundoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/negociacoes': {
+      id: '/negociacoes'
+      path: '/negociacoes'
+      fullPath: '/negociacoes'
+      preLoaderRoute: typeof NegociacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/novo-jogo': {
+      id: '/novo-jogo'
+      path: '/novo-jogo'
+      fullPath: '/novo-jogo'
+      preLoaderRoute: typeof NovoJogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peneiras': {
+      id: '/peneiras'
+      path: '/peneiras'
+      fullPath: '/peneiras'
+      preLoaderRoute: typeof PeneirasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/selecoes': {
+      id: '/selecoes'
+      path: '/selecoes'
+      fullPath: '/selecoes'
+      preLoaderRoute: typeof SelecoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mundo/': {
@@ -414,18 +414,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MundoIndexRouteImport
       parentRoute: typeof MundoRoute
     }
-    '/mundo/competicao/$competitionSlug': {
-      id: '/mundo/competicao/$competitionSlug'
-      path: '/competicao/$competitionSlug'
-      fullPath: '/mundo/competicao/$competitionSlug'
-      preLoaderRoute: typeof MundoCompeticaoCompetitionSlugRouteImport
-      parentRoute: typeof MundoRoute
-    }
     '/mundo/clube/$clubSlug': {
       id: '/mundo/clube/$clubSlug'
       path: '/clube/$clubSlug'
       fullPath: '/mundo/clube/$clubSlug'
       preLoaderRoute: typeof MundoClubeClubSlugRouteImport
+      parentRoute: typeof MundoRoute
+    }
+    '/mundo/competicao/$competitionSlug': {
+      id: '/mundo/competicao/$competitionSlug'
+      path: '/competicao/$competitionSlug'
+      fullPath: '/mundo/competicao/$competitionSlug'
+      preLoaderRoute: typeof MundoCompeticaoCompetitionSlugRouteImport
       parentRoute: typeof MundoRoute
     }
   }
