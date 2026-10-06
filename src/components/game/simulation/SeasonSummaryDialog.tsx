@@ -2,6 +2,7 @@ import { Award, CalendarCheck, Flag, Stethoscope, Target, Trophy, Users } from "
 
 import { AttributeDeltaList } from "@/components/game/simulation/AttributeDeltaList";
 import { StatCard } from "@/components/game/Stats";
+import { GalaCeremony } from "@/components/game/awards/GalaCeremony";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -81,6 +82,8 @@ export function SeasonSummaryDialog({
             emptyLabel="Nenhum atributo mudou nesta temporada."
           />
         </section>
+
+        {summary.gala?.length ? <GalaCeremony awards={summary.gala} /> : null}
 
         <div className="grid gap-4 md:grid-cols-3">
           <ListBlock

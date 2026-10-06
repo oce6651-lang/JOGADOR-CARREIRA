@@ -28,6 +28,7 @@ import {
   competitionEdition,
   competitionsForClub,
   getClub,
+  getCompetition,
   isAgeEligible,
   legalCategoryForAge,
 } from "../world";
