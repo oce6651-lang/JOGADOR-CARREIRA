@@ -9,6 +9,7 @@ import { formatMoney } from "@/game/format";
 import { useGame } from "@/game/GameProvider";
 import type { FinanceCategory } from "@/game/types";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/financas")({
   head: () => ({
@@ -60,6 +61,7 @@ function FinancePage() {
         <ArrowLeft className="size-3.5" /> Carreira
       </Link>
       <PageHeader eyebrow="Finanças pessoais" title="Saldo e extrato" description="Tudo o que o atleta recebeu e gastou na carreira." />
+      <Button variant="outline" asChild className="mb-5"><Link to="/patrocinios">Patrocínios e material esportivo</Link></Button>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
         <StatCard icon={Wallet} label="Saldo atual" value={formatMoney(finances.balance)} />

@@ -30,6 +30,7 @@ import { createEvent, appendEvents } from "./events";
 
 import { createId } from "./ids";
 import { canAfford, createFinances, ensureFinances, registerTransaction } from "./finance";
+import { ensureSponsorships, settleSponsorships } from "./sponsorships";
 import { calculateOverall, createPlayer, primaryStatus } from "./player";
 import { addStatus, removeStatus } from "./player/status";
 import { createSeasonProgress, simulate, type SimulationScope } from "./simulation";
@@ -101,6 +102,7 @@ export function createCareer(input: NewCareerInput, now = Date.now()): Career {
     status: "unsigned",
     sport,
     finances: createFinances(),
+    sponsorships: ensureSponsorships(),
     player,
     timeline,
     events,
@@ -164,7 +166,7 @@ export function retireCareer(career: Career): Career {
     updatedAt: Date.now(),
   };
 
-  return withEvents(retired, [
+  return withEvents(settleSponsorships(career, retired), [
     createEvent("retirement", date, "Fim da carreira", {
       description: `${playerFullName(career)} pendurou as chuteiras aos ${age} anos com ${totals.appearances} jogos, ${totals.goals} gols, ${totals.assists} assistências e ${career.player.history.titles.length} título(s).`,
       tone: "warning",

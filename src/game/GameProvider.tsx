@@ -30,6 +30,7 @@ import type { AgentTemplate, TrialOpportunity } from "./ai";
 import type { Club } from "./world";
 import type { NegotiationTopic } from "./types";
 import type { SimulationScope } from "./simulation";
+import { acceptSponsorship, declineSponsorship } from "./sponsorships";
 import {
   DEFAULT_SETTINGS,
   deleteCareer,
@@ -64,6 +65,8 @@ interface GameContextValue {
   acceptOffer: (offerId: string) => void;
   negotiateOffer: (offerId: string, topic: NegotiationTopic) => NegotiationFeedback | null;
   declineOffer: (offerId: string) => void;
+  acceptSponsorOffer: (offerId: string) => void;
+  declineSponsorOffer: (offerId: string) => void;
   attendTrial: (opportunity: TrialOpportunity) => boolean;
   hireAgent: (template: AgentTemplate) => void;
   /** Agent offers the athlete to any club in the world. */
@@ -174,6 +177,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     [updateCareer],
   );
 
+  const acceptSponsorOffer = useCallback(
+    (offerId: string) => updateCareer((prev) => acceptSponsorship(prev, offerId)),
+    [updateCareer],
+  );
+  const declineSponsorOffer = useCallback(
+    (offerId: string) => updateCareer((prev) => declineSponsorship(prev, offerId)),
+    [updateCareer],
+  );
+
   const attendTrial = useCallback(
     (opportunity: TrialOpportunity) => {
       if (!career) return false;
@@ -270,6 +282,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       acceptOffer,
       negotiateOffer,
       declineOffer,
+      acceptSponsorOffer,
+      declineSponsorOffer,
       attendTrial,
       hireAgent,
       dismissAgent,
@@ -298,6 +312,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       acceptOffer,
       negotiateOffer,
       declineOffer,
+      acceptSponsorOffer,
+      declineSponsorOffer,
       attendTrial,
       hireAgent,
       dismissAgent,

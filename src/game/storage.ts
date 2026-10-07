@@ -1,6 +1,7 @@
 import { SAVE_VERSION } from "./constants";
 import { ageAt, switchCalendar } from "./calendar";
 import { createCareerAi } from "./ai";
+import { ensureSponsorships } from "./sponsorships";
 
 import { createPlayer } from "./player";
 import { calculateOverall } from "./player/overall";
@@ -308,6 +309,7 @@ function migrateCareer(career: Career): Career | null {
 function repairCareer(career: Career): Career {
   let next: Career = {
     ...career,
+    sponsorships: ensureSponsorships(career.sponsorships),
     events: Array.isArray(career.events) ? career.events : [],
     pendingSeasonSummaries: Array.isArray(career.pendingSeasonSummaries)
       ? career.pendingSeasonSummaries

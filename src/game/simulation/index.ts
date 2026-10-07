@@ -47,6 +47,7 @@ import type {
 import { createId } from "../ids";
 import { runGala } from "../awards/gala";
 import { ensureFinances, registerTransaction } from "../finance";
+import { reviewSponsorships, settleSponsorships } from "../sponsorships";
 import { rollInjury } from "./injury";
 import { matchToStatLine, randomOpponent, simulateMatch } from "./match";
 import { mergeChanges, progressAttributes } from "./progression";
@@ -800,16 +801,6 @@ function simulateSingleWeek(career: Career): WeekOutcome {
       });
     }
 
-    // Boot deals and local sponsors appear once the athlete has a name.
-    if (ai.reputation >= 55) {
-      finances = registerTransaction(finances, {
-        date: nextDate,
-        amount: Math.round((ai.reputation - 50) * 140),
-        category: "sponsorship",
-        label: "Patrocínios e publicidade",
-      });
-    }
-
     const matchBonus =
       (ai.club.appearanceBonus ?? 0) * stats.appearances +
       (ai.club.goalBonus ?? 0) * (stats.goals + (player.position === "GK" ? stats.cleanSheets : 0));
@@ -824,7 +815,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     }
   }
 
-  const nextCareer: Career = {
+  const simulatedCareer: Career = {
     ...career,
     finances,
     player,
@@ -836,6 +827,8 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     pendingSeasonSummaries: [...career.pendingSeasonSummaries, ...seasonSummaries],
     competitionHistory,
   };
+  const nextCareer = reviewSponsorships(settleSponsorships(career, simulatedCareer));
+  events.push(...nextCareer.events.filter((event) => !simulatedCareer.events.some((old) => old.id === event.id)));
 
   return {
     career: nextCareer,
