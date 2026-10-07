@@ -24,6 +24,7 @@ export type EntityKind =
   | "title"
   | "transfer"
   | "finance"
+  | "sponsorship"
   | "event";
 
 export type Foot = "left" | "right" | "both";
@@ -782,6 +783,40 @@ export interface Career {
   sport: Sport;
   /** Personal money of the athlete. */
   finances: PlayerFinances;
+  /** Optional only for backwards-compatible loading of older saves. */
+  sponsorships?: SponsorshipState;
+}
+
+export interface SponsorshipTerms {
+  seasonalFee: number;
+  goalBonus: number;
+  titleBonus: number;
+  callUpBonus: number;
+  seasons: number;
+}
+
+export interface SponsorshipOffer {
+  id: EntityId;
+  brandId: string;
+  brandName: string;
+  sport: Sport;
+  terms: SponsorshipTerms;
+  createdWeek: number;
+  expiresWeek: number;
+}
+
+export interface SponsorshipContract extends SponsorshipOffer {
+  signedDate: IsoDate;
+  endDate: IsoDate;
+  status: "active" | "expired" | "retired";
+  totalReceived: number;
+  paidSeasons: number[];
+}
+
+export interface SponsorshipState {
+  offers: SponsorshipOffer[];
+  contracts: SponsorshipContract[];
+  lastReviewWeek: number;
 }
 
 /** A competition edition finished while this career was being played. */
