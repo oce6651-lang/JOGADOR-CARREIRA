@@ -1,6 +1,7 @@
 import { Activity, Award, HeartPulse, Smile, Star, Target, Users } from "lucide-react";
 
 import { EventList } from "@/components/game/events/EventList";
+import { MatchCommentaryCard } from "@/components/game/match/MatchCommentaryCard";
 import { AttributeDeltaList } from "@/components/game/simulation/AttributeDeltaList";
 import { Button } from "@/components/ui/button";
 import {
@@ -115,6 +116,22 @@ export function SimulationReportDialog({
         ) : (
           <p className="text-sm text-muted-foreground">Nenhuma lesão no período.</p>
         )}
+
+        {report.matches?.length ? (
+          <section>
+            <h3 className="mb-2 text-display text-lg uppercase">Partidas e narração</h3>
+            <div className="space-y-2">
+              {report.matches.slice(0, 12).map((match, index) => (
+                <MatchCommentaryCard key={match.id} match={match} defaultOpen={index === 0 && report.matches!.length === 1} />
+              ))}
+            </div>
+            {report.matches.length > 12 ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                + {report.matches.length - 12} partidas no histórico do jogador.
+              </p>
+            ) : null}
+          </section>
+        ) : null}
 
         <section>
           <h3 className="mb-2 text-display text-lg uppercase">Evolução</h3>
