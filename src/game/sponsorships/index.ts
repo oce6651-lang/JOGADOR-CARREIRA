@@ -114,7 +114,7 @@ export function settleSponsorships(before: Career, after: Career): Career {
       finances = registerTransaction(finances, { date: after.timeline.current, amount, category: "sponsorship", label: `${contract.brandName} · ${label}` });
       totalReceived += amount;
     }
-    const status = after.status === "retired" ? "retired" : after.timeline.current.date >= contract.endDate ? "expired" : "active";
+    const status: SponsorshipContract["status"] = after.status === "retired" ? "retired" : after.timeline.current.date >= contract.endDate ? "expired" : "active";
     if (status !== "active") events.unshift(createEvent("contract", after.timeline.current, `Patrocínio encerrado: ${contract.brandName}`));
     return { ...contract, totalReceived, paidSeasons, status };
   });
