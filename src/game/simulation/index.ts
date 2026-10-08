@@ -38,6 +38,7 @@ import type {
   Career,
   GameEvent,
   InjuryRecord,
+  MatchRecord,
   MatchStatLine,
   Player,
   SeasonSummary,
@@ -49,6 +50,7 @@ import { runGala } from "../awards/gala";
 import { ensureFinances, registerTransaction } from "../finance";
 import { reviewSponsorships, settleSponsorships } from "../sponsorships";
 import { rollInjury } from "./injury";
+import { buildMatchHighlights } from "./narration";
 import { matchToStatLine, randomOpponent, simulateMatch } from "./match";
 import { mergeChanges, progressAttributes } from "./progression";
 import {
@@ -96,6 +98,7 @@ interface WeekOutcome {
   attributeChanges: AttributeChange[];
   seasonSummaries: SeasonSummary[];
   playedMatch: boolean;
+  match?: MatchRecord;
 }
 
 export function hasClub(player: Player) {
@@ -148,6 +151,7 @@ export function simulate(
   let attributeChanges: AttributeChange[] = [];
   let seasonSummaries: SeasonSummary[] = [];
   let weeks = 0;
+  const matches: MatchRecord[] = [];
 
   for (let i = 0; i < maxWeeks; i += 1) {
     const outcome = simulateSingleWeek(state);
@@ -159,6 +163,7 @@ export function simulate(
     injuries = [...injuries, ...outcome.injuries];
     attributeChanges = mergeChanges(attributeChanges, outcome.attributeChanges);
     seasonSummaries = [...seasonSummaries, ...outcome.seasonSummaries];
+    if (outcome.match) matches.unshift(outcome.match);
 
     if (scope === "match" && outcome.playedMatch) break;
   }
@@ -182,6 +187,7 @@ export function simulate(
     attributeChanges,
     injuries,
     seasonSummaries,
+    matches,
     headlines: buildHeadlines({
       ai,
       stats,
@@ -245,6 +251,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
   let stats = createStatLine();
   let trainings = 0;
   let playedMatch = false;
+  let playedRecord: MatchRecord | undefined;
   let minutesPlayed = 0;
   let player = career.player;
   let ai: CareerAi = career.ai;
@@ -319,7 +326,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     if (called) {
       const starter = chance(profile.starterChance, random);
       const opponentStrength = randomOpponentStrength(situation.clubReputation, random);
-      const match = simulateMatch(
+      const resolved = simulateMatch(
         player,
         {
           date,
@@ -334,6 +341,23 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         },
         random,
       );
+      const match: MatchRecord = {
+        ...resolved,
+        competitionId: fixture.id,
+        starter,
+        highlights: buildMatchHighlights(
+          resolved,
+          {
+            playerName: player.lastName || player.firstName,
+            clubName: situation.clubName,
+            starter,
+            sport: career.sport ?? "football",
+            isGoalkeeper: player.position === "GK",
+          },
+          createRandom(`${career.id}:${career.timeline.elapsedWeeks}:narration`),
+        ),
+      };
+      playedRecord = match;
       playedMatch = true;
       minutesPlayed = match.minutes;
       const matchStats = matchToStatLine(player, match);
@@ -350,7 +374,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
         ...player,
         history: {
           ...player.history,
-          matches: [{ ...match, competitionId: fixture.id }, ...player.history.matches].slice(
+          matches: [match, ...player.history.matches].slice(
             0,
             400,
           ),
@@ -839,6 +863,7 @@ function simulateSingleWeek(career: Career): WeekOutcome {
     attributeChanges: progression.changes,
     seasonSummaries,
     playedMatch,
+    match: playedRecord,
   };
 }
 

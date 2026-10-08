@@ -305,6 +305,18 @@ export interface MatchRecord {
   goals: number;
   assists: number;
   rating: number;
+  /** Optional: absent in matches saved before commentary existed. */
+  starter?: boolean;
+  highlights?: MatchHighlight[];
+}
+
+export type MatchHighlightKind = "goal" | "assist" | "teamGoal" | "concede" | "chance" | "save" | "sub" | "final";
+
+export interface MatchHighlight {
+  minute: number;
+  kind: MatchHighlightKind;
+  text: string;
+  involvesPlayer: boolean;
 }
 
 export interface InjuryRecord {
@@ -683,6 +695,8 @@ export interface SimulationReport {
   attributeChanges: AttributeChange[];
   injuries: InjuryRecord[];
   seasonSummaries: SeasonSummary[];
+  /** Matches played in the period, newest first, with commentary. */
+  matches?: MatchRecord[];
   /** Short AI-written lines summarising what the period meant. */
   headlines: string[];
   clubName?: string;
