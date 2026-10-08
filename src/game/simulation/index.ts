@@ -38,6 +38,7 @@ import type {
   Career,
   GameEvent,
   InjuryRecord,
+  MatchRecord,
   MatchStatLine,
   Player,
   SeasonSummary,
